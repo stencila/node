@@ -1,0 +1,43 @@
+{
+  "name": "stencila",
+  "version": "0.1.0",
+  "description": "Stencila components for Javascript",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "lint": "eslint *.js tests",
+    "test": "tape tests | tap-spec",
+    "cover": "istanbul cover tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stencila/js.git"
+  },
+  "keywords": [
+    "data",
+    "documents",
+    "sheets",
+    "contexts",
+    "sessions",
+    "reproducibility",
+    "science"
+  ],
+  "author": "",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/stencila/js/issues"
+  },
+  "homepage": "https://github.com/stencila/js#readme",
+  "devDependencies": {
+    "babel-preset-es2015": "^6.14.0",
+    "babelify": "^7.3.0",
+    "eslint": "^3.5.0",
+    "glob": "^7.0.6",
+    "istanbul": "^0.4.5",
+    "tap-spec": "^4.1.1",
+    "tape": "^4.6.0"
+  },
+  "dependencies": {}
+}
