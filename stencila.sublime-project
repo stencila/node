@@ -1,0 +1,36 @@
+{
+	"folders":
+	[
+		{
+			"path": ".",
+			"folder_exclude_patterns": [
+				"node_modules",
+				"coverage"
+			]
+		}
+	],
+
+	"build_systems":
+	[
+		{
+			"name": "Test one: run all tests",
+			"cmd":
+			[
+				"make", "test"
+			],
+			"working_dir": "."
+		},
+		{
+			"name": "Test one: run one test file",
+			"cmd":
+			[
+				"node", "$file_path/$file_name"
+			],
+			"working_dir": "."
+		},
+	],
+
+	"tab_size": 2,
+	"translate_tabs_to_spaces": true
+}
+
