@@ -14,7 +14,10 @@ script:
   - make cover
 
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+  - |
+    if [[ $TRAVIS_R_VERSION == 6.* ]]; then
+      bash <(curl -s https://codecov.io/bash);
+    fi
 
 notifications:
   webhooks:
