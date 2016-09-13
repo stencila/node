@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "scripts": {
-    "lint": "eslint *.js tests",
+    "lint": "eslint *.js src tests",
     "test": "tape tests | tap-spec",
     "cover": "istanbul cover tests"
   },
