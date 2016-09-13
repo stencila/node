@@ -6,7 +6,6 @@ module.exports = {
     "es6": true
   },
   "rules": {
-    "indent": ["error", 2],
-    "semi": ["error", "always"]
+    "indent": ["error", 2]
   }
 };

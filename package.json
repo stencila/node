@@ -39,5 +39,8 @@
     "tap-spec": "^4.1.1",
     "tape": "^4.6.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "mkdirp": "^0.5.1",
+    "tmp": "0.0.28"
+  }
 }
