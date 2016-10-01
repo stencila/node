@@ -4,8 +4,6 @@ const fs = require('fs');
 const pathm = require('path');
 const mkdirp = require('mkdirp');
 
-const components = require('./components');
-
 class Component {
 
   constructor (path) {
@@ -18,8 +16,6 @@ class Component {
     } catch (err) {
       // eslint-disable empty-block
     }
-
-    components.push(this)
   }
 
   path () {

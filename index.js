@@ -1,13 +1,11 @@
-var Component = require('./Component');
-var Document = require('./Document');
-var Sheet = require('./Sheet');
-var Context = require('./Context');
-var Session = require('./Session');
+var Component = require('./component/Component');
+var Document = require('./document/Document');
+var Sheet = require('./sheet/Sheet');
+var Session = require('./session/Session');
 
 module.exports = {
   Component: Component,
   Document: Document,
   Sheet: Sheet,
-  Context: Context,
   Session: Session
 };

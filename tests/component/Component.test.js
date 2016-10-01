@@ -5,7 +5,7 @@ var path = require('path');
 var tmp = require('tmp');
 var test = require('tape');
 
-var Component = require('../src/Component');
+var Component = require('../../src/component/Component');
 
 
 test('Component can be constructed', function (t) {

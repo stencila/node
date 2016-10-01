@@ -1,6 +1,6 @@
 var test = require('tape');
 
-var Session = require('../src/Session');
+var Session = require('../../src/session/Session');
 
 
 test('Session can be constructed', function (t) {

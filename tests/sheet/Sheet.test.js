@@ -1,6 +1,6 @@
 var test = require('tape');
 
-var Sheet = require('../src/Sheet');
+var Sheet = require('../../src/sheet/Sheet');
 
 
 test('Sheet can be constructed', function (t) {

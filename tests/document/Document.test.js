@@ -1,6 +1,6 @@
 var test = require('tape');
 
-var Document = require('../src/Document');
+var Document = require('../../src/document/Document');
 
 
 test('Document can be constructed', function (t) {
