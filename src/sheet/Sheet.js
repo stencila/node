@@ -1,7 +1,5 @@
-'use strict';
-
 class Sheet {
 
 }
 
-module.exports = Sheet;
+module.exports = Sheet

@@ -1,25 +1,22 @@
-'use strict';
+const fs = require('fs')
+const path = require('path')
+const tmp = require('tmp')
+const test = require('tape')
 
-var fs = require('fs');
-var path = require('path');
-var tmp = require('tmp');
-var test = require('tape');
-
-var Component = require('../../src/component/Component');
-
+const Component = require('../../src/component/Component')
 
 test('Component can be constructed', function (t) {
-  var c = new Component();
+  let c = new Component()
 
-  t.ok(c instanceof Component);
-  t.end();
-});
+  t.ok(c instanceof Component)
+  t.end()
+})
 
 test('Component can be read and written', function (t) {
   let p1 = tmp.fileSync().name
   let p2 = tmp.fileSync().name
 
-  let c = new Component(p1);
+  let c = new Component(p1)
   t.equal(c.path(), p1, 'Initial path is set')
 
   c.read()
@@ -35,15 +32,15 @@ test('Component can be read and written', function (t) {
   t.equal(c.path(), p1, 'Write with arg does change path')
 
   t.end()
-});
+})
 
 test('Component read errors correctly', function (t) {
-  let c = new Component('foo/bar');
+  let c = new Component('foo/bar')
   t.equal(c.path(), 'foo/bar', 'Initial path is set and doesnt matter if it doesnt exist')
   t.throws(c.read.bind(c), /Filesystem path does not exist/, 'Explicit read should error')
 
   t.end()
-});
+})
 
 test('Component writer creates the right directories', function (t) {
   let dir = tmp.dirSync().name
@@ -61,4 +58,4 @@ test('Component writer creates the right directories', function (t) {
   t.ok(fs.statSync(dir2), 'Directory is written')
 
   t.end()
-});
+})

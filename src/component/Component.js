@@ -1,8 +1,6 @@
-'use strict';
-
-const fs = require('fs');
-const pathm = require('path');
-const mkdirp = require('mkdirp');
+const fs = require('fs')
+const pathm = require('path')
+const mkdirp = require('mkdirp')
 
 class Component {
 
@@ -23,7 +21,7 @@ class Component {
   }
 
   read (path) {
-    if (!path || path == '') {
+    if (!path || path === '') {
       path = this._path
     }
 
@@ -38,7 +36,7 @@ class Component {
   }
 
   write (path) {
-    if (!path || path == '') {
+    if (!path || path === '') {
       path = this._path
     }
 
@@ -51,4 +49,4 @@ class Component {
 
 }
 
-module.exports = Component;
+module.exports = Component

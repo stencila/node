@@ -1,11 +1,10 @@
-var test = require('tape');
+const test = require('tape')
 
-var Document = require('../../src/document/Document');
-
+const Document = require('../../src/document/Document')
 
 test('Document can be constructed', function (t) {
-  var c = new Document();
+  let c = new Document()
 
-  t.ok(c instanceof Document);
-  t.end();
-});
+  t.ok(c instanceof Document)
+  t.end()
+})
