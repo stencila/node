@@ -4,6 +4,7 @@ const tmp = require('tmp')
 const test = require('tape')
 
 const Component = require('../../src/component/Component')
+require('../../src/controller/Controller')
 
 test('Component can be constructed', function (t) {
   let c = new Component()
@@ -59,3 +60,11 @@ test('Component writer creates the right directories', function (t) {
 
   t.end()
 })
+
+test('Component can be viewed in browser', function (t) {
+  let c = new Component()
+  c.view()
+
+  t.end()
+})
+
