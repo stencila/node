@@ -1,4 +1,6 @@
-class Document {
+const Component = require('../component/Component')
+
+class Document extends Component {
 
 }
 
