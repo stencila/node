@@ -1,3 +1,5 @@
+const fs = require('fs')
+
 const Component = require('../component/Component')
 const Document = require('../document/Document')
 const Sheet = require('../sheet/Sheet')
@@ -39,6 +41,23 @@ class Controller extends Component {
     */
   }
 
+  clone (address) {
+    let {scheme, path, version} = this.split(address)
+
+    if (scheme === 'new') {
+      return null
+    }
+
+    if (scheme === 'file') {
+      try {
+        fs.statSync(path)
+        return path
+      } catch (error) {
+        throw Error(`Local file system path does not exist\n  path: ${path}`)
+      }
+    }
+  }
+
   get components () {
     return this._components
   }
@@ -62,7 +81,7 @@ class Controller extends Component {
       } else if (path === 'jssession') {
         return new JsSession()
       } else {
-        throw Error('Unable to create new component of type\n  address: %s\n  type: %s' % (address, path))
+        throw Error(`Unable to create new component of type\n  address: ${address}\n  type: ${path}`)
       }
     }
 
@@ -78,6 +97,16 @@ class Controller extends Component {
         }
       }
     }
+
+    let filename = this.clone(address)
+    for (let cls of [Document, Sheet]) {
+      let component = cls.open(address, filename)
+      if (component) {
+        return component
+      }
+    }
+
+    throw Error(`Unable to open address\n address: ${address}`)
   }
 
   serve () {

@@ -1,3 +1,5 @@
+const fs = require('fs')
+
 class ComponentConverter {
 
   load (component, content, format, options) {
@@ -9,11 +11,11 @@ class ComponentConverter {
   }
 
   read (component, path, format, options) {
-    throw Error('This method must be implmented in derived class')
+    this.load(component, fs.readFileSync(path), format, options)
   }
 
   write (component, path, format, options) {
-    throw Error('This method must be implmented in derived class')
+    fs.writeFileSync(path, this.dump(component, format, options))
   }
 
 }

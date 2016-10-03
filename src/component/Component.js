@@ -2,7 +2,7 @@ const child = require('child-process-promise')
 const crypto = require('crypto')
 const fs = require('fs')
 const os = require('os')
-const pathm = require('path')
+const path = require('path')
 const mkdirp = require('mkdirp')
 
 const version = require('../../package').version
@@ -16,24 +16,13 @@ var _controller = null
 
 class Component {
 
-  constructor (path) {
-    path = path || ''
-
+  constructor (address, path) {
     this._id = crypto.randomBytes(32).toString('hex')
-    this._address = 'id://' + this._id
+    this._address = address || ('id://' + this._id)
     this._path = path
     this._meta = {}
 
-    if (_controller) {
-      _controller.register(this)
-    }
-
-    try {
-      fs.statSync(path)
-      this.read(path)
-    } catch (err) {
-      // eslint-disable empty-block
-    }
+    if (_controller) _controller.register(this)
   }
 
   static get controller () {
@@ -66,7 +55,7 @@ class Component {
     } else if (address[0] === '~') {
       return 'id://' + address.substring(1)
     } else if (address[0] === '.' || address[0] === '/') {
-      return 'file://' + pathm.resolve(address)
+      return 'file://' + path.resolve(address)
     } else if (address.substring(0, 3) === 'bb/') {
       return 'git://bitbucket.org/' + address.substring(3)
     } else if (address.substring(0, 3) === 'gh/') {
@@ -120,29 +109,25 @@ class Component {
 
   converter (format) {
     if (format === 'data') {
-      return ComponentDataConverter
+      return new ComponentDataConverter()
     } else if (format === 'json') {
-      return ComponentJsonConverter
+      return new ComponentJsonConverter()
     } else if (format === 'html') {
-      return ComponentHtmlConverter
+      return new ComponentHtmlConverter()
     } else if (format === 'html-head') {
-      return ComponentHtmlHeadConverter
+      return new ComponentHtmlHeadConverter()
     } else {
       throw Error('Unhandled format\n  format: ' + format)
     }
   }
 
   load (content, format, options) {
-    let Converter = this.converter(format)
-    let converter = new Converter()
-    converter.load(this, content, format, options)
+    this.converter(format).load(this, content, format, options)
     return this
   }
 
   dump (format, options) {
-    let Converter = this.converter(format)
-    let converter = new Converter()
-    return converter.dump(this, format, options)
+    return this.converter(format).dump(this, format, options)
   }
 
   get json () {
@@ -165,31 +150,34 @@ class Component {
     return this._path
   }
 
-  read (path) {
-    if (!path || path === '') {
-      path = this._path
+  read (filepath, options) {
+    if (!filepath || filepath === '') {
+      filepath = this._path
     }
 
     try {
-      fs.statSync(path)
-      this._path = path
+      fs.statSync(filepath)
+      this._path = filepath
     } catch (err) {
-      if (err) throw new Error(`Filesystem path does not exist\n  path: ${path}`)
+      throw new Error(`Local file system path does not exist\n  path: ${filepath}`)
     }
 
-    return path
+    let format = path.extname(filepath).substring(1)
+    this.converter(format).read(this, filepath, format, options)
+
+    return this
   }
 
-  write (path) {
-    if (!path || path === '') {
-      path = this._path
+  write (filepath) {
+    if (!filepath || filepath === '') {
+      filepath = this._path
     }
 
-    mkdirp.sync(pathm.extname(path) === '' ? path : pathm.dirname(path))
+    mkdirp.sync(path.extname(filepath) === '' ? filepath : path.dirname(filepath))
 
-    this._path = path
+    this._path = filepath
 
-    return path
+    return this
   }
 
   get title () {

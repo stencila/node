@@ -56,8 +56,7 @@ class HttpServer {
     try {
       method.call(this, request, response, ...args)
     } catch (error) {
-      response.statusCode = 500
-      response.end(error.stack)
+      this.error(request, response, error)
     }
   }
 
@@ -116,7 +115,7 @@ class HttpServer {
     if (component) {
       let result = component[name]
       response.setHeader('Content-Type', 'application/json')
-      response.end(json(result))
+      response.end(stringify(result))
     } else {
       response.statusCode = 404
       response.end()
@@ -124,12 +123,18 @@ class HttpServer {
   }
 
   set (request, response, address, name) {
-    var body = []
-    request.on('data', function (chunk) {
-      body.push(chunk)
-    }).on('end', function () {
-      body = Buffer.concat(body).toString()
-      response.end('TODO set: ' + body)
+    let self = this
+    bodify(request, function (body) {
+      try {
+        if (body) {
+          let component = self._controller.open(address)
+          let value = JSON.parse(body)
+          component[name] = value
+        }
+        response.end()
+      } catch (error) {
+        self.error(request, response, error)
+      }
     })
   }
 
@@ -137,9 +142,24 @@ class HttpServer {
     response.end('TODO call')
   }
 
+  error (request, response, error) {
+    response.statusCode = 500
+    response.end(error.stack)
+  }
+
 }
 
-function json (object) {
+function bodify (request, callback) {
+  var body = []
+  request.on('data', function (chunk) {
+    body.push(chunk)
+  }).on('end', function () {
+    body = Buffer.concat(body).toString()
+    callback(body)
+  })
+}
+
+function stringify (object) {
   return JSON.stringify(object, function (key, value) {
     if (value instanceof Component) {
       return value.dump('data')
