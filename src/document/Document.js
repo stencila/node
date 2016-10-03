@@ -3,6 +3,7 @@ const cheerio = require('cheerio')
 const Component = require('../component/Component')
 const DocumentDataConverter = require('./DocumentDataConverter')
 const DocumentHtmlConverter = require('./DocumentHtmlConverter')
+const DocumentMarkdownConverter = require('./DocumentMarkdownConverter')
 
 class Document extends Component {
 
@@ -23,6 +24,8 @@ class Document extends Component {
       return new DocumentDataConverter()
     } else if (format === 'html') {
       return new DocumentHtmlConverter()
+    } else if (format === 'md') {
+      return new DocumentMarkdownConverter()
     } else {
       return super.converter(format)
     }
