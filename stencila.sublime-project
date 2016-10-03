@@ -38,7 +38,7 @@
 			"name": "Test one: run one test file",
 			"cmd":
 			[
-				"node", "$file_path/$file_name"
+				"node", "$file"
 			],
 			"working_dir": "."
 		},

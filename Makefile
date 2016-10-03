@@ -3,6 +3,9 @@ all: setup build
 setup:
 	npm install
 
+run:
+	npm start
+
 lint:
 	npm run lint
 

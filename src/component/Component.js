@@ -1,8 +1,16 @@
-var child = require('child-process-promise')
+const child = require('child-process-promise')
+const crypto = require('crypto')
 const fs = require('fs')
 const os = require('os')
 const pathm = require('path')
 const mkdirp = require('mkdirp')
+
+const version = require('../../package').version
+const ComponentDataConverter = require('./ComponentDataConverter')
+const ComponentJsonConverter = require('./ComponentJsonConverter')
+const ComponentHtmlConverter = require('./ComponentHtmlConverter')
+const ComponentHtmlHeadConverter = require('./ComponentHtmlHeadConverter')
+
 
 var _controller = null
 
@@ -11,8 +19,15 @@ class Component {
   constructor (path) {
     path = path || ''
 
-    this._address = ''
+    this._id = crypto.randomBytes(32).toString('hex')
+    this._address = 'id://' + this._id
     this._path = path
+    this._meta = {}
+
+    if (_controller) {
+      _controller.register(this)
+    }
+
     try {
       fs.statSync(path)
       this.read(path)
@@ -29,21 +44,124 @@ class Component {
     _controller = component
   }
 
+  get type () {
+    return this.constructor.name.toLowerCase()
+  }
+
+  get id () {
+    return this._id
+  }
+
   get address () {
     return this._address
   }
 
-  lengthen () {
-    // TODO
-    return this._address
+  lengthen (address) {
+    address = address || this.address
+
+    if (address.match(/^[a-z]+:\/\//)) {
+      return address
+    } else if (address[0] === '+') {
+      return 'new://' + address.substring(1)
+    } else if (address[0] === '~') {
+      return 'id://' + address.substring(1)
+    } else if (address[0] === '.' || address[0] === '/') {
+      return 'file://' + pathm.resolve(address)
+    } else if (address.substring(0, 3) === 'bb/') {
+      return 'git://bitbucket.org/' + address.substring(3)
+    } else if (address.substring(0, 3) === 'gh/') {
+      return 'git://github.com/' + address.substring(3)
+    } else if (address.substring(0, 3) === 'gl/') {
+      return 'git://gitlab.com/' + address.substring(3)
+    } else {
+      return 'git://stenci.la/' + address
+    }
   }
 
-  shorten () {
-    // TODO
-    return this._address
+  shorten (address) {
+    address = address || this.address
+
+    if (address.substring(0, 6) === 'new://') {
+      return '+' + address.substring(6)
+    } else if (address.substring(0, 5) === 'id://') {
+      return '~' + address.substring(5)
+    } else if (address.substring(0, 7) === 'file://') {
+      return address.substring(7)
+    } else if (address.substring(0, 7) === 'http://' || address.substring(0, 8) === 'https://') {
+      return address
+    } else if (address.substring(0, 20) === 'git://bitbucket.org/') {
+      return 'bb/' + address.substring(20)
+    } else if (address.substring(0, 17) === 'git://github.com/') {
+      return 'gh/' + address.substring(17)
+    } else if (address.substring(0, 17) === 'git://gitlab.com/') {
+      return 'gl/' + address.substring(17)
+    } else if (address.substring(0, 16) === 'git://stenci.la/') {
+      return address.substring(16)
+    } else {
+      throw Error('Unable to shortern address\n address: ' + address)
+    }
   }
 
-  path () {
+  split (address) {
+    address = address || this.address
+
+    address = this.lengthen(address)
+    let matches = address.match(/([a-z]+):\/\/([\w\-\./]+)(@([\w\-\.]+))?/)
+    if (matches) {
+      return {
+        scheme: matches[1],
+        path: matches[2],
+        version: matches[4] || null
+      }
+    } else {
+      throw Error('Unable to split address\n address: ' + address)
+    }
+  }
+
+  converter (format) {
+    if (format === 'data') {
+      return ComponentDataConverter
+    } else if (format === 'json') {
+      return ComponentJsonConverter
+    } else if (format === 'html') {
+      return ComponentHtmlConverter
+    } else if (format === 'html-head') {
+      return ComponentHtmlHeadConverter
+    } else {
+      throw Error('Unhandled format\n  format: ' + format)
+    }
+  }
+
+  load (content, format, options) {
+    let Converter = this.converter(format)
+    let converter = new Converter()
+    converter.load(this, content, format, options)
+    return this
+  }
+
+  dump (format, options) {
+    let Converter = this.converter(format)
+    let converter = new Converter()
+    return converter.dump(this, format, options)
+  }
+
+  get json () {
+    return this.dump('json')
+  }
+
+  set json (content) {
+    return this.load(content, 'json')
+  }
+
+  get html () {
+    return this.dump('html')
+  }
+
+  set html (content) {
+    return this.load(content, 'html')
+  }
+
+  get path () {
     return this._path
   }
 
@@ -74,8 +192,78 @@ class Component {
     return path
   }
 
+  get title () {
+    return this._meta.title
+  }
+
+  set title (value) {
+    this._meta.title = value
+  }
+
+  get description () {
+    return this._meta.description
+  }
+
+  set description (value) {
+    this._meta.description = value
+  }
+
+  get summary () {
+    return this._meta.summary
+  }
+
+  set summary (value) {
+    this._meta.summary = value
+  }
+
+  get keywords () {
+    return this._meta.keywords
+  }
+
+  set keywords (value) {
+    this._meta.keywords = value
+  }
+
+  get authors () {
+    return this._meta.authors
+  }
+
+  set authors (value) {
+    this._meta.authors = value
+  }
+
+  get date () {
+    return this._meta.date
+  }
+
+  set date (value) {
+    this._meta.date = value
+  }
+
   get url () {
     return _controller.url + '/' + this.shorten()
+  }
+
+  show (format) {
+    format = format || 'html'
+
+    if (format === 'json') {
+      return this.dump('json')
+    } else {
+      return `<!DOCTYPE html>
+<html>
+  <head>
+    ${this.dump('html-head')}
+    <meta name="generator" content="stencila-js-${version}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="/web/${this.type}.min.css">
+  </head>
+  <body>
+    <main id="content">${this.html}</main>
+    <script src="/web/${this.type}.min.js"></script>
+  </body>
+</html>`
+    }
   }
 
   view () {

@@ -1,4 +1,6 @@
-class Session {
+const Component = require('../component/Component')
+
+class Session extends Component {
 
 }
 

@@ -1,7 +1,20 @@
 const http = require('http')
 const httpShutdown = require('http-shutdown')
 
+const Component = require('../component/Component')
+
 class HttpServer {
+
+  constructor (controller, address, port) {
+    this._controller = controller
+    this._address = address || '127.0.0.1'
+    this._port = port || 2000
+    this._server = null
+  }
+
+  get url () {
+    return 'http://' + this._address + ':' + this._port
+  }
 
   get status () {
     return (this._server ? 'on' : 'off')
@@ -14,17 +27,16 @@ class HttpServer {
       if (!this._server) {
         let server = http.createServer(this.handle.bind(this))
         server = httpShutdown(server)
-        let port = 2000
         server.on('error', function (error) {
-          if (error.code === 'EADDRINUSE' & port < 65535) {
-            port += 10
+          if (error.code === 'EADDRINUSE' & this._port < 65535) {
+            this._port += 10
             server.close()
-            server.listen(port, '127.0.0.1')
+            server.listen(this._port, this._address)
             return
           }
           console.error(error.stack)
         })
-        server.listen(port, '127.0.0.1')
+        server.listen(this._port, this._address)
         this._server = server
       }
     } else {
@@ -41,7 +53,12 @@ class HttpServer {
     let methodArgs = this.route(request.method, request.url)
     let method = methodArgs[0]
     let args = methodArgs.slice(1)
-    method.call(this, request, response, ...args)
+    try {
+      method.call(this, request, response, ...args)
+    } catch (error) {
+      response.statusCode = 500
+      response.end(error.stack)
+    }
   }
 
   route (method, path) {
@@ -56,12 +73,9 @@ class HttpServer {
       return (this.hello,)
     }
     */
-    if (path === '/') {
-      return [this.show, null]
-    }
-    let matches = path.match(/^\/(.+?)!(.+)$/)
+    let matches = path.match(/^\/(.+?)?!(.+)$/)
     if (matches) {
-      let address = matches[1]
+      let address = matches[1] || null
       let name = matches[2]
       if (method === 'GET') {
         return [this.get, address, name]
@@ -71,7 +85,7 @@ class HttpServer {
         return [this.call, address, name]
       }
     }
-    return [this.show, path.substring(1)]
+    return [this.show, path.substring(1) || null]
   }
 
   web (request, response, path) {
@@ -81,11 +95,32 @@ class HttpServer {
   }
 
   show (request, response, address) {
-    response.end('TODO show')
+    let component = this._controller.open(address)
+    if (component) {
+      let accept = request.headers['accept'] || ''
+      if (accept.match(/application\/json/)) {
+        response.setHeader('Content-Type', 'application/json')
+        response.end(component.show('json'))
+      } else {
+        response.setHeader('Content-Type', 'text/html')
+        response.end(component.show('html'))
+      }
+    } else {
+      response.statusCode = 404
+      response.end()
+    }
   }
 
   get (request, response, address, name) {
-    response.end('TODO get')
+    let component = this._controller.open(address)
+    if (component) {
+      let result = component[name]
+      response.setHeader('Content-Type', 'application/json')
+      response.end(json(result))
+    } else {
+      response.statusCode = 404
+      response.end()
+    }
   }
 
   set (request, response, address, name) {
@@ -102,6 +137,16 @@ class HttpServer {
     response.end('TODO call')
   }
 
+}
+
+function json (object) {
+  return JSON.stringify(object, function (key, value) {
+    if (value instanceof Component) {
+      return value.dump('data')
+    } else {
+      return value
+    }
+  })
 }
 
 module.exports = HttpServer
