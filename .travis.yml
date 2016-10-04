@@ -12,6 +12,7 @@ cache:
 install:
   - wget https://github.com/jgm/pandoc/releases/download/1.17.2/pandoc-1.17.2-1-amd64.deb
   - sudo dpkg -i pandoc-1.17.2-1-amd64.deb
+  - make setup
 
 script:
   - make lint
