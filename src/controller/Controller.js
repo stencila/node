@@ -42,7 +42,7 @@ class Controller extends Component {
   }
 
   clone (address) {
-    let {scheme, path, version} = this.split(address)
+    let {scheme, path, version} = this.split(address) // eslint-disable-line no-unused-vars
 
     if (scheme === 'new') {
       return null
@@ -78,7 +78,7 @@ class Controller extends Component {
         return new Document()
       } else if (path === 'sheet') {
         return new Sheet()
-      } else if (path === 'jssession') {
+      } else if (path === 'js-session') {
         return new JsSession()
       } else {
         throw Error(`Unable to create new component of type\n  address: ${address}\n  type: ${path}`)
@@ -110,10 +110,10 @@ class Controller extends Component {
   }
 
   serve () {
-    if (!this.servers.http) {
+    if (!this._servers.http) {
       var server = new HttpServer(this)
       server.serve()
-      this.servers.http = server
+      this._servers.http = server
     }
   }
 
@@ -122,7 +122,7 @@ class Controller extends Component {
   }
 
   get url () {
-    return this._servers.htpp ? this._servers.http.url : null
+    return this._servers.http ? this._servers.http.url : null
   }
 
 }

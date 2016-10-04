@@ -1,6 +1,10 @@
 const test = require('tape')
 
+const Controller = require('../../src/controller/Controller')
 const RemoteComponent = require('../../src/component/RemoteComponent')
+
+var controller = Controller.controller
+controller.serve()
 
 test('RemoteComponent can be constructed', function (t) {
   let c = new RemoteComponent()
@@ -10,7 +14,7 @@ test('RemoteComponent can be constructed', function (t) {
 })
 
 test('RemoteComponent can get a property', function (t) {
-  let c = new RemoteComponent('http://127.0.0.1:2000', '+document')
+  let c = new RemoteComponent(controller.url, '+document')
   c.get('type')
     .then(function (value) {
       t.equal(value, 'document')
@@ -19,7 +23,7 @@ test('RemoteComponent can get a property', function (t) {
 })
 
 test('RemoteComponent can set a property', function (t) {
-  let c = new RemoteComponent('http://127.0.0.1:2000', '+document')
+  let c = new RemoteComponent(controller.url, '+document')
   c.set('html', '<p>Hello from Node.js</p>')
     .then(function () {
       t.end()
@@ -30,8 +34,8 @@ test('RemoteComponent can set a property', function (t) {
     })
 })
 
-test('RemoteComponent can call a method', function (t) {
-  let c = new RemoteComponent('http://127.0.0.1:2000', '+session')
+test.skip('RemoteComponent can call a method', function (t) {
+  let c = new RemoteComponent(controller.url, '+jssession')
   c.call('print', '6*7')
     .then(function (value) {
       t.equal(value, '42')
