@@ -6,13 +6,13 @@ const Sheet = require('../sheet/Sheet')
 const JsSession = require('../js-session/JsSession')
 const HttpServer = require('../servers/HttpServer')
 
-class Controller extends Component {
+class Host extends Component {
 
   constructor () {
     super()
 
-    if (!Component.controller) {
-      Component.controller = this
+    if (!Component.host) {
+      Component.host = this
     }
 
     this._components = []
@@ -127,6 +127,6 @@ class Controller extends Component {
 
 }
 
-var controller = new Controller() // eslint-disable-line no-unused-vars
+var host = new Host() // eslint-disable-line no-unused-vars
 
-module.exports = Controller
+module.exports = Host

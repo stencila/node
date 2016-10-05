@@ -4,7 +4,7 @@ const tmp = require('tmp')
 const test = require('tape')
 
 const Component = require('../../src/component/Component')
-require('../../src/controller/Controller')
+require('../../src/host/Host')
 
 test('Component can be constructed', function (t) {
   let c = new Component()

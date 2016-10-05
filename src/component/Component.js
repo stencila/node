@@ -12,7 +12,7 @@ const ComponentHtmlConverter = require('./ComponentHtmlConverter')
 const ComponentHtmlHeadConverter = require('./ComponentHtmlHeadConverter')
 
 
-var _controller = null
+var _host = null
 
 class Component {
 
@@ -22,15 +22,15 @@ class Component {
     this._path = path
     this._meta = {}
 
-    if (_controller) _controller.register(this)
+    if (_host) _host.register(this)
   }
 
-  static get controller () {
-    return _controller
+  static get host () {
+    return _host
   }
 
-  static set controller (component) {
-    _controller = component
+  static set host (component) {
+    _host = component
   }
 
   get type () {
@@ -229,7 +229,7 @@ class Component {
   }
 
   get url () {
-    return _controller.url + '/' + this.shorten()
+    return _host.url + '/' + this.shorten()
   }
 
   show (format) {
@@ -255,7 +255,7 @@ class Component {
   }
 
   view () {
-    _controller.serve()
+    _host.serve()
     if (os.platform() === 'linux') {
       child.exec('2>/dev/null 1>&2 xdg-open "' + this.url + '"')
     } else {

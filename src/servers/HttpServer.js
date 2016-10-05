@@ -5,8 +5,8 @@ const Component = require('../component/Component')
 
 class HttpServer {
 
-  constructor (controller, address, port) {
-    this._controller = controller
+  constructor (host, address, port) {
+    this._controller = host
     this._address = address || '127.0.0.1'
     this._port = port || 2000
     this._server = null

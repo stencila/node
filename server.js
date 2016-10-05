@@ -1,2 +1,2 @@
 const stencila = require('./index')
-stencila.Component.controller.serve()
+stencila.Component.host.serve()
