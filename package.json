@@ -10,8 +10,8 @@
     "lint": "eslint *.js src tests",
     "test": "tape tests | tap-spec",
     "cover": "istanbul cover tests",
-    "docs": "documentation build --config docs.yml --output build/docs --format html",
-    "docs-serve": "documentation serve --config docs.yml --watch"
+    "docs": "documentation build --config docs/docs.yml --output docs --format html",
+    "docs-serve": "documentation serve --config docs/docs.yml --watch"
   },
   "repository": {
     "type": "git",

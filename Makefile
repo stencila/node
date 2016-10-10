@@ -17,6 +17,7 @@ cover:
 
 docs:
 	npm run docs
+.PHONY: docs
 
 docs-serve:
 	npm run docs-serve
