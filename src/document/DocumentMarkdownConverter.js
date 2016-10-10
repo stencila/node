@@ -4,11 +4,18 @@ const pandoc = require('../helpers/pandoc')
 class DocumentMarkdownConverter extends ComponentConverter {
 
   load (document, content, format, options) {
-    document.load(pandoc.convert(content, 'markdown', 'html'), 'html')
+    options = options || {}
+    let html = pandoc.convert(content, 'markdown', 'html')
+    document.load(html, 'html')
   }
 
   dump (document, format, options) {
-    return pandoc.convert(document.dump('html'), 'html', 'markdown')
+    options = options || {}
+    let html = document.dump('html')
+    return pandoc.convert(html, 'html', 'markdown', {
+      'wrap': options.wrap || 'preserve',
+      'columns': options.columns || 100
+    })
   }
 
 }

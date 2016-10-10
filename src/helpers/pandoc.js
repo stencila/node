@@ -27,8 +27,13 @@ function call (args, options) {
   return result.stdout
 }
 
-function convert (content, from, to) {
-  return call(['--from', from, '--to', to], {
+function convert (content, from, to, options) {
+  let args = ['--from', from, '--to', to]
+  for (let option in options) {
+    args.push(`--${option}`)
+    args.push(options[option].toString())
+  }
+  return call(args, {
     input: content,
     encoding: 'utf8'
   })
