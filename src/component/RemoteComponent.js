@@ -2,15 +2,20 @@ const request = require('request-promise')
 
 class RemoteComponent {
 
-  constructor (host, id) {
-    this._host = host
-    this._address = id
+  /**
+   * Construct a remote component
+   *
+   * @param  {string} url URL of the component
+   */
+  constructor (url) {
+    this._url = url
   }
 
   get (name) {
     return new Promise((resolve, reject) => {
       request({
-        uri: this._host + '/' + this._address + '!' + name,
+        url: this._url + '!' + name,
+        method: 'GET',
         json: true
       })
       .then(function (data) {
@@ -25,7 +30,7 @@ class RemoteComponent {
   set (name, value) {
     return new Promise((resolve, reject) => {
       request({
-        uri: this._host + '/' + this._address + '!' + name,
+        url: this._url + '!' + name,
         method: 'PUT',
         body: value,
         json: true
@@ -39,12 +44,13 @@ class RemoteComponent {
     })
   }
 
-  call (name, value) {
+  call (name) {
+    let args = Array.prototype.slice.call(arguments, 1)
     return new Promise((resolve, reject) => {
       request({
-        uri: this._host + '/' + this._address + '!' + name,
+        url: this._url + '!' + name,
         method: 'POST',
-        body: Array.prototype.slice.call(arguments, 1),
+        body: args,
         json: true
       })
       .then(function (data) {
@@ -54,6 +60,18 @@ class RemoteComponent {
         reject(error)
       })
     })
+  }
+
+  read (path) {
+    return this.call('read', path || null)
+  }
+
+  write (path) {
+    return this.call('write', path || null)
+  }
+
+  save (content, format, path) {
+    return this.call('save', content, format, path || null)
   }
 
 }

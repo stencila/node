@@ -10,12 +10,24 @@ const ComponentDataConverter = require('./ComponentDataConverter')
 const ComponentJsonConverter = require('./ComponentJsonConverter')
 const ComponentHtmlConverter = require('./ComponentHtmlConverter')
 const ComponentHtmlHeadConverter = require('./ComponentHtmlHeadConverter')
+const ComponentHtmlBodyConverter = require('./ComponentHtmlBodyConverter')
 
 
 var _host = null
 
+/**
+ * The abstract base class for all Stencila components
+ *
+ * @class Component
+ */
 class Component {
 
+  /**
+   * Construct a component
+   *
+   * @param      {string}  [address]  The address
+   * @param      {string}  [path]     The path
+   */
   constructor (address, path) {
     this._id = crypto.randomBytes(32).toString('hex')
     this._address = address || ('id://' + this._id)
@@ -33,6 +45,11 @@ class Component {
     _host = component
   }
 
+  /**
+   * Get the type of this component
+   *
+   * @return     {string}  A string e.g. `"document"`, `"sheet"`
+   */
   get type () {
     return this.constructor.name.toLowerCase()
   }
@@ -100,6 +117,7 @@ class Component {
       return {
         scheme: matches[1],
         path: matches[2],
+        format: path.extname(matches[2]).substring(1) || null,
         version: matches[4] || null
       }
     } else {
@@ -107,6 +125,12 @@ class Component {
     }
   }
 
+  /**
+   * Get the converter for a format
+   *
+   * @param      {string} format  The format e.g. `'html'`, `'md'`
+   * @return     {ComponentConverter}  A component converter
+   */
   converter (format) {
     if (format === 'data') {
       return new ComponentDataConverter()
@@ -116,6 +140,8 @@ class Component {
       return new ComponentHtmlConverter()
     } else if (format === 'html-head') {
       return new ComponentHtmlHeadConverter()
+    } else if (format === 'html-body') {
+      return new ComponentHtmlBodyConverter()
     } else {
       throw Error('Unhandled format\n  format: ' + format)
     }
@@ -157,7 +183,6 @@ class Component {
 
     try {
       fs.statSync(filepath)
-      this._path = filepath
     } catch (err) {
       throw new Error(`Local file system path does not exist\n  path: ${filepath}`)
     }
@@ -165,19 +190,29 @@ class Component {
     let format = path.extname(filepath).substring(1)
     this.converter(format).read(this, filepath, format, options)
 
+    this._path = filepath
+
     return this
   }
 
-  write (filepath) {
+  write (filepath, options) {
     if (!filepath || filepath === '') {
       filepath = this._path
     }
 
     mkdirp.sync(path.extname(filepath) === '' ? filepath : path.dirname(filepath))
 
+    let format = path.extname(filepath).substring(1)
+    this.converter(format).write(this, filepath, format, options)
+
     this._path = filepath
 
     return this
+  }
+
+  save (content, format, filepath, options) {
+    return this.load(content, format, options)
+               .write(filepath, options)
   }
 
   get title () {
@@ -247,7 +282,7 @@ class Component {
     <link rel="stylesheet" type="text/css" href="/web/${this.type}.min.css">
   </head>
   <body>
-    <main id="content">${this.html}</main>
+    ${this.dump('html-body')}
     <script src="/web/${this.type}.min.js"></script>
   </body>
 </html>`

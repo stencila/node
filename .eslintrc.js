@@ -10,6 +10,7 @@ module.exports = {
     "es6": true
   },
   "rules": {
-    "indent": ["error", 2]
+    "indent": ["error", 2],
+    "valid-jsdoc": ["error"]
   }
 }
