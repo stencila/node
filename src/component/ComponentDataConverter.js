@@ -6,7 +6,8 @@ class ComponentDataConverter extends ComponentConverter {
     return {
       'type': component.type,
       'id': component.id,
-      'address': component.address
+      'address': component.address,
+      'url': component.url
     }
   }
 
