@@ -1,19 +1,18 @@
-const Component = require('./src/component/Component')
-const Host = require('./src/host/Host')
+/**
+ * Primary entry point for this package. Only exports
+ * classes and objects that will normally be used by external
+ * packages. Base classes (e.g. `Component`) and internal classes
+ * (e.g. `Host`) are not exported
+ */
+
 const Document = require('./src/document/Document')
 const Sheet = require('./src/sheet/Sheet')
-const Session = require('./src/session/Session')
-
-const host = new Host()
-host.serve()
-host.discover()
+const JsSession = require('./src/js-session/JsSession')
+const host = require('./src/host/host')
 
 module.exports = {
-  Component: Component,
-  Host: Host,
   Document: Document,
   Sheet: Sheet,
-  Session: Session,
-
+  JsSession: JsSession,
   host: host
 }

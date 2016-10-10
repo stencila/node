@@ -329,6 +329,27 @@ class Host extends Component {
     return this._servers.http ? this._servers.http.url : null
   }
 
+  /**
+   * Start up this host (start servers and discover peers)
+   *
+   * @return {Host} This host
+   */
+  startup () {
+    this.serve()
+    this.discover()
+    return this
+  }
+
+  /**
+   * Shutdown this host (stop servers)
+   *
+   * @return {Host} This host
+   */
+  shutdown () {
+    this.serve(false)
+    return this
+  }
+
 }
 
 module.exports = Host
