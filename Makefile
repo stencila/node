@@ -16,10 +16,10 @@ cover:
 	npm run cover
 
 docs:
-	documentation build --config docs.yml
+	npm run docs
 
 docs-serve:
-	documentation serve --config docs.yml --watch
+	npm run docs-serve
 
 clean:
 	rm -rf node_modules
