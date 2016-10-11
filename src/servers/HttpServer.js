@@ -147,7 +147,21 @@ class HttpServer {
     })
   }
 
+  /**
+   * Show a component
+   *
+   * Is the address scheme is `new` and the request is for HTML
+   * content then the requester is redireted to the URL of the new
+   * component. This prevents new components being created on each refresh
+   * of a browser window.
+   *
+   * @param  {[type]} request  [description]
+   * @param  {[type]} response [description]
+   * @param  {[type]} address  [description]
+   * @return {[type]}          [description]
+   */
   show (request, response, address) {
+    let {scheme} = this._host.split(address)
     let component = this._host.open(address)
     if (component) {
       let accept = request.headers['accept'] || ''
@@ -155,8 +169,14 @@ class HttpServer {
         response.setHeader('Content-Type', 'application/json')
         response.end(component.show('json'))
       } else {
-        response.setHeader('Content-Type', 'text/html')
-        response.end(component.show('html'))
+        if (scheme === 'new') {
+          response.statusCode = 302
+          response.setHeader('Location', component.url)
+          response.end()
+        } else {
+          response.setHeader('Content-Type', 'text/html')
+          response.end(component.show('html'))
+        }
       }
     } else {
       this.error404(request, response)
