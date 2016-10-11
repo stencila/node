@@ -17,7 +17,7 @@ class Document extends Component {
 
   /**
    * Constructs a document
-   * 
+   *
    * If a `path` argument is supplied then the document
    * will be `read()` from it.
    *
@@ -41,7 +41,7 @@ class Document extends Component {
    * Get the `Document` converter for a format
    *
    * @override
-   * @param {string} format
+   * @param {string} format The format needing conversion
    * @return {ComponentConverter} A converter object
    */
   converter (format) {
@@ -61,8 +61,8 @@ class Document extends Component {
   /**
    * Select
    *
-   * @param      {<type>}  selector  The selector
-   * @return     {<type>}  { description_of_the_return_value }
+   * @param      {string}  selector  The selector
+   * @return     {Array<DOMNodes>}  An array of cheerio DOM nodes
    */
   select (selector) {
     return this.content(selector)

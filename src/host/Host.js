@@ -82,8 +82,7 @@ class Host extends Component {
    * @example
    * // Create a new document
    * host.open('+document')
-   * 
-   * 
+   *
    * @example
    * host.open('stats/t-test')
    *
@@ -117,7 +116,7 @@ class Host extends Component {
       if (component) return component
     }
 
-    //this.ask(address).then(resolve)
+    // this.ask(address).then(resolve)
 
     throw Error(`Unable to open address\n address: ${address}`)
   }
@@ -268,7 +267,7 @@ class Host extends Component {
    */
   ask (address) {
     return new Promise((resolve, reject) => {
-      let {scheme, path, format, version} = this.split(address)
+      let {scheme, path, format, version} = this.split(address) // eslint-disable-line no-unused-vars
       let found = false
       for (let peer of this._peers) {
         if (
@@ -288,9 +287,7 @@ class Host extends Component {
               let type = data.type
               if (type === 'document') {
                 resolve(new RemoteDocument(peer.url, data.id))
-              } 
-
-              else {
+              } else {
                 reject(new Error(`Unhandled component type\n  type: ${type}`))
               }
             }
