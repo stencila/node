@@ -22,6 +22,7 @@ class RemoteComponent {
         resolve(data)
       })
       .catch(function (error) {
+        console.error('Error in remote get: ' + error.error)
         reject(error)
       })
     })
@@ -39,6 +40,7 @@ class RemoteComponent {
         resolve()
       })
       .catch(function (error) {
+        console.error('Error in remote set: ' + error.error)
         reject(error)
       })
     })
@@ -57,6 +59,7 @@ class RemoteComponent {
         resolve(data)
       })
       .catch(function (error) {
+        console.error('Error in remote call: ' + error.error)
         reject(error)
       })
     })
