@@ -1,4 +1,5 @@
 const cheerio = require('cheerio')
+const beautify = require('js-beautify')
 
 const ComponentConverter = require('../component/ComponentConverter')
 
@@ -9,7 +10,10 @@ class DocumentHtmlConverter extends ComponentConverter {
   }
 
   dump (document, format, options) {
-    return document.content.html()
+    let html = document.content.html()
+    // See beautification options at https://github.com/beautify-web/js-beautify/blob/master/js/lib/beautify-html.js
+    html = beautify.html(html)
+    return html
   }
 
 }
