@@ -84,6 +84,28 @@ class Component {
     }
   }
 
+  /**
+   * Shorten an address
+   *
+   * This method is the inverse of `lengthen()`. It shortens an address for
+   * more aeshetically pleasing URL etc. Some addresses (e.g `http://` scheme)
+   * can not be shortened.
+   *
+   * Addresses using the `file://` scheme can not be shortened by prefixing with a `./`
+   * because browsers often resolve paths thereby squashing that extra dot.
+   *
+   * @example
+   *
+   * component.shorten('new://document')
+   * '+document'
+   *
+   * component.shorten('file://my-doc.md')
+   * 'file://my-doc.md'
+   *
+   * @see Component#lengthen
+   * @param  {string} [address] [description]
+   * @return {string}           The shortened address
+   */
   shorten (address) {
     address = address || this.address
 
@@ -92,7 +114,7 @@ class Component {
     } else if (address.substring(0, 5) === 'id://') {
       return '~' + address.substring(5)
     } else if (address.substring(0, 7) === 'file://') {
-      return address.substring(7)
+      return address
     } else if (address.substring(0, 7) === 'http://' || address.substring(0, 8) === 'https://') {
       return address
     } else if (address.substring(0, 20) === 'git://bitbucket.org/') {
