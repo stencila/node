@@ -111,12 +111,16 @@ class HttpServer {
     let self = this
     bodify(request, function (body) {
       try {
-        if (body) {
-          let component = self._host.open(address)
-          let value = JSON.parse(body)
-          component[name] = value
+        let component = self._host.open(address)
+        if (component) {
+          if (body) {
+            let value = JSON.parse(body)
+            component[name] = value
+          }
+          response.end()
+        } else {
+          self.error404(request, response)
         }
-        response.end()
       } catch (error) {
         self.error500(request, response, error)
       }
@@ -125,32 +129,36 @@ class HttpServer {
 
   call (request, response, address, name) {
     let self = this
-    let component = self._host.open(address)
     bodify(request, function (body) {
-      if (component) {
-        let method = component[name]
-        if (!method) {
-          throw Error(`Unknown method for component\n  address: ${address}\n  name: ${name}`)
-        }
-        let result
-        if (body) {
-          let args = JSON.parse(body)
-          if (args instanceof Array) {
-            result = method.call(component, ...args)
-          } else if (args instanceof Object) {
-            // Convert object to an array
-            args = Object.keys(args).map(key => args[key])
-            result = method.call(component, ...args)
-          } else {
-            result = method.call(component, args)
+      try {
+        let component = self._host.open(address)
+        if (component) {
+          let method = component[name]
+          if (!method) {
+            throw Error(`Unknown method for component\n  address: ${address}\n  name: ${name}`)
           }
+          let result
+          if (body) {
+            let args = JSON.parse(body)
+            if (args instanceof Array) {
+              result = method.call(component, ...args)
+            } else if (args instanceof Object) {
+              // Convert object to an array
+              args = Object.keys(args).map(key => args[key])
+              result = method.call(component, ...args)
+            } else {
+              result = method.call(component, args)
+            }
+          } else {
+            result = method.call(component)
+          }
+          response.setHeader('Content-Type', 'application/json')
+          response.end(stringify(result))
         } else {
-          result = method.call(component)
+          self.error404(request, response)
         }
-        response.setHeader('Content-Type', 'application/json')
-        response.end(stringify(result))
-      } else {
-        this.error404(request, response)
+      } catch (error) {
+        self.error500(request, response, error)
       }
     })
   }
