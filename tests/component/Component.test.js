@@ -41,7 +41,7 @@ test('Component address can be shortened', function (t) {
 
   t.equal(c.shorten('new://document'), '+document')
   t.equal(c.shorten('id://aaaaaaaa'), '~aaaaaaaa')
-  t.equal(c.shorten('file://' + process.cwd() + '/report.docx'), process.cwd() + '/report.docx')
+  t.equal(c.shorten('file://report.docx'), 'file://report.docx')
   t.equal(c.shorten('https://foo.com/report.md'), 'https://foo.com/report.md')
   t.equal(c.shorten('git://bitbucket.org/foo/bar/report.md'), 'bb/foo/bar/report.md')
   t.equal(c.shorten('git://github.com/foo/bar/report.md'), 'gh/foo/bar/report.md')
@@ -68,10 +68,10 @@ test('Component address can be lengthened and then shortened', function (t) {
 test('Component address can be split', function (t) {
   let c = new Component()
 
-  t.deepEqual(c.split('+document'), {scheme: 'new', path: 'document', version: null})
-  t.deepEqual(c.split('~aaaaaaaa'), {scheme: 'id', path: 'aaaaaaaa', version: null})
-  t.deepEqual(c.split('stats/t-test'), {scheme: 'git', path: 'stenci.la/stats/t-test', version: null})
-  t.deepEqual(c.split('stats/t-test@1.1.0'), {scheme: 'git', path: 'stenci.la/stats/t-test', version: '1.1.0'})
+  t.deepEqual(c.split('+document'), {scheme: 'new', path: 'document', format: null, version: null})
+  t.deepEqual(c.split('~aaaaaaaa'), {scheme: 'id', path: 'aaaaaaaa', format: null, version: null})
+  t.deepEqual(c.split('stats/t-test'), {scheme: 'git', path: 'stenci.la/stats/t-test', format: null, version: null})
+  t.deepEqual(c.split('stats/t-test@1.1.0'), {scheme: 'git', path: 'stenci.la/stats/t-test', format: null, version: '1.1.0'})
   t.end()
 })
 

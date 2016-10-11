@@ -187,7 +187,7 @@ class Host extends Component {
   /**
    * Say "hello" to a peer
    *
-   * When a host attempts to `discover()` peers it does a HTTP `POST` request to
+   * When a host attempts to `discover()` peers it does a HTTP `PUT` request to
    * the `/!hello` endpoint. This method responds to that request by:
    *
    * 1. Recording the peer's manifest in this host's peer list (replacing or appending as appropriate)
@@ -197,6 +197,8 @@ class Host extends Component {
    * @return     {Object}    This host's manifest
    */
   hello (manifest) {
+    if (!manifest) throw new Error('No manifest supplied')
+
     let replaced = false
     for (let index in this._peers) {
       let peer = this._peers[index]
@@ -226,9 +228,9 @@ class Host extends Component {
         request({
           method: 'POST',
           url: `http://127.0.0.1:${port}/!hello`,
-          body: {
-            manifest: this.manifest()
-          },
+          body: [
+            this.manifest()
+          ],
           json: true,
           timeout: 100,
           resolveWithFullResponse: true
