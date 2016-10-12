@@ -12,7 +12,8 @@ const ComponentHtmlConverter = require('./ComponentHtmlConverter')
 const ComponentHtmlHeadConverter = require('./ComponentHtmlHeadConverter')
 const ComponentHtmlBodyConverter = require('./ComponentHtmlBodyConverter')
 
-
+// Variable that hosts the static member `host` for the component class
+// See Component.host below
 var _host = null
 
 /**
@@ -37,27 +38,57 @@ class Component {
     if (_host) _host.register(this)
   }
 
+  /**
+   * Get the host
+   *
+   * Using a static getter for this purpose is useful
+   * for avoid ng circular dependencies
+   *
+   * @return {Host} The host
+   */
   static get host () {
     return _host
   }
 
-  static set host (component) {
-    _host = component
+  /**
+   * Set the host
+   *
+   * This method should only be called once, by the `Host`
+   * instance, on construction
+   *
+   * @param {Host} host The host
+   */
+  static set host (host) {
+    _host = host
   }
 
   /**
    * Get the type of this component
    *
-   * @return     {string}  A string e.g. `"document"`, `"sheet"`
+   * @return {string} A string e.g. `"document"`, `"sheet"`
    */
   get type () {
     return this.constructor.name.toLowerCase()
   }
 
+  /**
+   * Get the id of this component
+   *
+   * Each component has a unique identifier. This is used as a
+   * default address when peers or browser clients want to
+   * access the component.
+   *
+   * @return {string} The id
+   */
   get id () {
     return this._id
   }
 
+  /**
+   * Get the address of this component
+   *
+   * @return {string} The address
+   */
   get address () {
     return this._address
   }
