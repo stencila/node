@@ -223,8 +223,9 @@ class Host extends Component {
    */
   discover () {
     this._peers = []
+    let thisPort = this.servers.http ? this.servers.http.port : null
     for (let port = 2000; port <= 3000; port += 10) {
-      if (port !== this.servers.http.port) {
+      if (port !== thisPort) {
         request({
           method: 'POST',
           url: `http://127.0.0.1:${port}/!hello`,
