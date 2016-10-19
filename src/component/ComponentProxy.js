@@ -1,14 +1,16 @@
 const request = require('request-promise')
 
-class RemoteComponent {
+class ComponentProxy {
 
   /**
    * Construct a remote component
    *
    * @param  {string} url URL of the component
+   * @param  {string} type The type of the component
    */
-  constructor (url) {
+  constructor (url, type) {
     this._url = url
+    this._type = type
   }
 
   get (name) {
@@ -79,4 +81,4 @@ class RemoteComponent {
 
 }
 
-module.exports = RemoteComponent
+module.exports = ComponentProxy

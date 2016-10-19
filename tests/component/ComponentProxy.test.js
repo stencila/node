@@ -3,17 +3,17 @@ const test = require('tape')
 const host = require('../../src/host/host')
 host.serve()
 
-const RemoteComponent = require('../../src/component/RemoteComponent')
+const ComponentProxy = require('../../src/component/ComponentProxy')
 
-test('RemoteComponent can be constructed', function (t) {
-  let c = new RemoteComponent()
+test('ComponentProxy can be constructed', function (t) {
+  let c = new ComponentProxy()
 
-  t.ok(c instanceof RemoteComponent)
+  t.ok(c instanceof ComponentProxy)
   t.end()
 })
 
-test('RemoteComponent can get a property', function (t) {
-  let c = new RemoteComponent(host.url + '/+document')
+test('ComponentProxy can get a property', function (t) {
+  let c = new ComponentProxy(host.url + '/+document')
   c.get('type')
     .then(function (value) {
       t.equal(value, 'document')
@@ -21,8 +21,8 @@ test('RemoteComponent can get a property', function (t) {
     })
 })
 
-test('RemoteComponent can set a property', function (t) {
-  let c = new RemoteComponent(host.url + '/+document')
+test('ComponentProxy can set a property', function (t) {
+  let c = new ComponentProxy(host.url + '/+document')
   c.set('html', '<p>Hello from Node.js</p>')
     .then(function () {
       t.end()
@@ -33,8 +33,8 @@ test('RemoteComponent can set a property', function (t) {
     })
 })
 
-test.skip('RemoteComponent can call a method', function (t) {
-  let c = new RemoteComponent(host.url + '/+jssession')
+test.skip('ComponentProxy can call a method', function (t) {
+  let c = new ComponentProxy(host.url + '/+jssession')
   c.call('print', '6*7')
     .then(function (value) {
       t.equal(value, '42')
