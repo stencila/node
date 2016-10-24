@@ -1,7 +1,7 @@
 {
   "name": "stencila",
   "version": "0.1.0",
-  "description": "Stencila components for Javascript",
+  "description": "Stencila components for Node.js",
   "main": "index.js",
   "directories": {
     "test": "tests"
@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/stencila/js.git"
+    "url": "git+https://github.com/stencila/node.git"
   },
   "keywords": [
     "data",
@@ -33,9 +33,9 @@
   "author": "",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/stencila/js/issues"
+    "url": "https://github.com/stencila/node/issues"
   },
-  "homepage": "https://github.com/stencila/js#readme",
+  "homepage": "https://github.com/stencila/node#readme",
   "devDependencies": {
     "babel-preset-es2015": "^6.14.0",
     "babelify": "^7.3.0",
@@ -60,6 +60,7 @@
     "mkdirp": "^0.5.1",
     "request": "^2.75.0",
     "request-promise": "^4.1.1",
+    "sqlite3": "^3.1.6",
     "tmp": "0.0.28"
   }
 }
