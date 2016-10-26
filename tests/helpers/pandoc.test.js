@@ -5,6 +5,11 @@ const test = require('tape')
 
 const pandoc = require('../../src/helpers/pandoc')
 
+test('Pandoc is enabled', function (t) {
+  t.ok(pandoc.enabled())
+  t.end()
+})
+
 test('Pandoc can convert Markdown to HTML', function (t) {
   t.equal(pandoc.convert('Hello *world*', 'markdown', 'html'), '<p>Hello <em>world</em></p>\n')
   t.end()

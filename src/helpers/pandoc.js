@@ -10,7 +10,7 @@
  * - https://github.com/pvorb/node-pdc
  * - https://github.com/sbisbee/node-pandoc
  *
- * However all of these were aynchronus. This module implements synchronus conversion via
+ * However, all of these are asynchronous. This module implements synchronus conversion via
  * Pandoc.
  *
  * The main function is `convert` and `read` and `write` provide
@@ -21,10 +21,25 @@
 const spawn = require('child_process').spawnSync
 
 function call (args, options) {
+  options = options || {
+    encoding: 'utf8'
+  }
   let result = spawn('pandoc', args, options)
-  if (result.stderr) throw Error(result.stderr)
-  if (result.status !== 0) throw Error('Error in pandoc call')
+  if (result.status !== 0) {
+    let message = 'Error in pandoc call'
+    if (result.stderr) message += result.stderr
+    throw new Error(message)
+  }
   return result.stdout
+}
+
+function enabled () {
+  try {
+    call(['--version'])
+    return true
+  } catch (error) {
+    return false
+  }
 }
 
 function convert (content, from, to, options) {
@@ -40,9 +55,7 @@ function convert (content, from, to, options) {
 }
 
 function read (path, from, to) {
-  return call(['--from', from, '--to', to, path], {
-    encoding: 'utf8'
-  })
+  return call(['--from', from, '--to', to, path])
 }
 
 function write (content, from, to, path) {
@@ -54,6 +67,7 @@ function write (content, from, to, path) {
 
 module.exports = {
   call: call,
+  enabled: enabled,
   convert: convert,
   read: read,
   write: write
