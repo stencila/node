@@ -8,9 +8,17 @@ class ComponentProxy {
    * @param  {string} url URL of the component
    * @param  {string} type The type of the component
    */
-  constructor (url, type) {
-    this._url = url
+  constructor (type, url) {
     this._type = type
+    this._url = url
+  }
+
+  get type () {
+    return this._type
+  }
+
+  get url () {
+    return this._url
   }
 
   get (name) {
@@ -77,6 +85,18 @@ class ComponentProxy {
 
   save (content, format, path) {
     return this.call('save', content, format, path || null)
+  }
+
+  show (format) {
+    format = format || 'json'
+    if (format === 'json') {
+      return JSON.stringify({
+        type: this._type,
+        url: this._url
+      })
+    } else {
+      return this.call('show', format)
+    }
   }
 
 }
