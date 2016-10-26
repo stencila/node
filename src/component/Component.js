@@ -12,9 +12,11 @@ const ComponentHtmlConverter = require('./ComponentHtmlConverter')
 const ComponentHtmlHeadConverter = require('./ComponentHtmlHeadConverter')
 const ComponentHtmlBodyConverter = require('./ComponentHtmlBodyConverter')
 
-// Variable that hosts the static member `host` for the component class
-// See Component.host below
+// Variable that holds the static member `host` of the `Component` class
+// See `Component.host` below
 var _host = null
+
+var home = path.join(os.homedir(), '.stencila')
 
 /**
  * The abstract base class for all Stencila components
@@ -27,12 +29,12 @@ class Component {
    * Construct a component
    *
    * @param      {string}  [address]  The address
-   * @param      {string}  [path]     The path
+   * @param      {string}  [path_]     The path
    */
-  constructor (address, path) {
+  constructor (address, path_) {
     this._id = crypto.randomBytes(32).toString('hex')
     this._address = address || ('id://' + this._id)
-    this._path = path
+    this._path = path_ || path.join(home, 'id', this._id)
     this._meta = {}
 
     if (_host) _host.register(this)
@@ -184,7 +186,7 @@ class Component {
    * @param      {string} format  The format e.g. `'html'`, `'md'`
    * @return     {ComponentConverter}  A component converter
    */
-  converter (format) {
+  static converter (format) {
     if (format === 'data') {
       return new ComponentDataConverter()
     } else if (format === 'json') {
@@ -201,12 +203,12 @@ class Component {
   }
 
   load (content, format, options) {
-    this.converter(format).load(this, content, format, options)
+    this.constructor.converter(format).load(this, content, format, options)
     return this
   }
 
   dump (format, options) {
-    return this.converter(format).dump(this, format, options)
+    return this.constructor.converter(format).dump(this, format, options)
   }
 
   get json () {
@@ -241,7 +243,7 @@ class Component {
     }
 
     let format = path.extname(filepath).substring(1)
-    this.converter(format).read(this, filepath, format, options)
+    this.constructor.converter(format).read(this, filepath, format, options)
 
     this._path = filepath
 
@@ -256,7 +258,7 @@ class Component {
     mkdirp.sync(path.extname(filepath) === '' ? filepath : path.dirname(filepath))
 
     let format = path.extname(filepath).substring(1)
-    this.converter(format).write(this, filepath, format, options)
+    this.constructor.converter(format).write(this, filepath, format, options)
 
     this._path = filepath
 
@@ -264,6 +266,14 @@ class Component {
   }
 
   save (content, format, filepath, options) {
+    if (!filepath || filepath === '') {
+      filepath = this._path
+    }
+    // Ensure that the file name has the correct exension
+    let bits = path.parse(filepath)
+    if (bits.ext !== format) {
+      filepath = path.join(bits.dir, bits.name + '.' + format)
+    }
     return this.load(content, format, options)
                .write(filepath, options)
   }
