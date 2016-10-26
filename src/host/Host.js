@@ -1,17 +1,35 @@
 const fs = require('fs')
+const os = require('os')
+const path = require('path')
+const pathm = path
+
+const mime = require('mime')
+const git = require('nodegit')
 const request = require('request-promise')
+const tmp = require('tmp')
 
 const version = require('../../package').version
 const Component = require('../component/Component')
+
 const Document = require('../document/Document')
-const RemoteDocument = require('../document/RemoteDocument')
+const DocumentProxy = require('../document/DocumentProxy')
+
 const Sheet = require('../sheet/Sheet')
-const JsSession = require('../js-session/JsSession')
+
+const JavascriptSession = require('../session-js/JavascriptSession')
+const SessionProxy = require('../session/SessionProxy')
+
+const pandoc = require('../helpers/pandoc')
+
 const HttpServer = require('../servers/HttpServer')
 const HostDataConverter = require('./HostDataConverter')
 
+let home = path.join(os.homedir(), '.stencila')
+
 /**
- * A `Host` is ....
+ * A `Host` orchestrates `Components` and encapsulates application state.
+ * This is a singleton class - there should only ever be one `Host`
+ * in memory in each process (although, for purposes of testing, this is not enforced)
  *
  * @class      Host
  */
@@ -25,9 +43,7 @@ class Host extends Component {
     }
 
     this._components = []
-
     this._servers = {}
-
     this._peers = []
   }
 
@@ -38,7 +54,7 @@ class Host extends Component {
    * @param {string} format Format for conversion
    * @return {ComponentConverter} A converter object
    */
-  converter (format) {
+  static converter (format) {
     if (format === 'data') {
       return new HostDataConverter()
     } else {
@@ -50,101 +66,45 @@ class Host extends Component {
     return 'Stencila Javascript Host'
   }
 
-  /**
-   * Get a list of components managed by this host
-   *
-   * @return     {Array<Component>}  Array of components registered with this host
-   */
-  get components () {
-    return this._components
-  }
-
-  /**
-   * Register a component with this host
-   *
-   * This method is called by the `constructor()` method of
-   * the `Component` class so that each component is registered when
-   * it is constructed. It's unlikely to be used in any other context.
-   *
-   * @todo        Check that the component has not yet been registered
-   *
-   * @param      {Component}  component  The component
-   * @return     {Host} This host
-   */
-  register (component) {
-    this._components.push(component)
-    return this
-  }
-
-  /**
-   * Open a `Component` at an address
-   *
-   * @example
-   * // Create a new document
-   * host.open('+document')
-   *
-   * @example
-   * host.open('stats/t-test')
-   *
-   * @param      {string}                             address  The address
-   * @return     {Component}  { description_of_the_return_value }
-   */
-  open (address) {
-    if (address === null) return this
-
-    address = this.lengthen(address)
-    let {scheme, path, format, version} = this.split(address) // eslint-disable-line no-unused-vars
-
-    if (scheme === 'new') {
-      if (path === 'document') return new Document()
-      else if (path === 'sheet') return new Sheet()
-      else if (path === 'js-session') return new JsSession()
-    }
-
-    for (let index in this._components) {
-      let component = this._components[index]
-      if (scheme === 'id') {
-        if (component.id === path) return component
-      } else {
-        if (component.address === scheme + '://' + path) return component
+  get schemes () {
+    // TODO rather than a static enabled flag here may be better to use "builtin"
+    // and then provide a button for things that users can enable (e.g. by installing
+    // third party software)
+    return {
+      'new': {
+        enabled: true,
+        types: ['document', 'sheet', 'session-js']
+      },
+      'id': {
+        enabled: true
+      },
+      'file': {
+        enabled: true
+      },
+      'http': {
+        enabled: true
+      },
+      'https': {
+        enabled: true
+      },
+      'ftp': {
+        enabled: false
+      },
+      'git': {
+        enabled: true
+      },
+      'dat': {
+        enabled: false
       }
     }
-
-    let filename = this.clone(address)
-    for (let cls of [Document, Sheet]) {
-      let component = cls.open(address, filename)
-      if (component) return component
-    }
-
-    // this.ask(address).then(resolve)
-
-    throw Error(`Unable to open address\n address: ${address}`)
   }
 
-  clone (address) {
-    let {scheme, path, format, version} = this.split(address) // eslint-disable-line no-unused-vars
-
-    if (scheme === 'file') {
-      try {
-        fs.statSync(path)
-        return path
-      } catch (error) {
-        throw Error(`Local file system path does not exist\n  path: ${path}`)
-      }
+  get formats () {
+    let formats = ['html']
+    if (pandoc.enabled()) {
+      formats.concat(['md', 'tex'])
     }
-
-    throw Error(`Unable to clone address\n address: ${address}`)
-  }
-
-  /**
-   * A list of peers
-   *
-   * See Host#discover for how this list is populated
-   *
-   * @readonly
-   */
-  get peers () {
-    return this._peers
+    return formats
   }
 
   /**
@@ -168,20 +128,287 @@ class Host extends Component {
   manifest () {
     return {
       stencila: true,
-      package: 'js',
+      package: 'node',
       version: version,
       id: this.id,
       url: this.url,
-      schemes: [
-        'new', 'id', 'file'
-      ],
-      types: [
-        'document', 'sheet', 'js-session'
-      ],
-      formats: [
-        'html', 'md'
-      ]
+      schemes: this.schemes,
+      formats: this.formats
     }
+  }
+
+  /**
+   * Create a new component of a particular type
+   *
+   * @see  retrieve, load, clone, open
+   *
+   * @param  {string} type Type of component to create e.g. `'document'`
+   * @return {Component|null} A new component, or `null` if `type` is unknown
+   */
+  create (type) {
+    if (type === 'document') return new Document()
+    else if (type === 'sheet') return new Sheet()
+    else if (type === 'session-js') return new JavascriptSession()
+    else return null
+  }
+
+  /**
+   * Get a list of components managed by this host
+   *
+   * @return     {Array<Component>}  Array of components registered with this host
+   */
+  get components () {
+    return this._components
+  }
+
+  /**
+   * Register a component with this host
+   *
+   * This method is called by the `constructor()` method of
+   * the `Component` class so that each component is registered when
+   * it is constructed. It's unlikely to be used in any other context.
+   *
+   * @todo        Check that the component has not yet been registered
+   *
+   * @param      {Component}  component  The component
+   */
+  register (component) {
+    this._components.push(component)
+  }
+
+  /**
+   * Deregister a component with this host
+   *
+   * @param  {[type]} component [description]
+   * @return {[type]}           [description]
+   */
+  deregister (component) {
+    let index = this._components.indexOf(component)
+    if (index > -1) {
+      this._components.splice(index, 1)
+    }
+  }
+
+  /**
+   * Retrive a component that has already been instantiated and registered.
+   *
+   * Searches for a component with a matching address in `this.components`
+   *
+   * @see  register, create, load, clone, open
+   *
+   * @param  {string} address Component address to search for
+   * @return {Component|null} The component, or `null` if not found
+   */
+  retrieve (address) {
+    address = this.lengthen(address)
+    let {scheme, path} = this.split(address)
+    for (let index in this._components) {
+      let component = this._components[index]
+      if (scheme === 'id') {
+        if (component.id === path) return component
+      } else {
+        if (component.address === address) return component
+      }
+    }
+    return null
+  }
+
+  /**
+   * Load a component from content of a particular format
+   *
+   * 
+   *
+   * @param  {string} path Local file system path
+   * @param  {[type]} type [description]
+   * @return {[type]}      [description]
+   */
+  load (address, content, format) {
+    for (let cls of [Document, Sheet]) {
+      try {
+        // Try to get a converter
+        cls.converter(format)
+      } catch (error) {
+        // No converter, keep trying...
+        continue
+      }
+      // Return component of that class
+      let component = new cls(address) // eslint-disable-line new-cap
+      component.load(content, format)
+      return component
+    }
+    return null
+  }
+
+  /**
+   * Read a component from a local file
+   *
+   * 
+   *
+   * @param  {string} path Local file system path
+   * @param  {[type]} type [description]
+   * @return {[type]}      [description]
+   */
+  read (address, path) {
+    let format = pathm.extname(path).substring(1)
+    for (let cls of [Document, Sheet]) {
+      try {
+        // Try to get a converter
+        cls.converter(format)
+      } catch (error) {
+        // No converter, keep trying...
+        continue
+      }
+      // Return component of that class
+      let component = new cls(address) // eslint-disable-line new-cap
+      component.read(path)
+      return component
+    }
+    return null
+  }
+
+  clone (address, type) {
+    return new Promise((resolve, reject) => {
+      let {scheme, path, format, version} = this.split(address) // eslint-disable-line no-unused-vars
+
+      if (scheme === 'file') {
+        fs.access(path, fs.constants.R_OK, err => {
+          if (err) {
+            reject(new Error(
+              `Local file system path does not exist or you do not have permission to read it\n  path: ${path}`
+            ))
+          } else {
+            resolve(this.read(address, path))
+          }
+        })
+      } else if (scheme === 'http' || scheme === 'https') {
+        request({
+          method: 'GET',
+          url: `${scheme}://${path}`,
+          resolveWithFullResponse: true
+        })
+        .then(response => {
+          if (response.statusCode === 200) {
+            let extension = pathm.extname(path)
+            if (!extension) {
+              type = response.headers['content-type']
+              extension = mime.extension(type)
+            }
+            let format = extension.substring(1)
+            resolve(this.load(address, response.body, format))
+          } else {
+            reject(new Error(`Error fetching address\n address: ${address}\n  message: ${response.body}`))
+          }
+        })
+        .catch(error => {
+          reject(error)
+        })
+      } else if (scheme === 'git') {
+        let match = path.match(/([\w\-\.]+)\/([\w\-]+\/[\w\-]+)\/(.+)$/)
+        if (match) {
+          let host = match[1]
+          let hostDir = (host === 'stenci.la') ? '' : host
+          let repo = match[2]
+          let repoDir = pathm.join(home, hostDir, repo)
+          let masterDir = pathm.join(repoDir, 'master')
+          let file = match[3]
+
+          Promise.resolve(fs.existsSync(masterDir)).then(exists => {
+            if (exists) return git.Repository.open(masterDir)
+            else return git.Clone(`https://${host}/${repo}.git`, masterDir)
+          }).then(repo => {
+            // If a version other than master is specified...
+            if (version && version !== 'master') {
+              // Find the commit matching the (possibly) shorthand version e.g. 1.0, d427bc
+              return git.AnnotatedCommit.fromRevspec(repo, version).then(annotatedCommit => {
+                return git.Commit.lookup(repo, annotatedCommit.id())
+              }).then(commit => {
+                let sha = commit.sha()
+                let versionDir = pathm.join(repoDir, sha)
+                if (fs.existsSync(versionDir)) {
+                  return versionDir
+                } else {
+                  return git.Clone(masterDir, versionDir).then(clone => {
+                    return clone.getCommit(sha).then(commit => {
+                      return git.Checkout.tree(clone, commit, { checkoutStrategy: git.Checkout.STRATEGY.FORCE })
+                    }).then(() => {
+                      return versionDir
+                    })
+                  })
+                }
+              })
+            } else {
+              return masterDir
+            }
+          }).then((dir) => {
+            let path = pathm.join(dir, file)
+            let component = this.read(address, path)
+            resolve(component)
+          }).catch(error => {
+            reject(error)
+          })
+        } else {
+          reject(new Error(`Unable to determine Git repository URL from address\n  address: ${address}`))
+        }
+      } else {
+        resolve(null)
+      }
+    })
+  }
+
+  /**
+   * Open a `Component` at an address
+   *
+   * @example
+   * // Create a new document
+   * host.open('+document')
+   *
+   * @example
+   * host.open('stats/t-test')
+   *
+   * @param      {string}                             address  The address
+   * @return     {Component}  { description_of_the_return_value }
+   */
+  open (address) {
+    return new Promise((resolve, reject) => {
+      // No address, return this host
+      if (address === null) resolve(this)
+
+      address = this.lengthen(address)
+      let {scheme, path, format, version} = this.split(address) // eslint-disable-line no-unused-vars
+
+      // `new` scheme, attempt to create a component
+      if (scheme === 'new') {
+        let component = this.create(path)
+        if (component) return resolve(component)
+      }
+
+      // Attempt to retreive address
+      let component = this.retrieve(address)
+      if (component) return resolve(component)
+
+      // Attempt to clone address
+      this.clone(address).then(component => {
+        if (component) return resolve(component)
+
+        // Not able to clone address, so ask peers
+        this.ask(address).then(component => {
+          if (component) return resolve(component)
+
+          reject(new Error(`Unable to open address.  address: ${address}`))
+        }).catch(error => reject(error))
+      }).catch(error => reject(error))
+    })
+  }
+
+  /**
+   * A list of peers
+   *
+   * See Host#discover for how this list is populated
+   *
+   * @readonly
+   */
+  get peers () {
+    return this._peers
   }
 
   /**
@@ -218,6 +445,13 @@ class Host extends Component {
    * making a `POST /!hello` request with this host's manifest.
    * If another Stencila host is listening on the port then it will respond
    * with it's own manifest and will be added to this host's list of peers.
+   *
+   * Since we're doing this locally only, rather than port scanning we should
+   * keep a registry of serving hosts in `~/.stencila/stencila.sqlite3` or similar
+   *
+   * Note that a peer may not be serving (it's url will be `null`) i.e. it
+   * will be able to `ask()` this host for addresses but this host won't be
+   * able to ask it for anything.
    *
    * @return {Host} This host
    */
@@ -262,8 +496,8 @@ class Host extends Component {
    *
    * If a host is unable to open a component address (e.g. because it does not
    * know the address scheme) it will ask it's peers. This method iterates over this
-   * host's peers. If the scheme of the address is amongst the peer's schemes the peer
-   * will be asked to open the address.
+   * host's peers. If the peer is serving and the scheme of the address is amongst
+   * the peer's schemes the peer will be asked to open the address.
    *
    * @param {string} address The component addess to open
    * @return {Component|null} The component
@@ -274,7 +508,9 @@ class Host extends Component {
       let found = false
       for (let peer of this._peers) {
         if (
-          (peer.schemes.indexOf(scheme) >= 0) && (
+          peer.url &&
+          (peer.schemes.indexOf(scheme) >= 0) &&
+          (
             (scheme === 'new' && peer.types.indexOf(path) >= 0) ||
             (peer.formats.indexOf(format) >= 0)
           )
@@ -288,8 +524,11 @@ class Host extends Component {
             if (response.statusCode === 200) {
               let data = response.body
               let type = data.type
+              let url = data.url
               if (type === 'document') {
-                resolve(new RemoteDocument(peer.url, data.id))
+                resolve(new DocumentProxy(type, url))
+              } else if (type.substring(0, 7) === 'session') {
+                resolve(new SessionProxy(type, url))
               } else {
                 reject(new Error(`Unhandled component type\n  type: ${type}`))
               }
@@ -306,12 +545,12 @@ class Host extends Component {
   }
 
   serve (on) {
-    if (on === undefined) on = true
+    if (typeof on === 'undefined') on = true
     if (on) {
       if (!this._servers.http) {
         var server = new HttpServer(this)
-        server.serve()
         this._servers.http = server
+        return server.serve()
       }
     } else {
       for (let type in this._servers) {
@@ -335,9 +574,9 @@ class Host extends Component {
    * @return {Host} This host
    */
   startup () {
-    this.serve()
-    this.discover()
-    return this
+    return this.serve().then(() => {
+      return this.discover()
+    })
   }
 
   /**
