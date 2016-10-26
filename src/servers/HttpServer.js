@@ -33,26 +33,34 @@ class HttpServer {
 
     if (on) {
       if (!this._server) {
-        let server = http.createServer(this.handle.bind(this))
-        server = httpShutdown(server)
-        server.on('error', function (error) {
-          if (error.code === 'EADDRINUSE') {
-            this._port += 10
-            server.close()
-            server.listen(this._port, this._address)
-            return
-          }
-          throw error
-        }.bind(this))
-        server.listen(this._port, this._address)
-        this._server = server
+        return new Promise((resolve, reject) => {
+          let server = http.createServer(this.handle.bind(this))
+          server = httpShutdown(server)
+          server.on('error', function (error) {
+            if (error.code === 'EADDRINUSE') {
+              this._port += 10
+              server.close()
+              server.listen(this._port, this._address, 511, () => {
+                resolve()
+              })
+              return
+            }
+            reject(error)
+          }.bind(this))
+          server.listen(this._port, this._address, 511, () => {
+            resolve()
+          })
+          this._server = server
+        })
       }
     } else {
       if (this._server) {
-        this._server.shutdown(function () {
-          console.log('HTTP server has been shutdown')
+        return new Promise((resolve, reject) => {
+          this._server.shutdown(function () {
+            console.log('HTTP server has been shutdown')
+          })
+          this._server = null
         })
-        this._server = null
       }
     }
   }
@@ -91,75 +99,88 @@ class HttpServer {
   }
 
   web (request, response, path) {
-    response.statusCode = 302
-    response.setHeader('Location', 'http://127.0.0.1:9000/web/' + path)
+    if (true) { // FIXME
+      response.statusCode = 302
+      response.setHeader('Location', 'http://127.0.0.1:9000/web/' + path)
+    } else {
+      response.statusCode = 302
+      response.setHeader('Location', 'https://stenci.la/web/' + path)
+    }
     response.end()
   }
 
+  /**
+   * Get a property of a component
+   *
+   * The property is returned as a JSON string.
+   *
+   * If no component is found at the address, or if the component does not have a
+   * property with the name, a HTTP `404 Not Found` response is returned
+   *
+   * Access to "private" properties, those whose name begins with a leading underscore,
+   * is denied (HTTP `403 Forbidden` response).
+   *
+   * @param  {[type]} request  [description]
+   * @param  {[type]} response [description]
+   * @param  {[type]} address  [description]
+   * @param  {[type]} name     [description]
+   * @return {[type]}          [description]
+   */
   get (request, response, address, name) {
-    let component = this._host.open(address)
-    if (component) {
+    this._host.open(address).then(component => {
+      if (!component) return this.error404(request, response, address)
+      if (name[0] === '_') return this.error403(request, response, name)
       let result = component[name]
+      if (typeof result === 'undefined') return this.error404(request, response, name)
+
       response.setHeader('Content-Type', 'application/json')
       response.end(stringify(result))
-    } else {
-      this.error404(request, response)
-    }
+    }).catch(error => this.error500(request, response, error))
   }
 
   set (request, response, address, name) {
-    let self = this
-    bodify(request, function (body) {
-      try {
-        let component = self._host.open(address)
-        if (component) {
-          if (body) {
-            let value = JSON.parse(body)
-            component[name] = value
-          }
-          response.end()
-        } else {
-          self.error404(request, response)
+    bodify(request).then(body => {
+      this._host.open(address).then(component => {
+        if (!component) return this.error404(request, response, address)
+        if (name[0] === '_') return this.error403(request, response, name)
+
+        if (body) {
+          let value = JSON.parse(body)
+          component[name] = value
         }
-      } catch (error) {
-        self.error500(request, response, error)
-      }
+        response.end()
+      }).catch(error => this.error500(request, response, error))
     })
   }
 
   call (request, response, address, name) {
-    let self = this
-    bodify(request, function (body) {
-      try {
-        let component = self._host.open(address)
-        if (component) {
-          let method = component[name]
-          if (!method) {
-            throw Error(`Unknown method for component\n  address: ${address}\n  name: ${name}`)
-          }
-          let result
-          if (body) {
-            let args = JSON.parse(body)
-            if (args instanceof Array) {
-              result = method.call(component, ...args)
-            } else if (args instanceof Object) {
-              // Convert object to an array
-              args = Object.keys(args).map(key => args[key])
-              result = method.call(component, ...args)
-            } else {
-              result = method.call(component, args)
-            }
+    bodify(request).then(body => {
+      this._host.open(address).then(component => {
+        if (!component) return this.error404(request, response, address)
+        if (name[0] === '_') return this.error403(request, response, name)
+        let method = component[name]
+        if (typeof method === 'undefined') return this.error404(request, response, name)
+
+        let result
+        if (body) {
+          let args = JSON.parse(body)
+          if (args instanceof Array) {
+            result = method.call(component, ...args)
+          } else if (args instanceof Object) {
+            // Convert object to an array
+            args = Object.keys(args).map(key => args[key])
+            result = method.call(component, ...args)
           } else {
-            result = method.call(component)
+            result = method.call(component, args)
           }
-          response.setHeader('Content-Type', 'application/json')
-          response.end(stringify(result))
         } else {
-          self.error404(request, response)
+          result = method.call(component)
         }
-      } catch (error) {
-        self.error500(request, response, error)
-      }
+        response.setHeader('Content-Type', 'application/json')
+        response.end(stringify(result))
+      }).catch(error => {
+        this.error500(request, response, error)
+      })
     })
   }
 
@@ -178,46 +199,82 @@ class HttpServer {
    */
   show (request, response, address) {
     let {scheme} = this._host.split(address)
-    let component = this._host.open(address)
-    if (component) {
-      let accept = request.headers['accept'] || ''
-      if (accept.match(/application\/json/)) {
-        response.setHeader('Content-Type', 'application/json')
-        response.end(component.show('json'))
-      } else {
-        if (scheme === 'new') {
-          response.statusCode = 302
-          response.setHeader('Location', component.url)
-          response.end()
+    this._host.open(address).then(component => {
+      if (component) {
+        if (acceptsJson(request)) {
+          response.setHeader('Content-Type', 'application/json')
+          response.end(component.show('json'))
         } else {
-          response.setHeader('Content-Type', 'text/html')
-          response.end(component.show('html'))
+          if (scheme === 'new') {
+            response.statusCode = 302
+            response.setHeader('Location', component.url)
+            response.end()
+          } else {
+            response.setHeader('Content-Type', 'text/html')
+            response.end(component.show('html'))
+          }
         }
+      } else {
+        this.error404(request, response)
       }
-    } else {
-      this.error404(request, response)
-    }
+    }).catch(error => {
+      this.error500(request, response, error)
+    })
   }
 
-  error404 (request, response) {
+  error403 (request, response, what) {
+    response.statusCode = 403
+    let content
+    if (acceptsJson(request)) {
+      content = JSON.stringify({error: 'Access denied', what: what})
+      response.setHeader('Content-Type', 'application/json')
+    } else {
+      content = 'Access denied' + (what ? (': ' + what) : '')
+    }
+    response.end(content)
+  }
+
+  error404 (request, response, what) {
     response.statusCode = 404
-    response.end()
+    let content
+    if (acceptsJson(request)) {
+      content = JSON.stringify({error: 'Not found', what: what})
+      response.setHeader('Content-Type', 'application/json')
+    } else {
+      content = 'Not found' + (what ? (': ' + what) : '')
+    }
+    response.end(content)
   }
 
   error500 (request, response, error) {
     response.statusCode = 500
-    response.end(error.stack)
+    let content
+    let what = error ? error.stack : ''
+    if (acceptsJson(request)) {
+      content = JSON.stringify({error: 'Internal error', what: what})
+      response.setHeader('Content-Type', 'application/json')
+    } else {
+      content = 'Internal error' + (what ? (': ' + what) : '')
+    }
+    response.end(content)
   }
 
 }
 
-function bodify (request, callback) {
-  var body = []
-  request.on('data', function (chunk) {
-    body.push(chunk)
-  }).on('end', function () {
-    body = Buffer.concat(body).toString()
-    callback(body)
+function acceptsJson (request) {
+  let accept = request.headers['accept'] || ''
+  return accept.match(/application\/json/)
+}
+
+function bodify (request) {
+  return new Promise((resolve, reject) => {
+    var body = []
+    request.on('data', function (chunk) {
+      body.push(chunk)
+    }).on('end', function () {
+      body = Buffer.concat(body).toString()
+      resolve(body)
+    })
   })
 }
 
