@@ -256,7 +256,7 @@ class Host extends Component {
    */
   read (address, path) {
     if (fs.lstatSync(path).isDirectory()) {
-      return new Folder(path)
+      return new Folder(address, path)
     } else {
       let format = pathm.extname(path).substring(1)
       for (let cls of [Document, Sheet]) {
@@ -360,38 +360,55 @@ class Host extends Component {
           reject(new Error(`Unable to determine Git repository URL from address\n  address: ${address}`))
         }
       } else if (scheme === 'dat') {
-        // Preliminary implementation of Dat scheme
-        let dir = pathm.join(home, '.dat', path)
+        // See https://github.com/datproject/dat/blob/master/commands/download.js for
+        // guidance on how to approach this
+        // Also consider using a "DIY" approach by using `hyperdrive` and `hyperdrive-archive-swarm`
+        // modules instead of the higher level `dat-js` module. See http://docs.dat-data.com/diy-dat
+        let match = path.match(/([\w]+)(\/(.+))?$/)
+        let key = match[1]
+        let subpath = match[2]
+        let dir = pathm.join(home, '.dat', key)
+        let filepath = subpath ? pathm.join(dir, subpath) : dir
         mkdirp(dir, err => {
           if (err) reject(err)
-          let dat = Dat({dir: dir, key: path})
-          dat.download()
 
-          let status = null
-          dat.on('connecting', () => {
-            console.log('Dat connecting')
-          })
-          dat.on('swarm-update', () => {
-            console.log('Dat swarm-update')
-          })
-          dat.on('key', () => {
-            console.log('Dat key available')
-          })
-          dat.on('download', (err, data) => {
-            if (err) reject(err)
-            status = 'downloading'
-          })
-          dat.on('download-finished', err => {
-            if (err) reject(err)
-            resolve(this.read(address, dir))
-            status = 'downloaded'
-          })
-          // If nothing has happened after a while then give up
-          setTimeout(() => {
-            if (!status) {
-              reject(new Error('Dat has not downloaded anything in 30 seconds'))
-            }
-          }, 30000)
+          // If a dat already exists then `dat.download()` will go into live sync mode
+          // in which is waits for peers to update the dat. It also obtains a lock on that dat 
+          // and prevents this process (and any other?) from opening it with another `dat.download`
+          // call. To avoid this situation we check for and existing dat.
+          if (fs.existsSync(pathm.join(dir, '.dat'))) {
+            resolve(this.read(address, filepath))
+          } else {
+            let dat = Dat({dir: dir, key: key})
+
+            dat.on('error', err => {
+              reject(err)
+            })
+
+            dat.download(err => {
+              // It seems that this is only called when there is an error
+              if (err) reject(err)
+            })
+
+            dat.on('connecting', () => {
+              console.log('Dat connecting')
+            })
+            dat.on('swarm-update', () => {
+              console.log('Dat swarm-update')
+            })
+            dat.on('key', key => {
+              console.log('Dat key available: ' + key)
+            })
+            dat.on('download', () => {
+              console.log('Dat downloading')
+            })
+
+            dat.on('download-finished', err => {
+              if (err) reject(err)
+              console.log('Dat download finished')
+              resolve(this.read(address, filepath))
+            })
+          }
         })
       } else {
         resolve(null)
