@@ -313,14 +313,14 @@ class Host extends Component {
           reject(error)
         })
       } else if (scheme === 'git') {
-        let match = path.match(/([\w\-\.]+)\/([\w\-]+\/[\w\-]+)\/(.+)$/)
+        let match = path.match(/([\w\-\.]+)\/([\w\-]+\/[\w\-]+)(\/(.+))?$/)
         if (match) {
           let host = match[1]
           let hostDir = (host === 'stenci.la') ? '' : host
           let repo = match[2]
           let repoDir = pathm.join(home, hostDir, repo)
           let masterDir = pathm.join(repoDir, 'master')
-          let file = match[3]
+          let file = match[4]
 
           Promise.resolve(fs.existsSync(masterDir)).then(exists => {
             if (exists) return git.Repository.open(masterDir)
@@ -350,7 +350,7 @@ class Host extends Component {
               return masterDir
             }
           }).then((dir) => {
-            let path = pathm.join(dir, file)
+            let path = file ? pathm.join(dir, file) : dir
             let component = this.read(address, path)
             resolve(component)
           }).catch(error => {
