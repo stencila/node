@@ -114,6 +114,8 @@ class Component {
       return 'git://github.com/' + address.substring(3)
     } else if (address.substring(0, 3) === 'gl/') {
       return 'git://gitlab.com/' + address.substring(3)
+    } else if (address.substring(0, 6) === 'dat://') {
+      return address
     } else {
       return 'git://stenci.la/' + address
     }
@@ -160,6 +162,8 @@ class Component {
       return 'gl/' + address.substring(17)
     } else if (address.substring(0, 16) === 'git://stenci.la/') {
       return address.substring(16)
+    } else if (address.substring(0, 6) === 'dat://') {
+      return address
     } else {
       throw Error('Unable to shorten address\n address: ' + address)
     }

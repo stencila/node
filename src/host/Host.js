@@ -3,6 +3,8 @@ const os = require('os')
 const path = require('path')
 const pathm = path
 
+const Dat = require('dat-js')
+const mkdirp = require('mkdirp')
 const mime = require('mime')
 const git = require('nodegit')
 const request = require('request-promise')
@@ -10,6 +12,8 @@ const tmp = require('tmp')
 
 const version = require('../../package').version
 const Component = require('../component/Component')
+
+const Folder = require('../folder/Folder')
 
 const Document = require('../document/Document')
 const DocumentProxy = require('../document/DocumentProxy')
@@ -73,7 +77,7 @@ class Host extends Component {
     return {
       'new': {
         enabled: true,
-        types: ['document', 'sheet', 'session-js']
+        types: ['folder', 'document', 'sheet', 'session-js']
       },
       'id': {
         enabled: true
@@ -146,7 +150,8 @@ class Host extends Component {
    * @return {Component|null} A new component, or `null` if `type` is unknown
    */
   create (type) {
-    if (type === 'document') return new Document()
+    if (type === 'folder') return new Folder()
+    else if (type === 'document') return new Document()
     else if (type === 'sheet') return new Sheet()
     else if (type === 'session-js') return new JavascriptSession()
     else return null
@@ -240,28 +245,33 @@ class Host extends Component {
   }
 
   /**
-   * Read a component from a local file
+   * Read a component from a local file path
    *
-   * 
+   * If the path is a directory then it will be read as a pod,
+   * otherwise the
    *
    * @param  {string} path Local file system path
    * @param  {[type]} type [description]
    * @return {[type]}      [description]
    */
   read (address, path) {
-    let format = pathm.extname(path).substring(1)
-    for (let cls of [Document, Sheet]) {
-      try {
-        // Try to get a converter
-        cls.converter(format)
-      } catch (error) {
-        // No converter, keep trying...
-        continue
+    if (fs.lstatSync(path).isDirectory()) {
+      return new Folder(path)
+    } else {
+      let format = pathm.extname(path).substring(1)
+      for (let cls of [Document, Sheet]) {
+        try {
+          // Try to get a converter
+          cls.converter(format)
+        } catch (error) {
+          // No converter, keep trying...
+          continue
+        }
+        // Return component of that class
+        let component = new cls(address) // eslint-disable-line new-cap
+        component.read(path)
+        return component
       }
-      // Return component of that class
-      let component = new cls(address) // eslint-disable-line new-cap
-      component.read(path)
-      return component
     }
     return null
   }
@@ -349,6 +359,40 @@ class Host extends Component {
         } else {
           reject(new Error(`Unable to determine Git repository URL from address\n  address: ${address}`))
         }
+      } else if (scheme === 'dat') {
+        // Preliminary implementation of Dat scheme
+        let dir = pathm.join(home, '.dat', path)
+        mkdirp(dir, err => {
+          if (err) reject(err)
+          let dat = Dat({dir: dir, key: path})
+          dat.download()
+
+          let status = null
+          dat.on('connecting', () => {
+            console.log('Dat connecting')
+          })
+          dat.on('swarm-update', () => {
+            console.log('Dat swarm-update')
+          })
+          dat.on('key', () => {
+            console.log('Dat key available')
+          })
+          dat.on('download', (err, data) => {
+            if (err) reject(err)
+            status = 'downloading'
+          })
+          dat.on('download-finished', err => {
+            if (err) reject(err)
+            resolve(this.read(address, dir))
+            status = 'downloaded'
+          })
+          // If nothing has happened after a while then give up
+          setTimeout(() => {
+            if (!status) {
+              reject(new Error('Dat has not downloaded anything in 30 seconds'))
+            }
+          }, 30000)
+        })
       } else {
         resolve(null)
       }
