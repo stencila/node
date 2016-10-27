@@ -4,9 +4,9 @@ const Component = require('../component/Component')
 
 class Folder extends Component {
 
-  constructor (path) {
+  constructor (address, path) {
     if (!fs.existsSync(path)) throw new Error(`Path does not exist: ${path}`)
-    super(path, path)
+    super(address, path)
   }
 
   list () {
