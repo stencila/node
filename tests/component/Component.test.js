@@ -20,6 +20,17 @@ test('Component has an id', function (t) {
   t.end()
 })
 
+test('Component address is lengthend on construction', function (t) {
+  t.equal((new Component('/dir')).address, 'file:///dir')
+  t.end()
+})
+
+test('Component address defaults to id scheme', function (t) {
+  let c = new Component()
+  t.equal(c.address, `id://${c.id}`)
+  t.end()
+})
+
 test('Component address can be lengthened', function (t) {
   let c = new Component()
 

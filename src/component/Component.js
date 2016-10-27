@@ -33,7 +33,9 @@ class Component {
    */
   constructor (address, path_) {
     this._id = crypto.randomBytes(32).toString('hex')
-    this._address = address || ('id://' + this._id)
+    if (address) address = this.lengthen(address)
+    else address = 'id://' + this._id
+    this._address = address
     this._path = path_ || path.join(home, 'id', this._id)
     this._meta = {}
 
@@ -159,7 +161,7 @@ class Component {
     } else if (address.substring(0, 16) === 'git://stenci.la/') {
       return address.substring(16)
     } else {
-      throw Error('Unable to shortern address\n address: ' + address)
+      throw Error('Unable to shorten address\n address: ' + address)
     }
   }
 
