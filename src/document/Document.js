@@ -8,6 +8,7 @@ const DocumentHtmlBodyConverter = require('./DocumentHtmlBodyConverter')
 const DocumentHtmlConverter = require('./DocumentHtmlConverter')
 const DocumentLatexConverter = require('./DocumentLatexConverter')
 const DocumentMarkdownConverter = require('./DocumentMarkdownConverter')
+const JavascriptSession = require('../session-js/JavascriptSession')
 
 /**
  * A document
@@ -104,7 +105,7 @@ class Document extends Component {
       let print = $(this)
       let expr = print.attr('data-print')
       if (!self.session) {
-        self.session = host.open('+session-js')
+        self.session = new JavascriptSession()
       }
       let text = self.session.print(expr)
       print.text(text)
