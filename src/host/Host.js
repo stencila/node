@@ -205,7 +205,7 @@ class Host extends Component {
    * @return {Component|null} The component, or `null` if not found
    */
   retrieve (address) {
-    address = this.lengthen(address)
+    address = this.long(address)
     let {scheme, path} = this.split(address)
     for (let index in this._components) {
       let component = this._components[index]
@@ -420,6 +420,7 @@ class Host extends Component {
    * Open a `Component` at an address
    *
    * @example
+   * 
    * // Create a new document
    * host.open('+document')
    *
@@ -434,7 +435,7 @@ class Host extends Component {
       // No address, return this host
       if (address === null) resolve(this)
 
-      address = this.lengthen(address)
+      address = this.long(address)
       let {scheme, path, format, version} = this.split(address) // eslint-disable-line no-unused-vars
 
       // `new` scheme, attempt to create a component

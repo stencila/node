@@ -1,4 +1,5 @@
 const fs = require('fs')
+const os = require('os')
 const path = require('path')
 const tmp = require('tmp')
 const test = require('tape')
@@ -20,7 +21,7 @@ test('Component has an id', function (t) {
   t.end()
 })
 
-test('Component address is lengthend on construction', function (t) {
+test('Component address is longd on construction', function (t) {
   t.equal((new Component('/dir')).address, 'file:///dir')
   t.end()
 })
@@ -31,48 +32,49 @@ test('Component address defaults to id scheme', function (t) {
   t.end()
 })
 
-test('Component address can be lengthened', function (t) {
+test('Component address can be lengthend', function (t) {
   let c = new Component()
 
-  t.equal(c.lengthen('new://document'), 'new://document')
-  t.equal(c.lengthen('ftp://foo/bar'), 'ftp://foo/bar')
-  t.equal(c.lengthen('+document'), 'new://document')
-  t.equal(c.lengthen('~aaaaaaaa'), 'id://aaaaaaaa')
-  t.equal(c.lengthen('./report.docx'), 'file://' + process.cwd() + '/report.docx')
-  t.equal(c.lengthen('https://foo.com/report.md'), 'https://foo.com/report.md')
-  t.equal(c.lengthen('bb/foo/bar/report.md'), 'git://bitbucket.org/foo/bar/report.md')
-  t.equal(c.lengthen('gh/foo/bar/report.md'), 'git://github.com/foo/bar/report.md')
-  t.equal(c.lengthen('gl/foo/bar/report.md'), 'git://gitlab.com/foo/bar/report.md')
-  t.equal(c.lengthen('stats/t-test'), 'git://stenci.la/stats/t-test')
+  t.equal(c.long('new://document'), 'new://document')
+  t.equal(c.long('+document'), 'new://document')
+  t.equal(c.long('*aaaaaaaa'), 'id://aaaaaaaa')
+  t.equal(c.long('./report.docx'), 'file://' + process.cwd() + '/report.docx')
+  t.equal(c.long('/some/dir/report.docx'), 'file:///some/dir/report.docx')
+  t.equal(c.long('~/report.docx'), 'file://' + os.homedir() + '/report.docx')
+  t.equal(c.long('https://foo.com/report.md'), 'https://foo.com/report.md')
+  t.equal(c.long('bb:foo/bar/report.md'), 'git://bitbucket.org/foo/bar/report.md')
+  t.equal(c.long('gh:/foo/bar/report.md'), 'git://github.com/foo/bar/report.md')
+  t.equal(c.long('gl://foo/bar/report.md'), 'git://gitlab.com/foo/bar/report.md')
+  t.equal(c.long('stats/t-test'), 'st://stats/t-test')
   t.end()
 })
 
-test('Component address can be shortened', function (t) {
+test('Component address can be shotened', function (t) {
   let c = new Component()
 
-  t.equal(c.shorten('new://document'), '+document')
-  t.equal(c.shorten('id://aaaaaaaa'), '~aaaaaaaa')
-  t.equal(c.shorten('file://report.docx'), 'file://report.docx')
-  t.equal(c.shorten('https://foo.com/report.md'), 'https://foo.com/report.md')
-  t.equal(c.shorten('git://bitbucket.org/foo/bar/report.md'), 'bb/foo/bar/report.md')
-  t.equal(c.shorten('git://github.com/foo/bar/report.md'), 'gh/foo/bar/report.md')
-  t.equal(c.shorten('git://gitlab.com/foo/bar/report.md'), 'gl/foo/bar/report.md')
-  t.equal(c.shorten('git://stenci.la/stats/t-test'), 'stats/t-test')
+  t.equal(c.short('new://document'), '+document')
+  t.equal(c.short('id://aaaaaaaa'), '*aaaaaaaa')
+  t.equal(c.short('file://report.docx'), 'file:report.docx')
+  t.equal(c.short('https://foo.com/report.md'), 'https:foo.com/report.md')
+  t.equal(c.short('git://bitbucket.org/foo/bar/report.md'), 'bb:foo/bar/report.md')
+  t.equal(c.short('git://github.com/foo/bar/report.md'), 'gh:foo/bar/report.md')
+  t.equal(c.short('git://gitlab.com/foo/bar/report.md'), 'gl:foo/bar/report.md')
+  t.equal(c.short('st://stats/t-test'), 'stats/t-test')
   t.end()
 })
 
-test('Component address can be lengthened and then shortened', function (t) {
+test('Component address can be lengthend and then shotened', function (t) {
   let c = new Component()
   let ls = (address) => {
-    return c.shorten(c.lengthen(address))
+    return c.short(c.long(address))
   }
 
   t.equal(ls('+document'), '+document')
   t.equal(ls('new://document'), '+document')
-  t.equal(ls('~aaaaaaaa'), '~aaaaaaaa')
-  t.equal(ls('id://aaaaaaaa'), '~aaaaaaaa')
-  t.equal(ls('gh/foo/bar/report.md'), 'gh/foo/bar/report.md')
-  t.equal(ls('gh/foo/bar/report.md@1.1.0'), 'gh/foo/bar/report.md@1.1.0')
+  t.equal(ls('*aaaaaaaa'), '*aaaaaaaa')
+  t.equal(ls('id://aaaaaaaa'), '*aaaaaaaa')
+  t.equal(ls('gh:foo/bar/report.md'), 'gh:foo/bar/report.md')
+  t.equal(ls('gh:foo/bar/report.md@1.1.0'), 'gh:foo/bar/report.md@1.1.0')
   t.end()
 })
 
@@ -80,9 +82,9 @@ test('Component address can be split', function (t) {
   let c = new Component()
 
   t.deepEqual(c.split('+document'), {scheme: 'new', path: 'document', format: null, version: null})
-  t.deepEqual(c.split('~aaaaaaaa'), {scheme: 'id', path: 'aaaaaaaa', format: null, version: null})
-  t.deepEqual(c.split('stats/t-test'), {scheme: 'git', path: 'stenci.la/stats/t-test', format: null, version: null})
-  t.deepEqual(c.split('stats/t-test@1.1.0'), {scheme: 'git', path: 'stenci.la/stats/t-test', format: null, version: '1.1.0'})
+  t.deepEqual(c.split('*aaaaaaaa'), {scheme: 'id', path: 'aaaaaaaa', format: null, version: null})
+  t.deepEqual(c.split('stats/t-test'), {scheme: 'st', path: 'stats/t-test', format: null, version: null})
+  t.deepEqual(c.split('stats/t-test@1.1.0'), {scheme: 'st', path: 'stats/t-test', format: null, version: '1.1.0'})
   t.end()
 })
 

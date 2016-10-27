@@ -33,7 +33,7 @@ class Component {
    */
   constructor (address, path_) {
     this._id = crypto.randomBytes(32).toString('hex')
-    if (address) address = this.lengthen(address)
+    if (address) address = this.long(address)
     else address = 'id://' + this._id
     this._address = address
     this._path = path_ || path.join(home, 'id', this._id)
@@ -97,82 +97,129 @@ class Component {
     return this._address
   }
 
-  lengthen (address) {
+  /**
+   * Get the long form of an address
+   *
+   * If the `address` parameter is not supplied then returns the
+   * long form address of *this* component.
+   *
+   * @see Component#short
+   * @see address
+   *
+   * @example
+   *
+   * component.long('+document')
+   * 'new://document'
+   *
+   * component.long('gh:stencila/stencila')
+   * 'gh://stencila/stencila'
+   *
+   * component.long('./report/intro.md')
+   * 'file:///current/directory/report/intro.md'
+   *
+   * component.long('stats/t-test')
+   * 'st://stats/t-test'
+   *
+   * component.long()
+   * 'id://fa4cf2c5cff5b576990feb96f25c98e6111990c873010855a53bcba979583836'
+   *
+   * @param  {String|null} [address] The address to lengthen
+   * @return {String}                The long form of the address
+   */
+  long (address) {
     address = address || this.address
 
-    if (address.match(/^[a-z]+:\/\//)) {
+    if (address.match(/^(new|id|file|http|https|git|dat|st):\/\//)) {
       return address
     } else if (address[0] === '+') {
       return 'new://' + address.substring(1)
-    } else if (address[0] === '~') {
+    } else if (address[0] === '*') {
       return 'id://' + address.substring(1)
-    } else if (address[0] === '.' || address[0] === '/') {
+    } else if (address[0] === '.' || address[0] === '/' || address[0] === '~') {
+      if (address[0] === '~') address = os.homedir() + address.substring(1)
       return 'file://' + path.resolve(address)
-    } else if (address.substring(0, 3) === 'bb/') {
-      return 'git://bitbucket.org/' + address.substring(3)
-    } else if (address.substring(0, 3) === 'gh/') {
-      return 'git://github.com/' + address.substring(3)
-    } else if (address.substring(0, 3) === 'gl/') {
-      return 'git://gitlab.com/' + address.substring(3)
-    } else if (address.substring(0, 6) === 'dat://') {
-      return address
     } else {
-      return 'git://stenci.la/' + address
+      let match = address.match(/^([a-z]+)(:\/?\/?)(.+)$/)
+      if (match) {
+        let alias = match[1]
+        let path = match[3]
+        if (alias === 'bb') {
+          return `git://bitbucket.org/${path}`
+        } else if (alias === 'dat') {
+          return `dat://${path}`
+        } else if (alias === 'file') {
+          // Only arrive here with `file:/foo` since with
+          // `file:` with two or more slashes is already "long"
+          return `file:///${path}`
+        } else if (alias === 'http' | alias === 'https') {
+          return `${alias}://${path}`
+        } else if (alias === 'gh') {
+          return `git://github.com/${path}`
+        } else if (alias === 'gl') {
+          return `git://gitlab.com/${path}`
+        } else {
+          throw new Error(`Unknown scheme alias.\n  alias: ${alias}`)
+        }
+      } else {
+        return 'st://' + address
+      }
     }
   }
 
   /**
-   * Shorten an address
+   * Get the short form of an address
    *
-   * This method is the inverse of `lengthen()`. It shortens an address for
-   * more aeshetically pleasing URL etc. Some addresses (e.g `http://` scheme)
-   * can not be shortened.
+   * This method is the inverse of `long()`. It shortens an address tp
+   * a smaller, more aeshetically pleasing form, that is useful in URLs
+   * an other places.
    *
-   * Addresses using the `file://` scheme can not be shortened by prefixing with a `./`
-   * because browsers often resolve paths thereby squashing that extra dot.
+   * If the `address` parameter is not supplied then returns the
+   * short form address of this component.
+   *
+   * @see Component#long
    *
    * @example
    *
-   * component.shorten('new://document')
+   * component.short('new://document')
    * '+document'
    *
-   * component.shorten('file://my-doc.md')
-   * 'file://my-doc.md'
+   * component.short('file:///some/directory/my-doc.md')
+   * 'file:/some/directory/my-doc.md'
    *
-   * @see Component#lengthen
-   * @param  {string} [address] [description]
-   * @return {string}           The shortened address
+   * component.short()
+   * '*fa4cf2c5cff5b576990feb96f25c98e6111990c873010855a53bcba979583836'
+   *
+   * @param  {String} [address] The address to shorten
+   * @return {String}           The short form of the address
    */
-  shorten (address) {
+  short (address) {
     address = address || this.address
 
+    address = this.long(address)
     if (address.substring(0, 6) === 'new://') {
       return '+' + address.substring(6)
     } else if (address.substring(0, 5) === 'id://') {
-      return '~' + address.substring(5)
+      return '*' + address.substring(5)
     } else if (address.substring(0, 7) === 'file://') {
-      return address
-    } else if (address.substring(0, 7) === 'http://' || address.substring(0, 8) === 'https://') {
-      return address
+      return 'file:' + address.substring(7)
+    } else if (address.substring(0, 5) === 'st://') {
+      return address.substring(5)
     } else if (address.substring(0, 20) === 'git://bitbucket.org/') {
-      return 'bb/' + address.substring(20)
+      return 'bb:' + address.substring(20)
     } else if (address.substring(0, 17) === 'git://github.com/') {
-      return 'gh/' + address.substring(17)
+      return 'gh:' + address.substring(17)
     } else if (address.substring(0, 17) === 'git://gitlab.com/') {
-      return 'gl/' + address.substring(17)
-    } else if (address.substring(0, 16) === 'git://stenci.la/') {
-      return address.substring(16)
-    } else if (address.substring(0, 6) === 'dat://') {
-      return address
+      return 'gl:' + address.substring(17)
     } else {
-      throw Error('Unable to shorten address\n address: ' + address)
+      let match = address.match(/([a-z]+):\/\/(.+)$/)
+      return `${match[1]}:${match[2]}`
     }
   }
 
   split (address) {
     address = address || this.address
 
-    address = this.lengthen(address)
+    address = this.long(address)
     let matches = address.match(/([a-z]+):\/\/([\w\-\./]+)(@([\w\-\.]+))?/)
     if (matches) {
       return {
@@ -333,7 +380,7 @@ class Component {
   }
 
   get url () {
-    return _host.url + '/' + this.shorten()
+    return _host.url + '/' + this.short()
   }
 
   show (format) {
