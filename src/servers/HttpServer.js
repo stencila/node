@@ -176,8 +176,13 @@ class HttpServer {
         } else {
           result = method.call(component)
         }
-        response.setHeader('Content-Type', 'application/json')
-        response.end(stringify(result))
+        // Some method call's may be synchronous, others may be promises.
+        // Use Promise.resolve so that all method call results can be
+        // treated as promises.
+        Promise.resolve(result).then(result => {
+          response.setHeader('Content-Type', 'application/json')
+          response.end(stringify(result))
+        })
       }).catch(error => {
         this.error500(request, response, error)
       })
