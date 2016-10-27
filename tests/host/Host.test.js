@@ -13,21 +13,18 @@ test('Host can serve', function (t) {
 })
 
 test('Host can discover peers', function (t) {
-  // In leiu of promises, this uses yucky timeouts...
   let h1 = new Host()
-  h1.serve()
-
-  setTimeout(function () {
+  h1.serve().then(() => {
     let h2 = new Host()
-    h2.serve()
-
-    setTimeout(function () {
+    h2.serve().then(() => {
       t.notEqual(h1.url, h2.url)
-
-      h1.discover() // When h1 discovers h2, they exchange manifests so this works without h2.discover()
-
-      setTimeout(function () {
+      // When h1 discovers h2, they exchange manifests so this works without h2.discover()
+      h1.discover()
+      // Until discover is promisfies, using a timeout!
+      setTimeout(() => {
         // These tests allow for the fact that more than these two hosts may be running on this machine
+        console.log(h1.peers)
+        console.log(h2.peers)
         t.ok(h1.peers.length > 0)
         t.ok(h2.peers.length > 0)
 
@@ -37,7 +34,13 @@ test('Host can discover peers', function (t) {
         h1.serve(false)
         h2.serve(false)
         t.end()
-      }, 500)
-    }, 500)
-  }, 500)
+      }, 1000)
+    }).catch(error => {
+      t.notOk(error)
+      t.end()
+    })
+  }).catch(error => {
+    t.notOk(error)
+    t.end()
+  })
 })

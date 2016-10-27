@@ -529,18 +529,17 @@ class Host extends Component {
             this.manifest()
           ],
           json: true,
-          timeout: 100,
           resolveWithFullResponse: true
         })
-        .then(function (response) {
+        .then(response => {
           if (response.statusCode === 200) {
-            let data = response.body
-            if (data.stencila) {
-              this._peers.push(data)
+            let manifest = response.body
+            if (manifest.stencila) {
+              this.hello(manifest)
             }
           }
-        }.bind(this))
-        .catch(function (error) {
+        })
+        .catch(error => {
           if (error.name === 'RequestError') {
             if (error.code !== 'ECONNREFUSED' && error.code !== 'ETIMEDOUT') {
               return
