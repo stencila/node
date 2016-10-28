@@ -94,6 +94,8 @@ class Document extends Component {
    * - if no session then create one when hit first exec directive
    * - if hit a print or any other directive that needs evaluation first then error
    * - other exec directives should spawn in the root session
+   *
+   * @return {Document} This document
    */
   render () {
     // This is just a example implementation
@@ -110,6 +112,7 @@ class Document extends Component {
       let text = self.session.print(expr)
       print.text(text)
     })
+    return this
   }
 
 }

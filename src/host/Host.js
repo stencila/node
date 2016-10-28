@@ -8,7 +8,6 @@ const mkdirp = require('mkdirp')
 const mime = require('mime')
 const git = require('nodegit')
 const request = require('request-promise')
-const tmp = require('tmp')
 
 const version = require('../../package').version
 const Component = require('../component/Component')
@@ -176,22 +175,25 @@ class Host extends Component {
    * @todo        Check that the component has not yet been registered
    *
    * @param      {Component}  component  The component
+   * @return {Host} This host
    */
   register (component) {
     this._components.push(component)
+    return this
   }
 
   /**
    * Deregister a component with this host
    *
    * @param  {[type]} component [description]
-   * @return {[type]}           [description]
+   * @return {Host} This host
    */
   deregister (component) {
     let index = this._components.indexOf(component)
     if (index > -1) {
       this._components.splice(index, 1)
     }
+    return this
   }
 
   /**
@@ -221,11 +223,10 @@ class Host extends Component {
   /**
    * Load a component from content of a particular format
    *
-   * 
-   *
-   * @param  {string} path Local file system path
-   * @param  {[type]} type [description]
-   * @return {[type]}      [description]
+   * @param  {string} address Component address
+   * @param  {string} content Content for component
+   * @param  {string} format The format of the content
+   * @return {Component|null} A component, or `null` if no converter for format is found
    */
   load (address, content, format) {
     for (let cls of [Document, Sheet]) {
@@ -250,9 +251,9 @@ class Host extends Component {
    * If the path is a directory then it will be read as a pod,
    * otherwise the
    *
+   * @param  {string} address Component address
    * @param  {string} path Local file system path
-   * @param  {[type]} type [description]
-   * @return {[type]}      [description]
+   * @return {Component|null} A component, or `null` if no converter for format is found
    */
   read (address, path) {
     if (fs.lstatSync(path).isDirectory()) {
@@ -373,7 +374,7 @@ class Host extends Component {
           if (err) reject(err)
 
           // If a dat already exists then `dat.download()` will go into live sync mode
-          // in which is waits for peers to update the dat. It also obtains a lock on that dat 
+          // in which is waits for peers to update the dat. It also obtains a lock on that dat
           // and prevents this process (and any other?) from opening it with another `dat.download`
           // call. To avoid this situation we check for and existing dat.
           if (fs.existsSync(pathm.join(dir, '.dat'))) {
@@ -420,14 +421,14 @@ class Host extends Component {
    * Open a `Component` at an address
    *
    * @example
-   * 
+   *
    * // Create a new document
    * host.open('+document')
    *
    * @example
    * host.open('stats/t-test')
    *
-   * @param      {string}                             address  The address
+   * @param      {string}  address  The address
    * @return     {Component}  { description_of_the_return_value }
    */
   open (address) {

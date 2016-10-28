@@ -99,7 +99,8 @@ class HttpServer {
   }
 
   web (request, response, path) {
-    if (true) { // FIXME
+    // FIXME
+    if (true) { // eslint-disable-line no-constant-condition
       response.statusCode = 302
       response.setHeader('Location', 'http://127.0.0.1:9000/web/' + path)
     } else {

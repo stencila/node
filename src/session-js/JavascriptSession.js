@@ -15,11 +15,11 @@ class JavascriptSession extends Session {
   }
 
   execute (code) {
-    eval(code)
+    eval(code) // eslint-disable-line no-eval
   }
 
   print (expr) {
-    return eval(expr).toString()
+    return eval(expr).toString() // eslint-disable-line no-eval
   }
 
 }

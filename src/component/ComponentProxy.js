@@ -5,8 +5,8 @@ class ComponentProxy {
   /**
    * Construct a remote component
    *
-   * @param  {string} url URL of the component
    * @param  {string} type The type of the component
+   * @param  {string} url URL of the component
    */
   constructor (type, url) {
     this._type = type
