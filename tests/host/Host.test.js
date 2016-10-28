@@ -23,8 +23,6 @@ test('Host can discover peers', function (t) {
       // Until discover is promisfies, using a timeout!
       setTimeout(() => {
         // These tests allow for the fact that more than these two hosts may be running on this machine
-        console.log(h1.peers)
-        console.log(h2.peers)
         t.ok(h1.peers.length > 0)
         t.ok(h2.peers.length > 0)
 
