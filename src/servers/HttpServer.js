@@ -117,9 +117,9 @@ class HttpServer {
    * @param  {String} path     Path to requested file
    */
   web (request, response, path) {
-    let source = process.env.STENCILA_WEB
-    if (source === undefined) {
-      response.writeHead(302, {'Location': `https://stenci.la/web/${path}`})
+    let source = process.env.STENCILA_WEB || 'CDN'
+    if (source === 'CDN') {
+      response.writeHead(302, {'Location': `https://unpkg.com/stencila-web/build/${path}`})
       response.end()
     } else if (source.match(/\d+/)) {
       response.writeHead(302, {'Location': `http://127.0.0.1:${source}/web/${path}`})
