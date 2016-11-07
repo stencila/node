@@ -1,5 +1,7 @@
+const fs = require('fs')
 const http = require('http')
 const httpShutdown = require('http-shutdown')
+const pathm = require('path')
 
 const Component = require('../component/Component')
 
@@ -98,16 +100,59 @@ class HttpServer {
     return [this.show, path.substring(1) || null]
   }
 
+  /**
+   * Respond to a request for a file from the `web` package
+   *
+   * Stencila's `web` package (https://github.com/stencila/web) contains the
+   * the browser based user interfaces for Stencila components. This method
+   * serves up those interface files (Javascript, CSS, fonts etc) from alternative locations
+   * based on the `STENCILA_WEB` environment variable
+   *
+   * - a local build of the `web` package (set STENCILA_WEB to the path of the build)
+   * - a locally running `web` package development server (set STENCILA_WEB to the port number)
+   * - a remote server or CDN (STENCILA_WEB not set)
+   *
+   * @param  {Request} request  Request object
+   * @param  {Response} response Response object
+   * @param  {String} path     Path to requested file
+   */
   web (request, response, path) {
-    // FIXME
-    if (true) { // eslint-disable-line no-constant-condition
-      response.statusCode = 302
-      response.setHeader('Location', 'http://127.0.0.1:9000/web/' + path)
+    let source = process.env.STENCILA_WEB
+    if (source === undefined) {
+      response.writeHead(302, {'Location': `https://stenci.la/web/${path}`})
+      response.end()
+    } else if (source.match(/\d+/)) {
+      response.writeHead(302, {'Location': `http://127.0.0.1:${source}/web/${path}`})
+      response.end()
     } else {
-      response.statusCode = 302
-      response.setHeader('Location', 'https://stenci.la/web/' + path)
+      fs.readFile(pathm.join(source, path), (error, content) => {
+        if (error) {
+          if (error.code === 'ENOENT') {
+            response.writeHead(404)
+          } else {
+            response.writeHead(500)
+          }
+          response.end()
+        } else {
+          let contentType = {
+            '.html': 'text/html',
+            '.js': 'text/javascript',
+            '.css': 'text/css',
+            '.json': 'application/json',
+            '.png': 'image/png',
+            '.jpg': 'image/jpg',
+            '.gif': 'image/gif',
+            '.woff': 'application/font-woff',
+            '.ttf': 'application/font-ttf',
+            '.eot': 'application/vnd.ms-fontobject',
+            '.otf': 'application/font-otf',
+            '.svg': 'application/image/svg+xml'
+          }[String(pathm.extname(path)).toLowerCase()] || 'application/octect-stream'
+          response.writeHead(200, { 'Content-Type': contentType })
+          response.end(content, 'utf-8')
+        }
+      })
     }
-    response.end()
   }
 
   /**
@@ -125,7 +170,6 @@ class HttpServer {
    * @param  {[type]} response [description]
    * @param  {[type]} address  [description]
    * @param  {[type]} name     [description]
-   * @return {[type]}          [description]
    */
   get (request, response, address, name) {
     this._host.open(address).then(component => {
@@ -201,7 +245,6 @@ class HttpServer {
    * @param  {[type]} request  [description]
    * @param  {[type]} response [description]
    * @param  {[type]} address  [description]
-   * @return {[type]}          [description]
    */
   show (request, response, address) {
     let {scheme} = this._host.split(address)
