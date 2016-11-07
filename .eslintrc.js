@@ -11,6 +11,8 @@ module.exports = {
   },
   "rules": {
     "indent": ["error", 2],
-    "valid-jsdoc": ["error"]
+    "valid-jsdoc": ["error", {
+      "requireReturn": false
+    }]
   }
 }
