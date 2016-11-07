@@ -1,11 +1,10 @@
-## `stencila/js`
+## `stencila/node` : Stencila for Node.js
 
-[![Build status](https://travis-ci.org/stencila/js.svg?branch=master)](https://travis-ci.org/stencila/js)
-[![Code coverage](https://codecov.io/gh/stencila/js/branch/master/graph/badge.svg)](https://codecov.io/gh/stencila/js)
-[![Dependency status](https://david-dm.org/stencila/js.svg)](https://david-dm.org/stencila/js)
+[![Build status](https://travis-ci.org/stencila/node.svg?branch=master)](https://travis-ci.org/stencila/node)
+[![Code coverage](https://codecov.io/gh/stencila/node/branch/master/graph/badge.svg)](https://codecov.io/gh/stencila/node)
+[![Dependency status](https://david-dm.org/stencila/node.svg)](https://david-dm.org/stencila/node)
 [![Chat](https://badges.gitter.im/stencila/stencila.svg)](https://gitter.im/stencila/stencila)
 
-Stencila components for Javascript.
 
 ### Development
 
