@@ -3,6 +3,7 @@ const crypto = require('crypto')
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
+const pathm = path
 const mkdirp = require('mkdirp')
 
 const version = require('../../package').version
@@ -73,6 +74,15 @@ class Component {
    */
   get type () {
     return this.constructor.name.toLowerCase()
+  }
+
+  /**
+   * Get the defaults for this type of component
+   */
+  static get defaults () {
+    return {
+      extension: 'html'
+    }
   }
 
   /**
@@ -303,32 +313,59 @@ class Component {
     return this
   }
 
-  write (filepath, options) {
-    if (!filepath || filepath === '') {
-      filepath = this._path
+  /**
+   * Write this component to the local filesystem
+   *
+   * If `path` is provided the component's `path` will be updated. Otherwise, this component's
+   * existing `path` property will be used.
+   *
+   * The actual writing to file is done by a converter determined from the format (i.e. filename extension)
+   * of the `path`. If the `path` does not have an extension then the default extension for the component
+   * class will be used.
+   *
+   * @param  {String} path [description]
+   * @param  {String} options  [description]
+   * @return {Component} This component
+   */
+  write (path, options) {
+    if (!path || path === '') {
+      path = this._path
     }
 
-    mkdirp.sync(path.extname(filepath) === '' ? filepath : path.dirname(filepath))
+    let format = pathm.extname(path).substring(1)
+    if (format === '') {
+      if (this.constructor.defaults.extension) {
+        format = this.constructor.defaults.extension
+        path = path + '.' + format
+      }
+    }
 
-    let format = path.extname(filepath).substring(1)
-    this.constructor.converter(format).write(this, filepath, format, options)
+    mkdirp.sync(path.extname(path) === '' ? path : path.dirname(path))
 
-    this._path = filepath
+    this.constructor.converter(format).write(this, path, format, options)
+
+    this._path = path
 
     return this
   }
 
-  save (content, format, filepath, options) {
-    if (!filepath || filepath === '') {
-      filepath = this._path
-    }
-    // Ensure that the file name has the correct exension
-    let bits = path.parse(filepath)
-    if (bits.ext !== format) {
-      filepath = path.join(bits.dir, bits.name + '.' + format)
-    }
+  /**
+   * Save this component
+   *
+   * The component will `load()` itself from the `content` (using the
+   * `format` specified) and then `write()` itself to the `path`. Note that the format
+   * of the content provided (determined by the `format` parameter) is not necessarily
+   * the same as the format written to disk (determined by the filename extension of this component's `path`)
+   *
+   * @param  {String} content  [description]
+   * @param  {String} format   [description]
+   * @param  {String} [path] [description]
+   * @param  {Object} options  [description]
+   * @return {Component} This component
+   */
+  save (content, format, path, options) {
     return this.load(content, format, options)
-               .write(filepath, options)
+               .write(path, options)
   }
 
   get title () {
