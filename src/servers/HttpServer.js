@@ -2,6 +2,7 @@ const fs = require('fs')
 const http = require('http')
 const httpShutdown = require('http-shutdown')
 const pathm = require('path')
+const url = require('url')
 
 const Component = require('../component/Component')
 
@@ -112,6 +113,9 @@ class HttpServer {
    * - a locally running `web` package development server (set STENCILA_WEB to the port number)
    * - a remote server or CDN (STENCILA_WEB not set)
    *
+   * When being served from a local build, any queries (e.g. ?v=1.2.3) or hashes (e.g. #id)
+   * are ignored.
+   *
    * @param  {Request} request  Request object
    * @param  {Response} response Response object
    * @param  {String} path     Path to requested file
@@ -125,7 +129,8 @@ class HttpServer {
       response.writeHead(302, {'Location': `http://127.0.0.1:${source}/web/${path}`})
       response.end()
     } else {
-      fs.readFile(pathm.join(source, path), (error, content) => {
+      let pathname = url.parse(path).pathname
+      fs.readFile(pathm.join(source, pathname), (error, content) => {
         if (error) {
           if (error.code === 'ENOENT') {
             response.writeHead(404)
