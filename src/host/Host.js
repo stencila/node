@@ -66,7 +66,7 @@ class Host extends Component {
   }
 
   get title () {
-    return 'Stencila Javascript Host'
+    return 'Stencila Node.js Host'
   }
 
   get schemes () {
