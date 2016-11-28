@@ -455,7 +455,10 @@ class Host extends Component {
 
         // Not able to clone address, so ask peers
         this.ask(address).then(component => {
-          if (component) return resolve(component)
+          if (component) {
+            this.register(component)
+            return resolve(component)
+          }
 
           reject(new Error(`Unable to open address.  address: ${address}`))
         }).catch(error => reject(error))
@@ -586,11 +589,13 @@ class Host extends Component {
             if (response.statusCode === 200) {
               let data = response.body
               let type = data.type
+              let id = data.id
+              let address = data.address
               let url = data.url
               if (type === 'document') {
-                resolve(new DocumentProxy(type, url))
+                resolve(new DocumentProxy(type, id, address, url))
               } else if (type.substring(0, 7) === 'session') {
-                resolve(new SessionProxy(type, url))
+                resolve(new SessionProxy(type, id, address, url))
               } else {
                 reject(new Error(`Unhandled component type\n  type: ${type}`))
               }

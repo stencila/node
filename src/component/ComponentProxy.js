@@ -6,10 +6,14 @@ class ComponentProxy {
    * Construct a remote component
    *
    * @param  {string} type The type of the component
+   * @param  {string} id The id of the component
+   * @param  {string} address The address of the component
    * @param  {string} url URL of the component
    */
-  constructor (type, url) {
+  constructor (type, id, address, url) {
     this._type = type
+    this._id = id
+    this._address = address
     this._url = url
   }
 
@@ -19,6 +23,15 @@ class ComponentProxy {
 
   get url () {
     return this._url
+  }
+
+  dump (format) {
+    return {
+      'type': this._type,
+      'id': this._id,
+      'address': this._address,
+      'url': this._url
+    }
   }
 
   get (name) {
