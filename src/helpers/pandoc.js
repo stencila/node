@@ -10,7 +10,7 @@
  * - https://github.com/pvorb/node-pdc
  * - https://github.com/sbisbee/node-pandoc
  *
- * However, all of these are asynchronous. This module implements synchronus conversion via
+ * However, all of these are asynchronous. Insteead, this module implements synchronous conversion via
  * Pandoc.
  *
  * The main function is `convert` and `read` and `write` provide
