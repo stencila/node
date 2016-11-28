@@ -340,7 +340,7 @@ class Component {
       }
     }
 
-    mkdirp.sync(path.extname(path) === '' ? path : path.dirname(path))
+    mkdirp.sync(pathm.extname(path) === '' ? path : pathm.dirname(path))
 
     this.constructor.converter(format).write(this, path, format, options)
 
@@ -430,7 +430,7 @@ class Component {
 <html>
   <head>
     ${this.dump('html-head')}
-    <meta name="generator" content="stencila-js-${version}">
+    <meta name="generator" content="stencila-node-${version}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="/web/${this.type}.min.css">
   </head>

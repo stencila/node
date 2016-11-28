@@ -1,5 +1,6 @@
 const cheerio = require('cheerio')
 const $ = cheerio
+const includes = require('lodash/includes')
 
 const Component = require('../component/Component')
 const DocumentDataConverter = require('./DocumentDataConverter')
@@ -8,6 +9,7 @@ const DocumentHtmlBodyConverter = require('./DocumentHtmlBodyConverter')
 const DocumentHtmlConverter = require('./DocumentHtmlConverter')
 const DocumentLatexConverter = require('./DocumentLatexConverter')
 const DocumentMarkdownConverter = require('./DocumentMarkdownConverter')
+const DocumentXMarkdownConverter = require('./DocumentXMarkdownConverter')
 const JavascriptSession = require('../session-js/JavascriptSession')
 
 /**
@@ -32,7 +34,14 @@ class Document extends Component {
     super(address, path)
 
     this.content = cheerio.load('')
-    this.session = null
+
+    /**
+     * A list of sessions used by this document for
+     * rendering directives
+     *
+     * @member {Array<Session>}
+     */
+    this.sessions = []
 
     if (path) this.read(path)
   }
@@ -55,6 +64,8 @@ class Document extends Component {
       return new DocumentHtmlConverter()
     } else if (format === 'md') {
       return new DocumentMarkdownConverter()
+    } else if (includes(['jsmd', 'pymd', 'rmd'], format)) {
+      return new DocumentXMarkdownConverter()
     } else if (format === 'latex') {
       return new DocumentLatexConverter()
     } else {
@@ -85,7 +96,7 @@ class Document extends Component {
    * @return     {Array<DOMNodes>}  An array of cheerio DOM nodes
    */
   select (selector) {
-    return this.content(selector)
+    return this.content(selector)[0]
   }
 
   /**
