@@ -1,4 +1,5 @@
 const cheerio = require('cheerio')
+const $ = cheerio
 const beautify = require('js-beautify')
 
 const version = require('../../package').version
@@ -7,7 +8,21 @@ const ComponentConverter = require('../component/ComponentConverter')
 class DocumentHtmlConverter extends ComponentConverter {
 
   load (document, content, format, options) {
-    document.content = cheerio.load(content)
+    let dom = cheerio.load(content)
+    // Pandoc HTML -> Stencila HTML5
+    dom('div.figure').toArray().forEach(el => {
+      el.name = 'figure'
+      el = $(el)
+      el.removeClass('figure')
+      if (el.attr('class') === '') el.removeAttr('class')
+      el.find('p.caption').toArray().forEach(el => {
+        el.name = 'figcaption'
+        el = $(el)
+        el.removeClass('caption')
+        if (el.attr('class') === '') el.removeAttr('class')
+      })
+    })
+    document.content = dom
   }
 
   dump (document, format, options) {

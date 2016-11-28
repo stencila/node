@@ -96,7 +96,7 @@ class Document extends Component {
    * @return     {Array<DOMNodes>}  An array of cheerio DOM nodes
    */
   select (selector) {
-    return this.content(selector)[0]
+    return this.content(selector)
   }
 
   /**

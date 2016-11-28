@@ -25,6 +25,10 @@ test('Document can be loaded/dumped from/to HTML', function (t) {
   d.html = html
   t.equal(d.html, html)
 
+  // Pandoc figure e.g. generated from the Markdown `![Caption](figure.png)`
+  d.html = '<div class="figure"><img src="figure.png"><p class="caption">Caption</p></div>'
+  t.equal(d.html, '<figure><img src="figure.png">\n    <figcaption>Caption</figcaption>\n</figure>')
+
   t.end()
 })
 
@@ -42,12 +46,12 @@ test('Document can be loaded/dumped from/to Markdown', function (t) {
   t.end()
 })
 
-test('Document can be loaded/dumped from/to RMarkdown', function (t) {
+test.skip('Document can be loaded/dumped from/to RMarkdown', function (t) {
   let d = new Document()
 
   d.load('Hello from *RMarkdown*!\n``` {r}\nx <- 42\n```\n', 'rmd')
 
-  t.equal(d.html, '<p>Hello from <em>Markdown</em>!\n<pre data-execute="r">x &lt;- 42</pre></p>')
+  t.equal(d.html, '<p>Hello from <em>RMarkdown</em>!\n<pre data-execute="r">x &lt;- 42</pre></p>')
 
   //t.equal(d.dump('rmd'), rmd)
 
@@ -58,7 +62,7 @@ test('Document select can be used to CSS select child elements', function (t) {
   let d = new Document()
 
   d.html = '<p id="para-1">Para1</p>'
-  t.equal(d.select('#para-1').text(), 'Para1')
+  t.equal(d.select('#para-1').first().text(), 'Para1')
 
   t.end()
 })
@@ -68,7 +72,7 @@ test('Document render', function (t) {
 
   d.html = '<pre data-print="6*7"></pre>'
   d.render()
-  t.equal(d.select('[data-print]').text(), '42')
+  t.equal(d.select('[data-print]').first().text(), '42')
 
   t.end()
 })
