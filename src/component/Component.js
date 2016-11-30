@@ -77,6 +77,19 @@ class Component {
   }
 
   /**
+   * Get the kind of this component
+   *
+   * Used to specify the user interface to be loaded for this component.
+   * Usually the a component's `kind` is the same as it's `type` (e.g. `document` and `document`)
+   * But for sessions type may be `js-session` or `r-session` but kind is always `session`.
+   *
+   * @return {string} A string e.g. `"session"`
+   */
+  get kind () {
+    return this.type
+  }
+
+  /**
    * Get the defaults for this type of component
    */
   static get defaults () {
@@ -432,11 +445,11 @@ class Component {
     ${this.dump('html-head')}
     <meta name="generator" content="stencila-node-${version}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="/web/${this.type}.min.css">
+    <link rel="stylesheet" type="text/css" href="/web/${this.kind}.min.css">
   </head>
   <body>
     ${this.dump('html-body')}
-    <script src="/web/${this.type}.min.js"></script>
+    <script src="/web/${this.kind}.min.js"></script>
   </body>
 </html>`
     }
