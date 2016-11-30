@@ -10,7 +10,7 @@ const DocumentHtmlConverter = require('./DocumentHtmlConverter')
 const DocumentLatexConverter = require('./DocumentLatexConverter')
 const DocumentMarkdownConverter = require('./DocumentMarkdownConverter')
 const DocumentXMarkdownConverter = require('./DocumentXMarkdownConverter')
-const JavascriptSession = require('../session-js/JavascriptSession')
+const JavascriptSession = require('../js-session/JavascriptSession')
 
 /**
  * A document

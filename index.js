@@ -7,14 +7,14 @@
 
 const Document = require('./src/document/Document')
 const Sheet = require('./src/sheet/Sheet')
-const JsSession = require('./src/js-session/JsSession')
+const JavascriptSession = require('./src/js-session/JavascriptSession')
 const host = require('./src/host/host')
 const version = require('./package').version
 
 module.exports = {
   Document: Document,
   Sheet: Sheet,
-  JsSession: JsSession,
+  JavascriptSession: JavascriptSession,
   host: host,
   version: version
 }

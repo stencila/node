@@ -3,7 +3,7 @@ const Session = require('../session/Session')
 class JavascriptSession extends Session {
 
   get type () {
-    return 'session-js'
+    return 'js-session'
   }
 
   get (name) {
@@ -16,6 +16,14 @@ class JavascriptSession extends Session {
 
   execute (code) {
     eval(code) // eslint-disable-line no-eval
+    return {
+      errors: null,
+      output: {
+        format: 'json',
+        content: ''
+      },
+      pipes: []
+    }
   }
 
   print (expr) {
