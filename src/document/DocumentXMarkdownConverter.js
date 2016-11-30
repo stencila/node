@@ -46,7 +46,7 @@ class DocumentXMarkdownConverter extends DocumentMarkdownConverter {
   dump (document, format, options) {
     options = options || {}
 
-    let lang = format.substring(0, format.length-2)
+    let lang = format.substring(0, format.length - 2)
 
     let html = document.dump('html')
     let md = pandoc.convert(html, 'html', 'markdown', {
