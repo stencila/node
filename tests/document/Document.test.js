@@ -53,7 +53,7 @@ test.skip('Document can be loaded/dumped from/to RMarkdown', function (t) {
 
   t.equal(d.html, '<p>Hello from <em>RMarkdown</em>!\n<pre data-execute="r">x &lt;- 42</pre></p>')
 
-  //t.equal(d.dump('rmd'), rmd)
+  // t.equal(d.dump('rmd'), rmd)
 
   t.end()
 })

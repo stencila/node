@@ -23,8 +23,6 @@ const BashSession = require('../bash-session/BashSession')
 const JavascriptSession = require('../js-session/JavascriptSession')
 const SessionProxy = require('../session/SessionProxy')
 
-const pandoc = require('../helpers/pandoc')
-
 const HttpServer = require('../servers/HttpServer')
 const HostDataConverter = require('./HostDataConverter')
 
@@ -603,7 +601,7 @@ class Host extends Component {
               let url = data.url
               if (type === 'document') {
                 resolve(new DocumentProxy(type, id, address, url))
-              } else if (type.substring(type.length-7) === 'session') {
+              } else if (type.substring(type.length - 7) === 'session') {
                 resolve(new SessionProxy(type, id, address, url))
               } else {
                 reject(new Error(`Unhandled component type\n  type: ${type}`))
