@@ -19,7 +19,8 @@ const DocumentProxy = require('../document/DocumentProxy')
 
 const Sheet = require('../sheet/Sheet')
 
-const JavascriptSession = require('../session-js/JavascriptSession')
+const BashSession = require('../bash-session/BashSession')
+const JavascriptSession = require('../js-session/JavascriptSession')
 const SessionProxy = require('../session/SessionProxy')
 
 const pandoc = require('../helpers/pandoc')
@@ -75,8 +76,7 @@ class Host extends Component {
     // third party software)
     return {
       'new': {
-        enabled: true,
-        types: ['folder', 'document', 'sheet', 'session-js']
+        enabled: true
       },
       'id': {
         enabled: true
@@ -102,12 +102,21 @@ class Host extends Component {
     }
   }
 
-  get formats () {
-    let formats = ['html']
-    if (pandoc.enabled()) {
-      formats.concat(['md', 'tex'])
+  get types () {
+    return {
+      'document': {
+        formats: ['html']
+      },
+      'folder': {
+        formats: []
+      },
+      'bash-session': {
+        formats: []
+      },
+      'js-session': {
+        formats: []
+      }
     }
-    return formats
   }
 
   /**
@@ -124,11 +133,10 @@ class Host extends Component {
    * - `url`: the URL of this host
    * - `schemes`: a list of schemes e.g. `git` that this host can handle
    * - `types`: a list of types of components this host can create
-   * - `formats`: a list of formats e.g. `md` that this host recognises
    *
    * @return     {Object} A manifest
    */
-  manifest () {
+  get manifest () {
     return {
       stencila: true,
       package: 'node',
@@ -136,7 +144,7 @@ class Host extends Component {
       id: this.id,
       url: this.url,
       schemes: this.schemes,
-      formats: this.formats
+      types: this.types
     }
   }
 
@@ -152,7 +160,8 @@ class Host extends Component {
     if (type === 'folder') return new Folder()
     else if (type === 'document') return new Document()
     else if (type === 'sheet') return new Sheet()
-    else if (type === 'session-js') return new JavascriptSession()
+    else if (type === 'bash-session') return new BashSession()
+    else if (type === 'js-session') return new JavascriptSession()
     else return null
   }
 
@@ -501,7 +510,7 @@ class Host extends Component {
       }
     }
     if (!replaced) this._peers.push(manifest)
-    return this.manifest()
+    return this.manifest
   }
 
   /**
@@ -530,7 +539,7 @@ class Host extends Component {
           method: 'POST',
           url: `http://127.0.0.1:${port}/!hello`,
           body: [
-            this.manifest()
+            this.manifest
           ],
           json: true,
           resolveWithFullResponse: true
@@ -594,7 +603,7 @@ class Host extends Component {
               let url = data.url
               if (type === 'document') {
                 resolve(new DocumentProxy(type, id, address, url))
-              } else if (type.substring(0, 7) === 'session') {
+              } else if (type.substring(type.length-7) === 'session') {
                 resolve(new SessionProxy(type, id, address, url))
               } else {
                 reject(new Error(`Unhandled component type\n  type: ${type}`))
