@@ -3,7 +3,7 @@ const ComponentDataConverter = require('../component/ComponentDataConverter')
 class HostDataConverter extends ComponentDataConverter {
 
   dump (host, format, options) {
-    let data = super.dump(host)
+    let data = super.dump(host, format, options)
     data.package = 'node'
     data.components = host.components.map(function (component) {
       return component.dump('data')

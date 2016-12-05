@@ -6,6 +6,9 @@ const path = require('path')
 const pathm = path
 const mkdirp = require('mkdirp')
 
+const moniker = require('moniker')
+const names = moniker.generator([moniker.adjective])
+
 const version = require('../../package').version
 const ComponentDataConverter = require('./ComponentDataConverter')
 const ComponentJsonConverter = require('./ComponentJsonConverter')
@@ -34,9 +37,13 @@ class Component {
    */
   constructor (address, path_) {
     this._id = crypto.randomBytes(32).toString('hex')
+
     if (address) address = this.long(address)
-    else address = 'id://' + this._id
+    else {
+      address = 'name://' + names.choose() + '-' + this.type
+    }
     this._address = address
+
     this._path = path_ || path.join(home, 'id', this._id)
     this._meta = {}
 
@@ -152,12 +159,12 @@ class Component {
   long (address) {
     address = address || this.address
 
-    if (address.match(/^(new|id|file|http|https|git|dat|st):\/\//)) {
+    if (address.match(/^(new|id|name|file|http|https|git|dat|st):\/\//)) {
       return address
     } else if (address[0] === '+') {
       return 'new://' + address.substring(1)
     } else if (address[0] === '*') {
-      return 'id://' + address.substring(1)
+      return 'name://' + address.substring(1)
     } else if (address[0] === '.' || address[0] === '/' || address[0] === '~') {
       if (address[0] === '~') address = os.homedir() + address.substring(1)
       return 'file://' + path.resolve(address)
@@ -174,7 +181,7 @@ class Component {
           // Only arrive here with `file:/foo` since with
           // `file:` with two or more slashes is already "long"
           return `file:///${path}`
-        } else if (alias === 'http' | alias === 'https') {
+        } else if (alias === 'http' || alias === 'https') {
           return `${alias}://${path}`
         } else if (alias === 'gh') {
           return `git://github.com/${path}`
@@ -221,8 +228,8 @@ class Component {
     address = this.long(address)
     if (address.substring(0, 6) === 'new://') {
       return '+' + address.substring(6)
-    } else if (address.substring(0, 5) === 'id://') {
-      return '*' + address.substring(5)
+    } else if (address.substring(0, 7) === 'name://') {
+      return '*' + address.substring(7)
     } else if (address.substring(0, 7) === 'file://') {
       return 'file:' + address.substring(7)
     } else if (address.substring(0, 5) === 'st://') {

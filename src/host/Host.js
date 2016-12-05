@@ -49,6 +49,14 @@ class Host extends Component {
     this._peers = []
   }
 
+  get type () {
+    return 'nodejs-host'
+  }
+
+  get kind () {
+    return 'host'
+  }
+
   /**
    * Get the `Host` converter for a format
    *
@@ -62,10 +70,6 @@ class Host extends Component {
     } else {
       return super.converter(format)
     }
-  }
-
-  get title () {
-    return 'Stencila Node.js Host'
   }
 
   get schemes () {
@@ -624,7 +628,9 @@ class Host extends Component {
       if (!this._servers.http) {
         var server = new HttpServer(this)
         this._servers.http = server
-        return server.serve()
+        return server.serve().then(() => {
+          this._address = `name://local-${this._servers.http.port}-${this.type}`
+        })
       }
     } else {
       for (let type in this._servers) {
