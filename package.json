@@ -54,7 +54,7 @@
     "cheerio": "^0.22.0",
     "child-process-promise": "^2.2.0",
     "colors": "^1.1.2",
-    "dat-js": "^3.7.1",
+    "dat-node": "^0.1.1",
     "he": "^1.1.0",
     "http-shutdown": "^1.1.0",
     "js-beautify": "^1.6.4",

@@ -3,7 +3,7 @@ const os = require('os')
 const path = require('path')
 const pathm = path
 
-const Dat = require('dat-js')
+const Dat = require('dat-node')
 const mkdirp = require('mkdirp')
 const mime = require('mime')
 const git = require('nodegit')
