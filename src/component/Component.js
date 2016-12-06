@@ -20,6 +20,7 @@ const ComponentHtmlBodyConverter = require('./ComponentHtmlBodyConverter')
 // See `Component.host` below
 var _host = null
 
+// Stencila home directory path
 var home = path.join(os.homedir(), '.stencila')
 
 /**
@@ -30,7 +31,7 @@ var home = path.join(os.homedir(), '.stencila')
 class Component {
 
   /**
-   * Construct a component
+   * Construct this component
    *
    * @param      {string}  [address]  The address
    * @param      {string}  [path_]     The path
@@ -38,13 +39,12 @@ class Component {
   constructor (address, path_) {
     this._id = crypto.randomBytes(32).toString('hex')
 
-    if (address) address = this.long(address)
-    else {
-      address = 'name://' + names.choose() + '-' + this.type
-    }
-    this._address = address
+    if (address) this._address = this.long(address)
+    else this._address = 'name://' + names.choose() + '-' + this.type
 
-    this._path = path_ || path.join(home, 'id', this._id)
+    if (path) this._path = path_
+    else this._path = null
+
     this._meta = {}
 
     if (_host) _host.register(this)
