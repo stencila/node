@@ -8,6 +8,7 @@ const mkdirp = require('mkdirp')
 
 const moniker = require('moniker')
 const names = moniker.generator([moniker.adjective])
+const tmp = require('tmp')
 
 const version = require('../../package').version
 const ComponentDataConverter = require('./ComponentDataConverter')
@@ -349,6 +350,9 @@ class Component {
    */
   write (path, options) {
     if (!path || path === '') {
+      if (!this._path) {
+        this._path = tmp.tmpNameSync()
+      }
       path = this._path
     }
 
