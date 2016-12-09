@@ -42,11 +42,21 @@ function enabled () {
   }
 }
 
+/**
+ * Convert some content from one format to another
+ *
+ * @param  {String} content Content to convert
+ * @param  {String} from    Current format of the content
+ * @param  {String} to      Desired format for the content
+ * @param  {Object} options An object of additional Pandoc options. Use a `null` value ie. `{ option : null }` for options that are simple
+ *                          flags (ie don't have a value) e.g. 'no-highlight'
+ * @return {String}         The converted content
+ */
 function convert (content, from, to, options) {
   let args = ['--from', from, '--to', to]
   for (let option in options) {
     args.push(`--${option}`)
-    args.push(options[option].toString())
+    if (options[option] !== null) args.push(options[option].toString())
   }
   return call(args, {
     input: content,
