@@ -35,12 +35,12 @@ test('Document can be loaded/dumped from/to HTML', function (t) {
 test('Document can be loaded/dumped from/to Markdown', function (t) {
   let d = new Document()
 
-  t.equal(d.md, '\n')
+  t.equal(d.md, '')
 
   let md = 'Hello from *Markdown*!\n'
   d.md = md
 
-  t.equal(d.md, md)
+  t.equal(d.md, 'Hello from *Markdown*\\!') // Commonmark backslash escapes some characters see http://spec.commonmark.org/0.27/#backslash-escapes
   t.equal(d.html, '<p>Hello from <em>Markdown</em>!</p>')
 
   t.end()
