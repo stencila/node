@@ -325,7 +325,7 @@ class Host extends Component {
           reject(error)
         })
       } else if (scheme === 'git') {
-        let match = path.match(/([\w\-\.]+)\/([\w\-]+\/[\w\-]+)(\/(.+))?$/)
+        let match = path.match(/([\w\-\.]+)\/([\w\-]+\/[\w\-]+)(\/(.+))?$/) // eslint-disable-line no-useless-escape
         if (match) {
           let host = match[1]
           let hostDir = (host === 'stenci.la') ? '' : host

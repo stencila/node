@@ -21,9 +21,6 @@ const ComponentHtmlBodyConverter = require('./ComponentHtmlBodyConverter')
 // See `Component.host` below
 var _host = null
 
-// Stencila home directory path
-var home = path.join(os.homedir(), '.stencila')
-
 /**
  * The abstract base class for all Stencila components
  *
@@ -251,7 +248,7 @@ class Component {
     address = address || this.address
 
     address = this.long(address)
-    let matches = address.match(/([a-z]+):\/\/([\w\-\./]+)(@([\w\-\.]+))?/)
+    let matches = address.match(/([a-z]+):\/\/([\w\-\./]+)(@([\w\-\.]+))?/) // eslint-disable-line no-useless-escape
     if (matches) {
       return {
         scheme: matches[1],
