@@ -312,7 +312,7 @@ class Component {
     return this._path
   }
 
-  read (filepath, options) {
+  read (filepath, format, options) {
     if (!filepath || filepath === '') {
       filepath = this._path
     }
@@ -323,7 +323,7 @@ class Component {
       throw new Error(`Local file system path does not exist\n  path: ${filepath}`)
     }
 
-    let format = path.extname(filepath).substring(1)
+    format = format || path.extname(filepath).substring(1)
     this.constructor.converter(format).read(this, filepath, format, options)
 
     this._path = filepath
@@ -342,10 +342,11 @@ class Component {
    * class will be used.
    *
    * @param  {String} path [description]
+   * @param  {String} format  [description]
    * @param  {String} options  [description]
    * @return {Component} This component
    */
-  write (path, options) {
+  write (path, format, options) {
     if (!path || path === '') {
       if (!this._path) {
         this._path = tmp.tmpNameSync()
@@ -353,7 +354,7 @@ class Component {
       path = this._path
     }
 
-    let format = pathm.extname(path).substring(1)
+    format = format || pathm.extname(path).substring(1)
     if (format === '') {
       if (this.constructor.defaults.extension) {
         format = this.constructor.defaults.extension

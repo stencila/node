@@ -62,7 +62,7 @@ class Document extends Component {
       return new DocumentHtmlBodyConverter()
     } else if (format === 'html') {
       return new DocumentHtmlConverter()
-    } else if (format === 'md') {
+    } else if (includes(['md', 'gfmd'], format)) {
       return new DocumentMarkdownConverter()
     } else if (includes(['jsmd', 'pymd', 'rmd'], format)) {
       return new DocumentXMarkdownConverter()

@@ -19,7 +19,14 @@ class DocumentMarkdownConverter extends ComponentConverter {
    */
   load (document, content, format, options) {
     options = options || {}
-    let html = pandoc.convert(content, 'commonmark', 'html', {
+
+    // Mapping of format to Pandoc reader
+    format = {
+      'md': 'commonmark',
+      'gfmd': 'markdown_github+yaml_metadata_block'
+    }[format] || format
+
+    let html = pandoc.convert(content, format, 'html', {
       'no-highlight': null
     })
     document.load(html, 'html')
