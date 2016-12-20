@@ -21,7 +21,7 @@ test('Component has an id', function (t) {
   t.end()
 })
 
-test('Component address is longd on construction', function (t) {
+test('Component address is long on construction', function (t) {
   t.equal((new Component('/dir')).address, 'file:///dir')
   t.end()
 })
@@ -49,7 +49,7 @@ test('Component address can be lengthend', function (t) {
   t.end()
 })
 
-test('Component address can be shotened', function (t) {
+test('Component address can be shortened', function (t) {
   let c = new Component()
 
   t.equal(c.short('new://document'), '+document')
