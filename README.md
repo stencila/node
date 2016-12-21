@@ -26,7 +26,7 @@ We love feedback. Create a [new issue](https://github.com/stencila/node/issues/n
 
 ### Develop
 
-Most development tasks can be run directly using Javascript tooling (`npm` etc) or via `make` wrapper recipes.
+Most development tasks can be run directly using Node.js tooling (`npm` etc) or via `make` wrapper recipes.
 
 Task                                                    |`npm` et al            | `make`          |
 ------------------------------------------------------- |-----------------------|-----------------|    
@@ -35,7 +35,5 @@ Check code for lint                                     | `npm run lint`        
 Run tests                                               | `npm test`            | `make test`
 Run tests with coverage                                 | `npm run cover`       | `make cover`
 Clean                                                   |                       | `make clean`
-
-#### Test
 
 Tests live in the `tests` folder and are written using the [`tape`](https://github.com/substack/tape) test harness.
