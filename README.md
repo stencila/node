@@ -13,10 +13,8 @@ This is very much a work in progress. See our [main repo](https://github.com/ste
 
 ### Install
 
-Install from here using NPM,
-
 ```
-npm install stencila/node
+npm install stencila
 ```
 
 ### Discuss
@@ -26,7 +24,7 @@ We love feedback. Create a [new issue](https://github.com/stencila/node/issues/n
 
 ### Develop
 
-Most development tasks can be run directly using Node.js tooling (`npm` etc) or via `make` wrapper recipes.
+Most development tasks can be run directly from `npm` or via `make` wrapper recipes.
 
 Task                                                    |`npm` et al            | `make`          |
 ------------------------------------------------------- |-----------------------|-----------------|    
@@ -34,6 +32,8 @@ Install and setup dependencies                          | `npm install`         
 Check code for lint                                     | `npm run lint`        | `make lint`
 Run tests                                               | `npm test`            | `make test`
 Run tests with coverage                                 | `npm run cover`       | `make cover`
+Build documentation                                     | `npm run docs`        | `make docs`
+Serve and watch docs for updates                        | `npm run docs-serve`  | `make docs-serve`
 Clean                                                   |                       | `make clean`
 
 Tests live in the `tests` folder and are written using the [`tape`](https://github.com/substack/tape) test harness.
