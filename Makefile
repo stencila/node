@@ -1,4 +1,4 @@
-all: setup build
+all: setup lint cover docs
 
 setup:
 	npm install
