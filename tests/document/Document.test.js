@@ -46,6 +46,22 @@ test('Document can be loaded/dumped from/to Markdown', function (t) {
   t.end()
 })
 
+test('Document can be loaded from Markdown with YAML metadata', function (t) {
+  let d = new Document()
+
+  let md = `---
+title: Beep boop?
+abstract: To beep or to boop, that is the question.
+author: W. Shakebot
+---
+Beep boop!
+`
+  d.load(md, 'gfmd')
+  t.equal(d.html, '<h1 id="title">Beep boop?</h1>\n<p class="author">W. Shakebot</p>\n<div id="summary">To beep or to boop, that is the question.</div>\n<p>Beep boop!</p>')
+
+  t.end()
+})
+
 test.skip('Document can be loaded/dumped from/to RMarkdown', function (t) {
   let d = new Document()
 

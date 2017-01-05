@@ -1,3 +1,6 @@
+const fs = require('fs')
+const tmp = require('tmp')
+
 const ComponentConverter = require('../component/ComponentConverter')
 const pandoc = require('../helpers/pandoc')
 
@@ -26,9 +29,37 @@ class DocumentMarkdownConverter extends ComponentConverter {
       'gfmd': 'markdown_github+yaml_metadata_block'
     }[format] || format
 
-    let html = pandoc.convert(content, format, 'html', {
+    // To extract the document's meta-data use a custom Pandoc template.
+    // See
+    //   http://pandoc.org/MANUAL.html#templates
+    //   https://github.com/jgm/pandoc-templates/blob/master/default.html5
+    // Note that `$abstract$` can be one or more paragraph if that is ow it is written in YAML
+    let template = tmp.tmpNameSync({postfix: '.txt'})
+    fs.writeFileSync(template, `$if(title)$
+<h1 id="title">$title$</h1>
+$endif$
+$if(subtitle)$
+<p id="subtitle">$subtitle$</p>
+$endif$
+$for(author)$
+<p class="author">$author$</p>
+$endfor$
+$if(date)$
+<p id="date">$date$</p>
+$endif$
+$if(abstract)$
+<div id="summary">$abstract$</div>
+$endif$
+$if(toc)$
+<nav id="toc">$toc$</nav>
+$endif$
+$body$`)
+
+    let html = pandoc.convert(content, format, null, {
+      'template': template,
       'no-highlight': null
     })
+
     document.load(html, 'html')
   }
 

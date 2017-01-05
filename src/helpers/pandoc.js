@@ -55,7 +55,9 @@ function enabled () {
  * @return {String}         The converted content
  */
 function convert (content, from, to, options) {
-  let args = ['--from', from, '--to', to]
+  let args = []
+  if (from) args.push('--from', from)
+  if (to) args.push('--to', to)
   for (let option in options) {
     args.push(`--${option}`)
     if (options[option] !== null) args.push(options[option].toString())

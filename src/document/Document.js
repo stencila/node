@@ -79,6 +79,28 @@ class Document extends Component {
     return this.load(content, 'latex')
   }
 
+  // Some metadata getters
+
+  get title () {
+    return this.select('#title').text()
+  }
+
+  get summary () {
+    return this.select('#summary').text()
+  }
+
+  get authors () {
+    let authors = []
+    this.select('.author').each(function () {
+      authors.push($(this).text())
+    })
+    return authors
+  }
+
+  get date () {
+    return this.select('#date').text()
+  }
+
   /**
    * Select
    *
