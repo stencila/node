@@ -2,7 +2,7 @@ toc:
   - Component
   - ComponentProxy
   - Host
-  - HttpServer
+  - HostHttpServer
   - Document
   - DocumentMarkdownConverter
   - DocumentXMarkdownConverter

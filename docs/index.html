@@ -278,6 +278,45 @@
               
                 
                 <li><a
+                  href='#hosthttpserver'
+                  class=" toggle-sibling">
+                  HostHttpServer
+                  <span class='icon'>▸</span>
+                </a>
+                
+                <div class='toggle-target display-none'>
+                  
+                  
+                    <ul class='list-reset py1-ul pl1'>
+                      <li class='h5'><span>Instance members</span></li>
+                      
+                      <li><a
+                        href='#HostHttpServer#web'
+                        class='regular pre-open'>
+                        #web
+                      </a></li>
+                      
+                      <li><a
+                        href='#HostHttpServer#get'
+                        class='regular pre-open'>
+                        #get
+                      </a></li>
+                      
+                      <li><a
+                        href='#HostHttpServer#show'
+                        class='regular pre-open'>
+                        #show
+                      </a></li>
+                      
+                    </ul>
+                  
+                  
+                </div>
+                
+                </li>
+              
+                
+                <li><a
                   href='#document'
                   class=" toggle-sibling">
                   Document
@@ -406,45 +445,6 @@
                     
                     </ul>
                   
-                  
-                  
-                </div>
-                
-                </li>
-              
-                
-                <li><a
-                  href='#httpserver'
-                  class=" toggle-sibling">
-                  HttpServer
-                  <span class='icon'>▸</span>
-                </a>
-                
-                <div class='toggle-target display-none'>
-                  
-                  
-                    <ul class='list-reset py1-ul pl1'>
-                      <li class='h5'><span>Instance members</span></li>
-                      
-                      <li><a
-                        href='#HttpServer#web'
-                        class='regular pre-open'>
-                        #web
-                      </a></li>
-                      
-                      <li><a
-                        href='#HttpServer#get'
-                        class='regular pre-open'>
-                        #get
-                      </a></li>
-                      
-                      <li><a
-                        href='#HttpServer#show'
-                        class='regular pre-open'>
-                        #show
-                      </a></li>
-                      
-                    </ul>
                   
                   
                 </div>
@@ -2693,6 +2693,332 @@ the peer's schemes the peer will be asked to open the address.</p>
   
   <div class='clearfix'>
     
+    <h3 class='fl m0' id='hosthttpserver'>
+      HostHttpServer
+    </h3>
+    
+    
+  </div>
+  
+
+  <p>A HTTP server for a <code>Host</code></p>
+
+
+  <div class='pre p1 fill-light mt0'>new HostHttpServer()</div>
+
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Instance Members</div>
+    <div class="clearfix">
+  
+    <div class='border-bottom' id='HostHttpServer#web'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>web(request, response, path)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Respond to a request for a file from the <code>web</code> package</p>
+<p>Stencila's <code>web</code> package (<a href="https://github.com/stencila/web">https://github.com/stencila/web</a>) contains the
+the browser based user interfaces for Stencila components. This method
+serves up those interface files (Javascript, CSS, fonts etc) from alternative locations
+based on the <code>STENCILA_WEB</code> environment variable</p>
+<ul>
+<li>a local build of the <code>web</code> package (set STENCILA_WEB to the path of the build)</li>
+<li>a locally running <code>web</code> package development server (set STENCILA_WEB to the port number)</li>
+<li>a remote server or CDN (STENCILA_WEB not set)</li>
+</ul>
+<p>When being served from a local build, any queries (e.g. ?v=1.2.3) or hashes (e.g. #id)
+are ignored.</p>
+
+
+  <div class='pre p1 fill-light mt0'>web(request: <a href="https://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/request">Request</a>, response: <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5">Response</a>, path: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</div>
+
+  
+
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>request</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/request">Request</a>)</code>
+	    Request object
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>response</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5">Response</a>)</code>
+	    Response object
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>path</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
+	    Path to requested file
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='HostHttpServer#get'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>get(request, response, address, name)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Get a property of a component</p>
+<p>The property is returned as a JSON string.</p>
+<p>If no component is found at the address, or if the component does not have a
+property with the name, a HTTP <code>404 Not Found</code> response is returned</p>
+<p>Access to "private" properties, those whose name begins with a leading underscore,
+is denied (HTTP <code>403 Forbidden</code> response).</p>
+
+
+  <div class='pre p1 fill-light mt0'>get(request: [type], response: [type], address: [type], name: [type])</div>
+
+  
+
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>request</span> <code class='quiet'>([type])</code>
+	    [
+description
+]
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>response</span> <code class='quiet'>([type])</code>
+	    [
+description
+]
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>address</span> <code class='quiet'>([type])</code>
+	    [
+description
+]
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>name</span> <code class='quiet'>([type])</code>
+	    [
+description
+]
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='HostHttpServer#show'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>show(request, response, address)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Show a component</p>
+<p>Is the address scheme is <code>new</code> and the request is for HTML
+content then the requester is redireted to the URL of the new
+component. This prevents new components being created on each refresh
+of a browser window.</p>
+
+
+  <div class='pre p1 fill-light mt0'>show(request: [type], response: [type], address: [type])</div>
+
+  
+
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>request</span> <code class='quiet'>([type])</code>
+	    [
+description
+]
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>response</span> <code class='quiet'>([type])</code>
+	    [
+description
+]
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>address</span> <code class='quiet'>([type])</code>
+	    [
+description
+]
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+</div>
+
+  
+
+  
+</section>
+
+          
+        
+          
+            <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
     <h3 class='fl m0' id='document'>
       Document
     </h3>
@@ -3580,332 +3906,6 @@ flags (ie don't have a value) e.g. 'no-highlight'
 </div>
 
   
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='httpserver'>
-      HttpServer
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>A HTTP server for a <code>Host</code></p>
-
-
-  <div class='pre p1 fill-light mt0'>new HttpServer()</div>
-
-  
-
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Instance Members</div>
-    <div class="clearfix">
-  
-    <div class='border-bottom' id='HttpServer#web'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>web(request, response, path)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>Respond to a request for a file from the <code>web</code> package</p>
-<p>Stencila's <code>web</code> package (<a href="https://github.com/stencila/web">https://github.com/stencila/web</a>) contains the
-the browser based user interfaces for Stencila components. This method
-serves up those interface files (Javascript, CSS, fonts etc) from alternative locations
-based on the <code>STENCILA_WEB</code> environment variable</p>
-<ul>
-<li>a local build of the <code>web</code> package (set STENCILA_WEB to the path of the build)</li>
-<li>a locally running <code>web</code> package development server (set STENCILA_WEB to the port number)</li>
-<li>a remote server or CDN (STENCILA_WEB not set)</li>
-</ul>
-<p>When being served from a local build, any queries (e.g. ?v=1.2.3) or hashes (e.g. #id)
-are ignored.</p>
-
-
-  <div class='pre p1 fill-light mt0'>web(request: <a href="https://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/request">Request</a>, response: <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5">Response</a>, path: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</div>
-
-  
-
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>request</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/request">Request</a>)</code>
-	    Request object
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>response</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5">Response</a>)</code>
-	    Response object
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>path</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    Path to requested file
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='HttpServer#get'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>get(request, response, address, name)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>Get a property of a component</p>
-<p>The property is returned as a JSON string.</p>
-<p>If no component is found at the address, or if the component does not have a
-property with the name, a HTTP <code>404 Not Found</code> response is returned</p>
-<p>Access to "private" properties, those whose name begins with a leading underscore,
-is denied (HTTP <code>403 Forbidden</code> response).</p>
-
-
-  <div class='pre p1 fill-light mt0'>get(request: [type], response: [type], address: [type], name: [type])</div>
-
-  
-
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>request</span> <code class='quiet'>([type])</code>
-	    [
-description
-]
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>response</span> <code class='quiet'>([type])</code>
-	    [
-description
-]
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>address</span> <code class='quiet'>([type])</code>
-	    [
-description
-]
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>name</span> <code class='quiet'>([type])</code>
-	    [
-description
-]
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='HttpServer#show'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>show(request, response, address)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>Show a component</p>
-<p>Is the address scheme is <code>new</code> and the request is for HTML
-content then the requester is redireted to the URL of the new
-component. This prevents new components being created on each refresh
-of a browser window.</p>
-
-
-  <div class='pre p1 fill-light mt0'>show(request: [type], response: [type], address: [type])</div>
-
-  
-
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>request</span> <code class='quiet'>([type])</code>
-	    [
-description
-]
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>response</span> <code class='quiet'>([type])</code>
-	    [
-description
-]
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>address</span> <code class='quiet'>([type])</code>
-	    [
-description
-]
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-</div>
 
   
 

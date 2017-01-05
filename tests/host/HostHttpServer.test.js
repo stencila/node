@@ -1,9 +1,9 @@
 const test = require('tape')
 
-const HttpServer = require('../../src/servers/HttpServer')
+const HostHttpServer = require('../../src/host/HostHttpServer')
 
-test('HttpServer can serve', function (t) {
-  let s = new HttpServer()
+test('HostHttpServer can serve', function (t) {
+  let s = new HostHttpServer()
 
   t.equal(s.status, 'off')
   s.serve()
@@ -14,8 +14,8 @@ test('HttpServer can serve', function (t) {
   t.end()
 })
 
-test('HttpServer routes to endpoints correctly', function (t) {
-  let s = new HttpServer()
+test('HostHttpServer routes to endpoints correctly', function (t) {
+  let s = new HostHttpServer()
 
   t.deepEqual(s.route('GET', '/web/some/file.js'), [s.web, 'some/file.js'])
   t.deepEqual(s.route('GET', '/favicon.ico'), [s.web, 'images/favicon.ico'])

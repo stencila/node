@@ -23,7 +23,7 @@ const BashSession = require('../bash-session/BashSession')
 const JavascriptSession = require('../js-session/JavascriptSession')
 const SessionProxy = require('../session/SessionProxy')
 
-const HttpServer = require('../servers/HttpServer')
+const HostHttpServer = require('./HostHttpServer')
 const HostDataConverter = require('./HostDataConverter')
 
 let home = path.join(os.homedir(), '.stencila')
@@ -626,7 +626,7 @@ class Host extends Component {
     if (typeof on === 'undefined') on = true
     if (on) {
       if (!this._servers.http) {
-        var server = new HttpServer(this)
+        var server = new HostHttpServer(this)
         this._servers.http = server
         return server.serve().then(() => {
           this._address = `name://local-${this._servers.http.port}-${this.type}`

@@ -9,7 +9,7 @@ const Component = require('../component/Component')
 /**
  * A HTTP server for a `Host`
  */
-class HttpServer {
+class HostHttpServer {
 
   constructor (host, address, port) {
     this._host = host
@@ -345,4 +345,4 @@ function stringify (object) {
   })
 }
 
-module.exports = HttpServer
+module.exports = HostHttpServer
