@@ -120,6 +120,24 @@
                         #save
                       </a></li>
                       
+                      <li><a
+                        href='#Component#show'
+                        class='regular pre-open'>
+                        #show
+                      </a></li>
+                      
+                      <li><a
+                        href='#Component#page'
+                        class='regular pre-open'>
+                        #page
+                      </a></li>
+                      
+                      <li><a
+                        href='#Component#view'
+                        class='regular pre-open'>
+                        #view
+                      </a></li>
+                      
                     </ul>
                   
                   
@@ -347,12 +365,6 @@
                       </a></li>
                       
                       <li><a
-                        href='#Document#sessions'
-                        class='regular pre-open'>
-                        #sessions
-                      </a></li>
-                      
-                      <li><a
                         href='#Document#select'
                         class='regular pre-open'>
                         #select
@@ -362,6 +374,12 @@
                         href='#Document#render'
                         class='regular pre-open'>
                         #render
+                      </a></li>
+                      
+                      <li><a
+                        href='#Document#page'
+                        class='regular pre-open'>
+                        #page
                       </a></li>
                       
                     </ul>
@@ -465,11 +483,9 @@
 
   
   <div class='clearfix'>
-    
     <h3 class='fl m0' id='component'>
       Component
     </h3>
-    
     
   </div>
   
@@ -589,8 +605,7 @@ instance, on construction</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>host</span> <code class='quiet'>(<a href="#host">Host</a>)</code>
-	    The host
+            <span class='code bold'>host</span> <code class='quiet'>(<a href="#host">Host</a>)</code> The host
 
           </div>
           
@@ -693,11 +708,10 @@ instance, on construction</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>format</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
-	    The format e.g. 
-<code>'html'</code>
+            <span class='code bold'>format</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> The format e.g. 
+<code>&#x27;html&#x27;</code>
 , 
-<code>'md'</code>
+<code>&#x27;md&#x27;</code>
 
           </div>
           
@@ -744,7 +758,7 @@ instance, on construction</p>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>constructor(address?, path_?)</span>
+            <span class='code strong strong truncate'>constructor([address], [path_])</span>
         </div>
       </div>
       <div class="clearfix display-none toggle-target">
@@ -755,7 +769,7 @@ instance, on construction</p>
   <p>Construct this component</p>
 
 
-  <div class='pre p1 fill-light mt0'>constructor(address: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>?, path_: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>?)</div>
+  <div class='pre p1 fill-light mt0'>constructor(address: [<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>], path_: [<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>])</div>
 
   
 
@@ -771,8 +785,7 @@ instance, on construction</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>address</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>?)</code>
-	    The address
+            <span class='code bold'>address</span> <code class='quiet'>([<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>])</code> The address
 
           </div>
           
@@ -780,8 +793,7 @@ instance, on construction</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>path_</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>?)</code>
-	    The path
+            <span class='code bold'>path_</span> <code class='quiet'>([<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>])</code> The path
 
           </div>
           
@@ -842,9 +854,9 @@ instance, on construction</p>
       <div class='py1 quiet mt1 prose-big'>Returns</div>
       <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>:
         A string e.g. 
-<code>"document"</code>
+<code>&quot;document&quot;</code>
 , 
-<code>"sheet"</code>
+<code>&quot;sheet&quot;</code>
 
       
     
@@ -878,7 +890,7 @@ instance, on construction</p>
 
   <p>Get the kind of this component</p>
 <p>Used to specify the user interface to be loaded for this component.
-Usually the a component's <code>kind</code> is the same as it's <code>type</code> (e.g. <code>document</code> and <code>document</code>)
+Usually the a component&#x27;s <code>kind</code> is the same as it&#x27;s <code>type</code> (e.g. <code>document</code> and <code>document</code>)
 But for sessions type may be <code>js-session</code> or <code>r-session</code> but kind is always <code>session</code>.</p>
 
 
@@ -901,7 +913,7 @@ But for sessions type may be <code>js-session</code> or <code>r-session</code> b
       <div class='py1 quiet mt1 prose-big'>Returns</div>
       <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>:
         A string e.g. 
-<code>"session"</code>
+<code>&quot;session&quot;</code>
 
       
     
@@ -1034,7 +1046,7 @@ access the component.</p>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>long(address?)</span>
+            <span class='code strong strong truncate'>long([address])</span>
         </div>
       </div>
       <div class="clearfix display-none toggle-target">
@@ -1047,7 +1059,7 @@ access the component.</p>
 long form address of <em>this</em> component.</p>
 
 
-  <div class='pre p1 fill-light mt0'>long(address: (<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a> | null)?): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></div>
+  <div class='pre p1 fill-light mt0'>long(address: [(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a> | null)]): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></div>
 
   
 
@@ -1063,8 +1075,7 @@ long form address of <em>this</em> component.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>address</span> <code class='quiet'>((<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a> | null)?)</code>
-	    The address to lengthen
+            <span class='code bold'>address</span> <code class='quiet'>([(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a> | null)])</code> The address to lengthen
 
           </div>
           
@@ -1122,7 +1133,7 @@ component.long()
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>short(address?)</span>
+            <span class='code strong strong truncate'>short([address])</span>
         </div>
       </div>
       <div class="clearfix display-none toggle-target">
@@ -1138,7 +1149,7 @@ an other places.</p>
 short form address of this component.</p>
 
 
-  <div class='pre p1 fill-light mt0'>short(address: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>?): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></div>
+  <div class='pre p1 fill-light mt0'>short(address: [<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>]): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></div>
 
   
 
@@ -1154,8 +1165,7 @@ short form address of this component.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>address</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>?)</code>
-	    The address to shorten
+            <span class='code bold'>address</span> <code class='quiet'>([<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>])</code> The address to shorten
 
           </div>
           
@@ -1216,7 +1226,7 @@ component.short()
   
 
   <p>Write this component to the local filesystem</p>
-<p>If <code>path</code> is provided the component's <code>path</code> will be updated. Otherwise, this component's
+<p>If <code>path</code> is provided the component&#x27;s <code>path</code> will be updated. Otherwise, this component&#x27;s
 existing <code>path</code> property will be used.</p>
 <p>The actual writing to file is done by a converter determined from the format (i.e. filename extension)
 of the <code>path</code>. If the <code>path</code> does not have an extension then the default extension for the component
@@ -1239,10 +1249,7 @@ class will be used.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>path</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    [
-description
-]
+            <span class='code bold'>path</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code> [description]
 
           </div>
           
@@ -1250,10 +1257,7 @@ description
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>format</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    [
-description
-]
+            <span class='code bold'>format</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code> [description]
 
           </div>
           
@@ -1261,10 +1265,7 @@ description
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>options</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    [
-description
-]
+            <span class='code bold'>options</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code> [description]
 
           </div>
           
@@ -1303,7 +1304,7 @@ description
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>save(content, format, path?, options)</span>
+            <span class='code strong strong truncate'>save(content, format, [path], options)</span>
         </div>
       </div>
       <div class="clearfix display-none toggle-target">
@@ -1315,10 +1316,10 @@ description
 <p>The component will <code>load()</code> itself from the <code>content</code> (using the
 <code>format</code> specified) and then <code>write()</code> itself to the <code>path</code>. Note that the format
 of the content provided (determined by the <code>format</code> parameter) is not necessarily
-the same as the format written to disk (determined by the filename extension of this component's <code>path</code>)</p>
+the same as the format written to disk (determined by the filename extension of this component&#x27;s <code>path</code>)</p>
 
 
-  <div class='pre p1 fill-light mt0'>save(content: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>, format: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>, path: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>?, options: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>): <a href="#component">Component</a></div>
+  <div class='pre p1 fill-light mt0'>save(content: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>, format: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>, path: [<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>], options: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>): <a href="#component">Component</a></div>
 
   
 
@@ -1334,10 +1335,7 @@ the same as the format written to disk (determined by the filename extension of 
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>content</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    [
-description
-]
+            <span class='code bold'>content</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code> [description]
 
           </div>
           
@@ -1345,10 +1343,7 @@ description
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>format</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    [
-description
-]
+            <span class='code bold'>format</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code> [description]
 
           </div>
           
@@ -1356,10 +1351,7 @@ description
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>path</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>?)</code>
-	    [
-description
-]
+            <span class='code bold'>path</span> <code class='quiet'>([<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>])</code> [description]
 
           </div>
           
@@ -1367,10 +1359,7 @@ description
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>options</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code>
-	    [
-description
-]
+            <span class='code bold'>options</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code> [description]
 
           </div>
           
@@ -1405,6 +1394,208 @@ description
       </div>
     </div>
   
+    <div class='border-bottom' id='Component#show'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>show(format)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>&quot;Show&quot; this component</p>
+<p>Used to respond to a HTML GET request for this component with
+content based on the requested content (JSON or a HTML page)</p>
+
+
+  <div class='pre p1 fill-light mt0'>show(format: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></div>
+
+  
+
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>format</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code> Format of conteent (defaults to 
+<code>html</code>
+)
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code>:
+        JSON or HTML content
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='Component#page'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>page(options, part)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Generate a HTML page for this component</p>
+<p>The generated page has the structure expected by the user interfaces implemented
+in the Stencila <code>web</code> package. CSS and JS from that package can be served lacally or from
+a CDN.</p>
+<p>Note that this is a recursive function and the <code>part</code> arguments is primarily
+used as a way for derived classes to override parts of the page.</p>
+
+
+  <div class='pre p1 fill-light mt0'>page(options: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>, part: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></div>
+
+  
+
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>options</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code> Options. Includes 
+<code>host</code>
+ for the URL of the UI CSS and JS e.g. 
+<code>/web</code>
+. Defaults to URL of CDN for 
+<code>web</code>
+ package
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>part</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code> Part of page to generate (e.g. &#x27;meta&#x27;, &#x27;main&#x27;)
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code>:
+        HTML page (or part of)
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='Component#view'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>view()</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>View this component in the browser</p>
+<p>Ensures that the <code>host</code> is serving and then opens the default browser
+at the local URL for this component</p>
+
+
+  <div class='pre p1 fill-light mt0'>view()</div>
+
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
 </div>
 
   
@@ -1419,11 +1610,9 @@ description
 
   
   <div class='clearfix'>
-    
     <h3 class='fl m0' id='componentproxy'>
       ComponentProxy
     </h3>
-    
     
   </div>
   
@@ -1488,8 +1677,7 @@ description
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>type</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
-	    The type of the component
+            <span class='code bold'>type</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> The type of the component
 
           </div>
           
@@ -1497,8 +1685,7 @@ description
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>id</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
-	    The id of the component
+            <span class='code bold'>id</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> The id of the component
 
           </div>
           
@@ -1506,8 +1693,7 @@ description
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>address</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
-	    The address of the component
+            <span class='code bold'>address</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> The address of the component
 
           </div>
           
@@ -1515,8 +1701,7 @@ description
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>url</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
-	    URL of the component
+            <span class='code bold'>url</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> URL of the component
 
           </div>
           
@@ -1557,11 +1742,9 @@ description
 
   
   <div class='clearfix'>
-    
     <h3 class='fl m0' id='host'>
       Host
     </h3>
-    
     
   </div>
   
@@ -1633,8 +1816,7 @@ in memory in each process (although, for purposes of testing, this is not enforc
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>format</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
-	    Format for conversion
+            <span class='code bold'>format</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> Format for conversion
 
           </div>
           
@@ -1690,7 +1872,7 @@ in memory in each process (although, for purposes of testing, this is not enforc
   
 
   <p>Get a manifest for this host</p>
-<p>A manifest describes this host and it's capabilities. When a host
+<p>A manifest describes this host and it&#x27;s capabilities. When a host
 says <code>hello</code> to a peer, they exchange manifests. The manifest is an object
 with the following properties:</p>
 <ul>
@@ -1773,9 +1955,8 @@ with the following properties:</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>type</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
-	    Type of component to create e.g. 
-<code>'document'</code>
+            <span class='code bold'>type</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> Type of component to create e.g. 
+<code>&#x27;document&#x27;</code>
 
           </div>
           
@@ -1846,7 +2027,7 @@ with the following properties:</p>
   
     
       <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="#component">Component</a>></code>:
+      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&lt;<a href="#component">Component</a>&gt;</code>:
         Array of components registered with this host
 
       
@@ -1882,7 +2063,7 @@ with the following properties:</p>
   <p>Register a component with this host</p>
 <p>This method is called by the <code>constructor()</code> method of
 the <code>Component</code> class so that each component is registered when
-it is constructed. It's unlikely to be used in any other context.</p>
+it is constructed. It&#x27;s unlikely to be used in any other context.</p>
 
 
   <div class='pre p1 fill-light mt0'>register(component: <a href="#component">Component</a>): <a href="#host">Host</a></div>
@@ -1901,8 +2082,7 @@ it is constructed. It's unlikely to be used in any other context.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>component</span> <code class='quiet'>(<a href="#component">Component</a>)</code>
-	    The component
+            <span class='code bold'>component</span> <code class='quiet'>(<a href="#component">Component</a>)</code> The component
 
           </div>
           
@@ -1968,10 +2148,7 @@ it is constructed. It's unlikely to be used in any other context.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>component</span> <code class='quiet'>([type])</code>
-	    [
-description
-]
+            <span class='code bold'>component</span> <code class='quiet'>([type])</code> [description]
 
           </div>
           
@@ -2038,8 +2215,7 @@ description
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>address</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
-	    Component address to search for
+            <span class='code bold'>address</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> Component address to search for
 
           </div>
           
@@ -2107,8 +2283,7 @@ description
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>address</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
-	    Component address
+            <span class='code bold'>address</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> Component address
 
           </div>
           
@@ -2116,8 +2291,7 @@ description
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>content</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
-	    Content for component
+            <span class='code bold'>content</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> Content for component
 
           </div>
           
@@ -2125,8 +2299,7 @@ description
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>format</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
-	    The format of the content
+            <span class='code bold'>format</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> The format of the content
 
           </div>
           
@@ -2196,8 +2369,7 @@ otherwise the</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>address</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
-	    Component address
+            <span class='code bold'>address</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> Component address
 
           </div>
           
@@ -2205,8 +2377,7 @@ otherwise the</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>path</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
-	    Local file system path
+            <span class='code bold'>path</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> Local file system path
 
           </div>
           
@@ -2274,8 +2445,7 @@ otherwise the</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>address</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
-	    The address
+            <span class='code bold'>address</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> The address
 
           </div>
           
@@ -2378,12 +2548,12 @@ host.open(<span class="hljs-string">'+document'</span>)</pre>
 
   
 
-  <p>Say "hello" to a peer</p>
+  <p>Say &quot;hello&quot; to a peer</p>
 <p>When a host attempts to <code>discover()</code> peers it does a HTTP <code>PUT</code> request to
 the <code>/!hello</code> endpoint. This method responds to that request by:</p>
 <ol>
-<li>Recording the peer's manifest in this host's peer list (replacing or appending as appropriate)</li>
-<li>Providing the peer with this host's own manifest</li>
+<li>Recording the peer&#x27;s manifest in this host&#x27;s peer list (replacing or appending as appropriate)</li>
+<li>Providing the peer with this host&#x27;s own manifest</li>
 </ol>
 
 
@@ -2403,8 +2573,7 @@ the <code>/!hello</code> endpoint. This method responds to that request by:</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>manifest</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code>
-	    The peer's manifest
+            <span class='code bold'>manifest</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code> The peer&#x27;s manifest
 
           </div>
           
@@ -2419,7 +2588,7 @@ the <code>/!hello</code> endpoint. This method responds to that request by:</p>
     
       <div class='py1 quiet mt1 prose-big'>Returns</div>
       <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code>:
-        This host's manifest
+        This host&#x27;s manifest
 
       
     
@@ -2453,13 +2622,13 @@ the <code>/!hello</code> endpoint. This method responds to that request by:</p>
 
   <p>Discover peers on the local machine</p>
 <p>This method scans the ports 2000, 2010,...3000 on the 127.0.0.1 address
-making a <code>POST /!hello</code> request with this host's manifest.
+making a <code>POST /!hello</code> request with this host&#x27;s manifest.
 If another Stencila host is listening on the port then it will respond
-with it's own manifest and will be added to this host's list of peers.</p>
-<p>Since we're doing this locally only, rather than port scanning we should
+with it&#x27;s own manifest and will be added to this host&#x27;s list of peers.</p>
+<p>Since we&#x27;re doing this locally only, rather than port scanning we should
 keep a registry of serving hosts in <code>~/.stencila/stencila.sqlite3</code> or similar</p>
-<p>Note that a peer may not be serving (it's url will be <code>null</code>) i.e. it
-will be able to <code>ask()</code> this host for addresses but this host won't be
+<p>Note that a peer may not be serving (it&#x27;s url will be <code>null</code>) i.e. it
+will be able to <code>ask()</code> this host for addresses but this host won&#x27;t be
 able to ask it for anything.</p>
 
 
@@ -2515,9 +2684,9 @@ able to ask it for anything.</p>
 
   <p>Ask peers to open a component</p>
 <p>If a host is unable to open a component address (e.g. because it does not
-know the address scheme) it will ask it's peers. This method iterates over this
-host's peers. If the peer is serving and the scheme of the address is amongst
-the peer's schemes the peer will be asked to open the address.</p>
+know the address scheme) it will ask it&#x27;s peers. This method iterates over this
+host&#x27;s peers. If the peer is serving and the scheme of the address is amongst
+the peer&#x27;s schemes the peer will be asked to open the address.</p>
 
 
   <div class='pre p1 fill-light mt0'>ask(address: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): (<a href="#component">Component</a> | null)</div>
@@ -2536,8 +2705,7 @@ the peer's schemes the peer will be asked to open the address.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>address</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
-	    The component addess to open
+            <span class='code bold'>address</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> The component addess to open
 
           </div>
           
@@ -2692,11 +2860,9 @@ the peer's schemes the peer will be asked to open the address.</p>
 
   
   <div class='clearfix'>
-    
     <h3 class='fl m0' id='hosthttpserver'>
       HostHttpServer
     </h3>
-    
     
   </div>
   
@@ -2743,7 +2909,7 @@ the peer's schemes the peer will be asked to open the address.</p>
   
 
   <p>Respond to a request for a file from the <code>web</code> package</p>
-<p>Stencila's <code>web</code> package (<a href="https://github.com/stencila/web">https://github.com/stencila/web</a>) contains the
+<p>Stencila&#x27;s <code>web</code> package (<a href="https://github.com/stencila/web">https://github.com/stencila/web</a>) contains the
 the browser based user interfaces for Stencila components. This method
 serves up those interface files (Javascript, CSS, fonts etc) from alternative locations
 based on the <code>STENCILA_WEB</code> environment variable</p>
@@ -2772,8 +2938,7 @@ are ignored.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>request</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/request">Request</a>)</code>
-	    Request object
+            <span class='code bold'>request</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/request">Request</a>)</code> Request object
 
           </div>
           
@@ -2781,8 +2946,7 @@ are ignored.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>response</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5">Response</a>)</code>
-	    Response object
+            <span class='code bold'>response</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5">Response</a>)</code> Response object
 
           </div>
           
@@ -2790,8 +2954,7 @@ are ignored.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>path</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    Path to requested file
+            <span class='code bold'>path</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code> Path to requested file
 
           </div>
           
@@ -2834,7 +2997,7 @@ are ignored.</p>
 <p>The property is returned as a JSON string.</p>
 <p>If no component is found at the address, or if the component does not have a
 property with the name, a HTTP <code>404 Not Found</code> response is returned</p>
-<p>Access to "private" properties, those whose name begins with a leading underscore,
+<p>Access to &quot;private&quot; properties, those whose name begins with a leading underscore,
 is denied (HTTP <code>403 Forbidden</code> response).</p>
 
 
@@ -2854,10 +3017,7 @@ is denied (HTTP <code>403 Forbidden</code> response).</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>request</span> <code class='quiet'>([type])</code>
-	    [
-description
-]
+            <span class='code bold'>request</span> <code class='quiet'>([type])</code> [description]
 
           </div>
           
@@ -2865,10 +3025,7 @@ description
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>response</span> <code class='quiet'>([type])</code>
-	    [
-description
-]
+            <span class='code bold'>response</span> <code class='quiet'>([type])</code> [description]
 
           </div>
           
@@ -2876,10 +3033,7 @@ description
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>address</span> <code class='quiet'>([type])</code>
-	    [
-description
-]
+            <span class='code bold'>address</span> <code class='quiet'>([type])</code> [description]
 
           </div>
           
@@ -2887,10 +3041,7 @@ description
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>name</span> <code class='quiet'>([type])</code>
-	    [
-description
-]
+            <span class='code bold'>name</span> <code class='quiet'>([type])</code> [description]
 
           </div>
           
@@ -2952,10 +3103,7 @@ of a browser window.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>request</span> <code class='quiet'>([type])</code>
-	    [
-description
-]
+            <span class='code bold'>request</span> <code class='quiet'>([type])</code> [description]
 
           </div>
           
@@ -2963,10 +3111,7 @@ description
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>response</span> <code class='quiet'>([type])</code>
-	    [
-description
-]
+            <span class='code bold'>response</span> <code class='quiet'>([type])</code> [description]
 
           </div>
           
@@ -2974,10 +3119,7 @@ description
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>address</span> <code class='quiet'>([type])</code>
-	    [
-description
-]
+            <span class='code bold'>address</span> <code class='quiet'>([type])</code> [description]
 
           </div>
           
@@ -3018,17 +3160,17 @@ description
 
   
   <div class='clearfix'>
-    
     <h3 class='fl m0' id='document'>
       Document
     </h3>
-    
     
   </div>
   
 
   <p>A document</p>
 <p>The <code>content</code> of a document is a Cheerio DOM node</p>
+<p><code>sessions</code> is a list of sessions used by this document for
+rendering directives</p>
 
 
   <div class='pre p1 fill-light mt0'>new Document()</div>
@@ -3093,8 +3235,7 @@ description
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>format</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
-	    The format needing conversion
+            <span class='code bold'>format</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> The format needing conversion
 
           </div>
           
@@ -3141,7 +3282,7 @@ description
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>constructor(address?, path?)</span>
+            <span class='code strong strong truncate'>constructor([address], [path])</span>
         </div>
       </div>
       <div class="clearfix display-none toggle-target">
@@ -3154,7 +3295,7 @@ description
 will be <code>read()</code> from it.</p>
 
 
-  <div class='pre p1 fill-light mt0'>constructor(address: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>?, path: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>?)</div>
+  <div class='pre p1 fill-light mt0'>constructor(address: [<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>], path: [<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>])</div>
 
   
 
@@ -3170,8 +3311,7 @@ will be <code>read()</code> from it.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>address</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>?)</code>
-	    The address
+            <span class='code bold'>address</span> <code class='quiet'>([<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>])</code> The address
 
           </div>
           
@@ -3179,60 +3319,13 @@ will be <code>read()</code> from it.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>path</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>?)</code>
-	    The path
+            <span class='code bold'>path</span> <code class='quiet'>([<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>])</code> The path
 
           </div>
           
         </div>
       
     </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='Document#sessions'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>sessions</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>A list of sessions used by this document for
-rendering directives</p>
-
-
-  <div class='pre p1 fill-light mt0'>sessions</div>
-
-  
-
-  
-  
-  
-  
-  
-
   
 
   
@@ -3268,7 +3361,7 @@ rendering directives</p>
   <p>Select</p>
 
 
-  <div class='pre p1 fill-light mt0'>select(selector: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;DOMNodes></div>
+  <div class='pre p1 fill-light mt0'>select(selector: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&lt;DOMNodes&gt;</div>
 
   
 
@@ -3284,8 +3377,7 @@ rendering directives</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>selector</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
-	    The selector
+            <span class='code bold'>selector</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> The selector
 
           </div>
           
@@ -3299,7 +3391,7 @@ rendering directives</p>
   
     
       <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;DOMNodes></code>:
+      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&lt;DOMNodes&gt;</code>:
         An array of cheerio DOM nodes
 
       
@@ -3340,7 +3432,7 @@ rendering directives</p>
 </ul>
 
 
-  <div class='pre p1 fill-light mt0'>render(): <a href="#document">Document</a></div>
+  <div class='pre p1 fill-light mt0'>render(): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript">Document</a></div>
 
   
 
@@ -3357,11 +3449,77 @@ rendering directives</p>
   
     
       <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="#document">Document</a></code>:
+      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript">Document</a></code>:
         This document
 
       
     
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='Document#page'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>page(options, part)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Generate a HTML page for this document</p>
+<p>This is an override to generate HTML data (rather than JSON data) for the
+user interface Javascript (in package <code>web</code>)</p>
+
+
+  <div class='pre p1 fill-light mt0'>page(options: Any, part: Any)</div>
+
+  
+
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>options</span> <code class='quiet'>(Any)</code> 
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>part</span> <code class='quiet'>(Any)</code> 
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
   
 
   
@@ -3392,11 +3550,9 @@ rendering directives</p>
 
   
   <div class='clearfix'>
-    
     <h3 class='fl m0' id='documentmarkdownconverter'>
       DocumentMarkdownConverter
     </h3>
-    
     
   </div>
   
@@ -3454,7 +3610,7 @@ specification of Markdown.</p>
   <p>Load a document from Markdown</p>
 
 
-  <div class='pre p1 fill-light mt0'>load(document: <a href="#document">Document</a>, content: [type], format: [type], options: [type])</div>
+  <div class='pre p1 fill-light mt0'>load(document: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript">Document</a>, content: [type], format: [type], options: [type])</div>
 
   
 
@@ -3470,8 +3626,7 @@ specification of Markdown.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>document</span> <code class='quiet'>(<a href="#document">Document</a>)</code>
-	    Document to load
+            <span class='code bold'>document</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript">Document</a>)</code> Document to load
 
           </div>
           
@@ -3479,8 +3634,7 @@ specification of Markdown.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>content</span> <code class='quiet'>([type])</code>
-	    Markdown content
+            <span class='code bold'>content</span> <code class='quiet'>([type])</code> Markdown content
 
           </div>
           
@@ -3488,8 +3642,7 @@ specification of Markdown.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>format</span> <code class='quiet'>([type])</code>
-	    Format (usually 
+            <span class='code bold'>format</span> <code class='quiet'>([type])</code> Format (usually 
 <code>md</code>
 )
 
@@ -3499,8 +3652,7 @@ specification of Markdown.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>options</span> <code class='quiet'>([type])</code>
-	    Any options (see implementations for those available)
+            <span class='code bold'>options</span> <code class='quiet'>([type])</code> Any options (see implementations for those available)
 
           </div>
           
@@ -3543,7 +3695,7 @@ specification of Markdown.</p>
 <p>Leading and trailing whiestpace, including newlines, are trimmed</p>
 
 
-  <div class='pre p1 fill-light mt0'>dump(document: <a href="#document">Document</a>, format: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>, options: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></div>
+  <div class='pre p1 fill-light mt0'>dump(document: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript">Document</a>, format: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>, options: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></div>
 
   
 
@@ -3559,8 +3711,7 @@ specification of Markdown.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>document</span> <code class='quiet'>(<a href="#document">Document</a>)</code>
-	    Document to dump
+            <span class='code bold'>document</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript">Document</a>)</code> Document to dump
 
           </div>
           
@@ -3568,8 +3719,7 @@ specification of Markdown.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>format</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    Format ( usually 
+            <span class='code bold'>format</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code> Format ( usually 
 <code>md</code>
 )
 
@@ -3579,8 +3729,7 @@ specification of Markdown.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>options</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code>
-	    Any options (see implementations for those available)
+            <span class='code bold'>options</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code> Any options (see implementations for those available)
 
           </div>
           
@@ -3629,11 +3778,9 @@ specification of Markdown.</p>
 
   
   <div class='clearfix'>
-    
     <h3 class='fl m0' id='documentxmarkdownconverter'>
       DocumentXMarkdownConverter
     </h3>
-    
     
   </div>
   
@@ -3641,15 +3788,16 @@ specification of Markdown.</p>
   <p>A Document converter for XMarkdown.</p>
 <p>XMarkdown is our name for RMarkdown-like formats, that is, RMarkdown but extended to language
 X, where X includes Python, Javascript, etc.</p>
-<p>In RMarkdown, R code is embedded in "code chunks". There are two types of code chunks: inline and block.
+<p>In RMarkdown, R code is embedded in &quot;code chunks&quot;. There are two types of code chunks: inline and block.
 In XMarkdown, we allow both inline and block chunks to be defined in various languages using
 our usual language labels e.g. <code>r</code>, <code>py</code>, <code>js</code>.</p>
-<p>Inline code chunks, equivalent to Stencila's print directive, are declared using Markdown code spans
+<p>Inline code chunks, equivalent to Stencila&#x27;s print directive, are declared using Markdown code spans
 prefixed by the language label e.g.</p>
 <p>The answer is <code>r x</code></p>
-<p>Block code chunks, equivalent to Stencila's execute directive, are declared using Markdown fenced code blocks
+<p>Block code chunks, equivalent to Stencila&#x27;s execute directive, are declared using Markdown fenced code blocks
 with attributes prefixed by the language label and, optionally, a chunk label and other options e.g.</p>
-<pre class='hljs'>plot(x,y)</pre>
+<pre><code>plot(x,y)
+</code></pre>
 <p>Here <code>myplot</code> is the chunk label and <code>fig.width=6, fig.height=7</code> are chunk options.
 A list of chunk options, recognised by the RMarkdown rendering enging, Knitr,
 is available at <a href="http://yihui.name/knitr/options/">http://yihui.name/knitr/options/</a>.
@@ -3704,11 +3852,9 @@ Stencila execute directive settings as follows</p>
 
   
   <div class='clearfix'>
-    
     <h3 class='fl m0' id='sheet'>
       Sheet
     </h3>
-    
     
   </div>
   
@@ -3757,11 +3903,9 @@ Stencila execute directive settings as follows</p>
 
   
   <div class='clearfix'>
-    
     <h3 class='fl m0' id='helperspandoc'>
       helpers/pandoc
     </h3>
-    
     
   </div>
   
@@ -3835,8 +3979,7 @@ some optimisation for reading and writing directly from/to disk.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>content</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    Content to convert
+            <span class='code bold'>content</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code> Content to convert
 
           </div>
           
@@ -3844,8 +3987,7 @@ some optimisation for reading and writing directly from/to disk.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>from</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    Current format of the content
+            <span class='code bold'>from</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code> Current format of the content
 
           </div>
           
@@ -3853,8 +3995,7 @@ some optimisation for reading and writing directly from/to disk.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>to</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    Desired format for the content
+            <span class='code bold'>to</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code> Desired format for the content
 
           </div>
           
@@ -3862,13 +4003,12 @@ some optimisation for reading and writing directly from/to disk.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>options</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code>
-	    An object of additional Pandoc options. Use a 
+            <span class='code bold'>options</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code> An object of additional Pandoc options. Use a 
 <code>null</code>
  value ie. 
 <code>{ option : null }</code>
  for options that are simple
-flags (ie don't have a value) e.g. 'no-highlight'
+flags (ie don&#x27;t have a value) e.g. &#x27;no-highlight&#x27;
 
           </div>
           

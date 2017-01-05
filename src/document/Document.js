@@ -4,8 +4,6 @@ const includes = require('lodash/includes')
 
 const Component = require('../component/Component')
 const DocumentDataConverter = require('./DocumentDataConverter')
-const DocumentHtmlHeadConverter = require('./DocumentHtmlHeadConverter')
-const DocumentHtmlBodyConverter = require('./DocumentHtmlBodyConverter')
 const DocumentHtmlConverter = require('./DocumentHtmlConverter')
 const DocumentLatexConverter = require('./DocumentLatexConverter')
 const DocumentMarkdownConverter = require('./DocumentMarkdownConverter')
@@ -16,6 +14,9 @@ const JsSession = require('../js-session/JsSession')
  * A document
  *
  * The `content` of a document is a Cheerio DOM node
+ *
+ * `sessions` is a list of sessions used by this document for
+ * rendering directives
  *
  * @class      Document
  */
@@ -34,13 +35,6 @@ class Document extends Component {
     super(address, path)
 
     this.content = cheerio.load('')
-
-    /**
-     * A list of sessions used by this document for
-     * rendering directives
-     *
-     * @member {Array<Session>}
-     */
     this.sessions = []
 
     if (path) this.read(path)
@@ -56,10 +50,6 @@ class Document extends Component {
   static converter (format) {
     if (format === 'data') {
       return new DocumentDataConverter()
-    } else if (format === 'html-head') {
-      return new DocumentHtmlHeadConverter()
-    } else if (format === 'html-body') {
-      return new DocumentHtmlBodyConverter()
     } else if (format === 'html') {
       return new DocumentHtmlConverter()
     } else if (includes(['md', 'gfmd'], format)) {
@@ -124,6 +114,25 @@ class Document extends Component {
       print.text(text)
     })
     return this
+  }
+
+  /**
+   * Generate a HTML page for this document
+   *
+   * This is an override to generate HTML data (rather than JSON data) for the
+   * user interface Javascript (in package `web`)
+   *
+   * @override
+   */
+  page (options, part) {
+    if (part === 'main') {
+      return `<main id="data" data-format="html">
+            <div class="content">${this.dump('html')}</div>
+            <div class="sessions">${this.sessions.map(session => { return session.dump('html') }).join()}</div>
+          </main>`
+    } else {
+      return super.page(options, part)
+    }
   }
 
 }

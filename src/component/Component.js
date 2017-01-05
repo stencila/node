@@ -1,6 +1,7 @@
 const child = require('child-process-promise')
 const crypto = require('crypto')
 const fs = require('fs')
+const he = require('he')
 const os = require('os')
 const path = require('path')
 const pathm = path
@@ -14,8 +15,6 @@ const version = require('../../package').version
 const ComponentDataConverter = require('./ComponentDataConverter')
 const ComponentJsonConverter = require('./ComponentJsonConverter')
 const ComponentHtmlConverter = require('./ComponentHtmlConverter')
-const ComponentHtmlHeadConverter = require('./ComponentHtmlHeadConverter')
-const ComponentHtmlBodyConverter = require('./ComponentHtmlBodyConverter')
 
 // Variable that holds the static member `host` of the `Component` class
 // See `Component.host` below
@@ -274,10 +273,6 @@ class Component {
       return new ComponentJsonConverter()
     } else if (format === 'html') {
       return new ComponentHtmlConverter()
-    } else if (format === 'html-head') {
-      return new ComponentHtmlHeadConverter()
-    } else if (format === 'html-body') {
-      return new ComponentHtmlBodyConverter()
     } else {
       throw Error('Unhandled format\n  format: ' + format)
     }
@@ -442,28 +437,75 @@ class Component {
     return _host.url + '/' + this.short()
   }
 
+  /**
+   * "Show" this component
+   *
+   * Used to respond to a HTML GET request for this component with
+   * content based on the requested content (JSON or a HTML page)
+   *
+   * @param  {String} format Format of conteent (defaults to `html`)
+   * @return {String}        JSON or HTML content
+   */
   show (format) {
-    format = format || 'html'
+    return (format || 'html') === 'json' ? this.dump('json') : this.page()
+  }
 
-    if (format === 'json') {
-      return this.dump('json')
+  /**
+   * Generate a HTML page for this component
+   *
+   * The generated page has the structure expected by the user interfaces implemented
+   * in the Stencila `web` package. CSS and JS from that package can be served lacally or from
+   * a CDN.
+   *
+   * Note that this is a recursive function and the `part` arguments is primarily
+   * used as a way for derived classes to override parts of the page.
+   *
+   * @param {String} options Options. Includes `host` for the URL of the UI CSS and JS e.g. `/web`. Defaults to URL of CDN for `web` package
+   * @param {String} part Part of page to generate (e.g. 'meta', 'main')
+   * @return {String} HTML page (or part of)
+   */
+  page (options, part) {
+    options = options || {}
+    options.host = options.host || 'https://unpkg.com/stencila-web/build'
+    options.header = options.header || ''
+    options.footer = options.footer || ''
+
+    if (part === 'meta') {
+      return `<title>${this.title || this.address}</title>\n` +
+          `<meta name="id" content="${this.id}">\n` +
+          (this.address ? `<meta name="address" content="${this.address}">\n` : '') +
+          (this.url ? `<meta name="url" content="${this.url}">\n` : '') +
+          (this.description ? `<meta name="description" content="${this.description}">\n` : '') +
+          (this.keywords ? `<meta name="keywords" content="${this.keywords.join(', ')}">\n` : '') +
+          `<meta name="generator" content="stencila-node-${version}">` +
+          `<meta name="viewport" content="width=device-width, initial-scale=1">`
+    } else if (part === 'main') {
+      let data = this.dump('data')
+      let json = he.encode(JSON.stringify(data))
+      return `<script id="data" data-format="json" type="application/json">${json}</script>`
     } else {
       return `<!DOCTYPE html>
-<html>
-  <head>
-    ${this.dump('html-head')}
-    <meta name="generator" content="stencila-node-${version}">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="/web/${this.kind}.min.css">
-  </head>
-  <body>
-    ${this.dump('html-body')}
-    <script src="/web/${this.kind}.min.js"></script>
-  </body>
-</html>`
+      <html>
+        <head>
+          ${this.page(options, 'meta')}
+          <link rel="stylesheet" type="text/css" href="${options.host}/${this.kind}.min.css">
+        </head>
+        <body>
+          ${options.header}
+          ${this.page(options, 'main')}
+          ${options.footer}
+          <script src="${options.host}/${this.kind}.min.js"></script>
+        </body>
+      </html>`
     }
   }
 
+  /**
+   * View this component in the browser
+   *
+   * Ensures that the `host` is serving and then opens the default browser
+   * at the local URL for this component
+   */
   view () {
     _host.serve()
     if (os.platform() === 'linux') {
