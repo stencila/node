@@ -20,7 +20,7 @@ const DocumentProxy = require('../document/DocumentProxy')
 const Sheet = require('../sheet/Sheet')
 
 const BashSession = require('../bash-session/BashSession')
-const JavascriptSession = require('../js-session/JavascriptSession')
+const JsSession = require('../js-session/JsSession')
 const SessionProxy = require('../session/SessionProxy')
 
 const HostHttpServer = require('./HostHttpServer')
@@ -163,7 +163,7 @@ class Host extends Component {
     else if (type === 'document') return new Document()
     else if (type === 'sheet') return new Sheet()
     else if (type === 'bash-session') return new BashSession()
-    else if (type === 'js-session') return new JavascriptSession()
+    else if (type === 'js-session') return new JsSession()
     else return null
   }
 

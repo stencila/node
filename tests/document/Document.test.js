@@ -66,14 +66,3 @@ test('Document select can be used to CSS select child elements', function (t) {
 
   t.end()
 })
-
-test('Document render', function (t) {
-  let d = new Document()
-
-  d.html = '<pre data-print="6*7"></pre>'
-  d.render()
-  t.equal(d.select('[data-print]').first().text(), '42')
-
-  t.end()
-})
-
