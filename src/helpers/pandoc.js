@@ -1,6 +1,4 @@
 /**
- * @module helpers/pandoc
- *
  * A simple wrapper around Pandoc
  *
  * At the time of writing there were at least three Node modules which
@@ -16,6 +14,7 @@
  * The main function is `convert` and `read` and `write` provide
  * some optimisation for reading and writing directly from/to disk.
  *
+ * @module helpers/pandoc
  */
 
 const spawn = require('child_process').spawnSync
@@ -44,6 +43,9 @@ function enabled () {
 
 /**
  * Convert some content from one format to another
+ *
+ * @memberof helpers/pandoc
+ * @static
  *
  * @param  {String} content Content to convert
  * @param  {String} from    Current format of the content

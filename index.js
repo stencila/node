@@ -1,4 +1,4 @@
-/**
+/*
  * Primary entry point for this package. Only exports
  * classes and objects that will normally be used by external
  * packages. Base classes (e.g. `Component`) and internal classes

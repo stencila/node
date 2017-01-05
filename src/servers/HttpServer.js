@@ -6,6 +6,9 @@ const url = require('url')
 
 const Component = require('../component/Component')
 
+/**
+ * A HTTP server for a `Host`
+ */
 class HttpServer {
 
   constructor (host, address, port) {

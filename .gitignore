@@ -1,7 +1,5 @@
 /.sandbox
 /node_modules
-npm-debug.log
+/npm-debug.log
 /coverage
-/docs
-!/docs/docs.yml
 /*.sublime-workspace

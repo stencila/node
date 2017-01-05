@@ -1,5 +1,9 @@
 toc:
   - Component
-  - Document
-  - Sheet
+  - ComponentProxy
   - Host
+  - HttpServer
+  - Document
+  - DocumentMarkdownConverter
+  - DocumentXMarkdownConverter
+  - Sheet

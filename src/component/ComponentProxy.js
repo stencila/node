@@ -1,5 +1,8 @@
 const request = require('request-promise')
 
+/**
+ * Proxy to a remote component
+ */
 class ComponentProxy {
 
   /**
