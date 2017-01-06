@@ -20,6 +20,8 @@ test('HostHttpServer routes to endpoints correctly', function (t) {
   t.deepEqual(s.route('GET', '/web/some/file.js'), [s.web, 'some/file.js'])
   t.deepEqual(s.route('GET', '/favicon.ico'), [s.web, 'images/favicon.ico'])
 
+  t.deepEqual(s.route('GET', '/some-image.png?raw'), [s.raw, 'some-image.png'])
+
   t.deepEqual(s.route('GET', '/'), [s.show, null])
   t.deepEqual(s.route('GET', '/scheme://some/address'), [s.show, 'scheme://some/address'])
 

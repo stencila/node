@@ -89,6 +89,10 @@ class HostHttpServer {
     if (path.substring(0, 5) === '/web/') {
       return [this.web, path.substring(5)]
     }
+    let parts = url.parse(path, true)
+    if (typeof parts.query['raw'] !== 'undefined') {
+      return [this.raw, parts.pathname.substring(1)]
+    }
     let matches = path.match(/^\/(.+?)?!(.+)$/)
     if (matches) {
       let address = matches[1] || null
@@ -102,6 +106,36 @@ class HostHttpServer {
       }
     }
     return [this.show, path.substring(1) || null]
+  }
+
+  raw (request, response, path) {
+    fs.readFile(url.parse(path).pathname, (error, content) => {
+      if (error) {
+        if (error.code === 'ENOENT') {
+          response.writeHead(404)
+        } else {
+          response.writeHead(500)
+        }
+        response.end()
+      } else {
+        let contentType = {
+          '.html': 'text/html',
+          '.js': 'text/javascript',
+          '.css': 'text/css',
+          '.json': 'application/json',
+          '.png': 'image/png',
+          '.jpg': 'image/jpg',
+          '.gif': 'image/gif',
+          '.woff': 'application/font-woff',
+          '.ttf': 'application/font-ttf',
+          '.eot': 'application/vnd.ms-fontobject',
+          '.otf': 'application/font-otf',
+          '.svg': 'application/image/svg+xml'
+        }[String(pathm.extname(path)).toLowerCase()] || 'application/octect-stream'
+        response.writeHead(200, { 'Content-Type': contentType })
+        response.end(content, 'utf-8')
+      }
+    })
   }
 
   /**
@@ -132,34 +166,7 @@ class HostHttpServer {
       response.writeHead(302, {'Location': `http://127.0.0.1:${source}/web/${path}`})
       response.end()
     } else {
-      let pathname = url.parse(path).pathname
-      fs.readFile(pathm.join(source, pathname), (error, content) => {
-        if (error) {
-          if (error.code === 'ENOENT') {
-            response.writeHead(404)
-          } else {
-            response.writeHead(500)
-          }
-          response.end()
-        } else {
-          let contentType = {
-            '.html': 'text/html',
-            '.js': 'text/javascript',
-            '.css': 'text/css',
-            '.json': 'application/json',
-            '.png': 'image/png',
-            '.jpg': 'image/jpg',
-            '.gif': 'image/gif',
-            '.woff': 'application/font-woff',
-            '.ttf': 'application/font-ttf',
-            '.eot': 'application/vnd.ms-fontobject',
-            '.otf': 'application/font-otf',
-            '.svg': 'application/image/svg+xml'
-          }[String(pathm.extname(path)).toLowerCase()] || 'application/octect-stream'
-          response.writeHead(200, { 'Content-Type': contentType })
-          response.end(content, 'utf-8')
-        }
-      })
+      this.raw(request, response, pathm.join(source, path))
     }
   }
 

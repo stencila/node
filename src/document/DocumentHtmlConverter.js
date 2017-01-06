@@ -1,3 +1,5 @@
+const url = require('url')
+
 const cheerio = require('cheerio')
 const $ = cheerio
 const beautify = require('js-beautify')
@@ -8,9 +10,10 @@ const ComponentConverter = require('../component/ComponentConverter')
 class DocumentHtmlConverter extends ComponentConverter {
 
   load (document, content, format, options) {
-    let dom = cheerio.load(content)
+    document.content = cheerio.load(content)
+
     // Pandoc HTML -> Stencila HTML5
-    dom('div.figure').toArray().forEach(el => {
+    document.content('div.figure').toArray().forEach(el => {
       el.name = 'figure'
       el = $(el)
       el.removeClass('figure')
@@ -22,14 +25,31 @@ class DocumentHtmlConverter extends ComponentConverter {
         if (el.attr('class') === '') el.removeAttr('class')
       })
     })
-    document.content = dom
   }
 
   dump (document, format, options) {
     options = options || {}
 
-    let html = document.content.html()
-    // See beautification options at https://github.com/beautify-web/js-beautify/blob/master/js/lib/beautify-html.js
+    // Need to clone content befor modiying
+    // Couldn't get this to work with cheerio clone, so doing a (presumably
+    // inefficient) dump and then load
+    let dom = cheerio.load(document.content.html())
+
+    // Append `?raw` to all image src URLs that are relative
+    // Why? Because otherwise the Stencila Host will serve up the file as a Component page
+    // instead of as a raw image.
+    dom('img[src]').toArray().forEach(el => {
+      el = $(el)
+      let src = el.attr('src')
+      let q = url.parse(src).query
+      if (q) src += '&raw'
+      else src += '?raw'
+      el.attr('src', src)
+    })
+
+    let html = dom.html()
+
+    // Beautification. See options at https://github.com/beautify-web/js-beautify/blob/master/js/lib/beautify-html.js
     //   indent_inner_html (default false)  — indent <head> and <body> sections,
     //   indent_size (default 4)          — indentation size,
     //   indent_char (default space)      — character to indent with,
@@ -56,6 +76,7 @@ class DocumentHtmlConverter extends ComponentConverter {
       'indent_handlebars': false,
       'extra_liners': ['/html']
     })
+
     // Create a standalone HTML document?
     if (options.standalone) {
       let theme = options.theme || 'https://unpkg.com/stencila-web/build/document.min'
