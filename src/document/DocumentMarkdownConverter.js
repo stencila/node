@@ -7,8 +7,8 @@ const pandoc = require('../helpers/pandoc')
 /**
  * Markdown converter for the `Document` class
  *
- * Uses Pandoc to convert to/from the Commonmark (http://commonmark.org/)
- * specification of Markdown.
+ * Uses Pandoc to convert to/from Markdown. Currently, Github Flavored Markdown
+ * is assumed for loading and dumping.
  */
 class DocumentMarkdownConverter extends ComponentConverter {
 
@@ -25,9 +25,8 @@ class DocumentMarkdownConverter extends ComponentConverter {
 
     // Mapping of format to Pandoc reader
     format = {
-      'md': 'commonmark',
-      'gfmd': 'markdown_github+yaml_metadata_block'
-    }[format] || format
+      'md': 'markdown_github+yaml_metadata_block'
+    }[format || 'md'] || format
 
     // To extract the document's meta-data use a custom Pandoc template.
     // See
