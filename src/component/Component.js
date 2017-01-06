@@ -460,15 +460,29 @@ class Component {
    * Note that this is a recursive function and the `part` arguments is primarily
    * used as a way for derived classes to override parts of the page.
    *
-   * @param {String} options Options. Includes `host` for the URL of the UI CSS and JS e.g. `/web`. Defaults to URL of CDN for `web` package
+   * @param {String} options Options.
    * @param {String} part Part of page to generate (e.g. 'meta', 'main')
    * @return {String} HTML page (or part of)
    */
   page (options, part) {
     options = options || {}
-    options.host = options.host || 'https://unpkg.com/stencila-web/build'
     options.header = options.header || ''
     options.footer = options.footer || ''
+
+    // During development you can serve JS and CSS for UI from local using the
+    // the env var `STENCILA_WEB`. If not set then falls back to the CDN
+    // See `HostHttpServer#web` for more details.
+    let web = process.env.STENCILA_WEB
+    if (typeof web === 'undefined') {
+      web = 'https://unpkg.com/stencila-web/build'
+    } else if (web.match(/\d+/)) {
+      // Being served by a local development server
+      web = `http://127.0.0.1:${web}/web/`
+    } else {
+      // Being served from the filesystem
+      // See `HostHttpServer#web`
+      web = '/web'
+    }
 
     if (part === 'meta') {
       return `<title>${this.title || this.address}</title>\n` +
@@ -488,13 +502,13 @@ class Component {
       <html>
         <head>
           ${this.page(options, 'meta')}
-          <link rel="stylesheet" type="text/css" href="${options.host}/${this.kind}.min.css">
+          <link rel="stylesheet" type="text/css" href="${web}/${this.kind}.min.css">
         </head>
         <body>
           ${options.header}
           ${this.page(options, 'main')}
           ${options.footer}
-          <script src="${options.host}/${this.kind}.min.js"></script>
+          <script src="${web}/${this.kind}.min.js"></script>
         </body>
       </html>`
     }
