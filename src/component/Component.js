@@ -468,6 +468,7 @@ class Component {
     options = options || {}
     options.header = options.header || ''
     options.footer = options.footer || ''
+    options.static = options.static || false
 
     // During development you can serve JS and CSS for UI from local using the
     // the env var `STENCILA_WEB`. If not set then falls back to the CDN
@@ -491,6 +492,7 @@ class Component {
           (this.url ? `<meta name="url" content="${this.url}">\n` : '') +
           (this.description ? `<meta name="description" content="${this.description}">\n` : '') +
           (this.keywords ? `<meta name="keywords" content="${this.keywords.join(', ')}">\n` : '') +
+          (options.static ? `<meta name="static" content="1">\n` : '') +
           `<meta name="generator" content="stencila-node-${version}">` +
           `<meta name="viewport" content="width=device-width, initial-scale=1">`
     } else if (part === 'main') {
