@@ -477,7 +477,7 @@ class Component {
       web = 'https://unpkg.com/stencila-web/build'
     } else if (web.match(/\d+/)) {
       // Being served by a local development server
-      web = `http://127.0.0.1:${web}/web/`
+      web = `http://127.0.0.1:${web}/web`
     } else {
       // Being served from the filesystem
       // See `HostHttpServer#web`
