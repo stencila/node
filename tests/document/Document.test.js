@@ -27,7 +27,7 @@ test('Document can be loaded/dumped from/to HTML', function (t) {
 
   // Pandoc figure e.g. generated from the Markdown `![Caption](figure.png)`
   d.html = '<div class="figure"><img src="figure.png"><p class="caption">Caption</p></div>'
-  t.equal(d.html, '<figure><img src="figure.png">\n    <figcaption>Caption</figcaption>\n</figure>')
+  t.equal(d.html, '<figure><img src="figure.png">\n  <figcaption>Caption</figcaption>\n</figure>')
 
   t.end()
 })
@@ -56,7 +56,7 @@ author: W. Shakebot
 ---
 Beep boop!
 `
-  d.load(md, 'gfmd')
+  d.md = md
   t.equal(d.html, '<h1 id="title">Beep boop?</h1>\n<p class="author">W. Shakebot</p>\n<div id="summary">To beep or to boop, that is the question.</div>\n<p>Beep boop!</p>')
 
   t.end()
