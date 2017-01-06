@@ -25,7 +25,7 @@ class DocumentMarkdownConverter extends ComponentConverter {
 
     // Mapping of format to Pandoc reader
     format = {
-      'md': 'markdown_github+yaml_metadata_block'
+      'md': 'markdown_github+yaml_metadata_block+implicit_figures'
     }[format || 'md'] || format
 
     // To extract the document's meta-data use a custom Pandoc template.
