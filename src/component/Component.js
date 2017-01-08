@@ -468,7 +468,6 @@ class Component {
     options = options || {}
     options.header = options.header || ''
     options.footer = options.footer || ''
-    options.static = options.static || false
 
     // During development you can serve JS and CSS for UI from local using the
     // the env var `STENCILA_WEB`. If not set then falls back to the CDN
@@ -485,16 +484,18 @@ class Component {
       web = '/web'
     }
 
-    if (part === 'meta') {
+    if (part === 'head') {
       return `<title>${this.title || this.address}</title>\n` +
           `<meta name="id" content="${this.id}">\n` +
           (this.address ? `<meta name="address" content="${this.address}">\n` : '') +
           (this.url ? `<meta name="url" content="${this.url}">\n` : '') +
           (this.description ? `<meta name="description" content="${this.description}">\n` : '') +
           (this.keywords ? `<meta name="keywords" content="${this.keywords.join(', ')}">\n` : '') +
-          (options.static ? `<meta name="static" content="1">\n` : '') +
+          (options.static ? `<meta name="static" content="${options.static}">\n` : '') +
+          (options.naked ? `<meta name="naked" content="${options.naked}">\n` : '') +
+          (options.edit ? `<meta name="edit" content="${options.edit}">\n` : '') +
           `<meta name="generator" content="stencila-node-${version}">` +
-          `<meta name="viewport" content="width=device-width, initial-scale=1">`
+          '<meta name="viewport" content="width=device-width, initial-scale=1">'
     } else if (part === 'main') {
       let data = this.dump('data')
       let json = he.encode(JSON.stringify(data))
@@ -503,13 +504,19 @@ class Component {
       return `<!DOCTYPE html>
       <html>
         <head>
-          ${this.page(options, 'meta')}
+          ${this.page(options, 'head')}
           <link rel="stylesheet" type="text/css" href="${web}/${this.kind}.min.css">
         </head>
         <body>
-          ${options.header}
-          ${this.page(options, 'main')}
-          ${options.footer}
+          <header>
+            ${options.header}
+          </header>
+          <main>
+            ${this.page(options, 'main')}
+          </main>
+          <footer>
+            ${options.footer}
+          </footer>
           <script src="${web}/${this.kind}.min.js"></script>
         </body>
       </html>`

@@ -148,10 +148,10 @@ class Document extends Component {
    */
   page (options, part) {
     if (part === 'main') {
-      return `<main id="data" data-format="html">
+      return `<div id="data" data-format="html">
             <div class="content">${this.dump('html')}</div>
             <div class="sessions">${this.sessions.map(session => { return session.dump('html') }).join()}</div>
-          </main>`
+          </div>`
     } else {
       return super.page(options, part)
     }
