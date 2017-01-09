@@ -25,10 +25,6 @@ test('Document can be loaded/dumped from/to HTML', function (t) {
   d.html = html
   t.equal(d.html, html)
 
-  // Pandoc figure e.g. generated from the Markdown `![Caption](figure.png)`
-  d.html = '<div class="figure"><img src="figure.png"><p class="caption">Caption</p></div>'
-  t.equal(d.html, '<figure><img src="figure.png?raw">\n  <figcaption>Caption</figcaption>\n</figure>')
-
   t.end()
 })
 
@@ -36,12 +32,18 @@ test('Document can be loaded/dumped from/to Markdown', function (t) {
   let d = new Document()
 
   t.equal(d.md, '')
+  t.equal(d.html, '')
 
-  let md = 'Hello from *Markdown*!\n'
+  let md = 'Hello from *Markdown*\\!' // Pandoc backslash escapes some characters see http://spec.commonmark.org/0.27/#backslash-escapes
+  let html = '<p>Hello from <em>Markdown</em>!</p>'
+
   d.md = md
+  t.equal(d.md, md)
+  t.equal(d.html, html)
 
-  t.equal(d.md, 'Hello from *Markdown*\\!') // Commonmark backslash escapes some characters see http://spec.commonmark.org/0.27/#backslash-escapes
-  t.equal(d.html, '<p>Hello from <em>Markdown</em>!</p>')
+  d.html = html
+  t.equal(d.html, html)
+  t.equal(d.md, md)
 
   t.end()
 })
@@ -69,7 +71,47 @@ test.skip('Document can be loaded/dumped from/to RMarkdown', function (t) {
 
   t.equal(d.html, '<p>Hello from <em>RMarkdown</em>!\n<pre data-execute="r">x &lt;- 42</pre></p>')
 
-  // t.equal(d.dump('rmd'), rmd)
+  t.end()
+})
+
+test.skip('Document Pandoc Markdown "implicit_figures" to HTML5 figure', function (t) {
+  let d = new Document()
+
+  d.md = '![Caption](figure.png)'
+  t.equal(d.html, '<figure><img src="figure.png?raw">\n  <figcaption>Caption</figcaption>\n</figure>')
+
+  t.end()
+})
+
+test('Document Pandoc Markdown "fenced_code_blocks" with parentheses to execute directives', function (t) {
+  let d = new Document()
+
+  d.md = '```r\nx*2\n```'
+  t.equal(d.html, '<pre class="r"><code>x*2</code></pre>')
+
+  d.md = '```r()\nx*2\n```'
+  t.equal(d.html, '<pre data-execute="r">x*2</pre>')
+
+  d.md = '```r(a,b)\nx*2\n```'
+  t.equal(d.html, '<pre data-execute="r" data-input="a,b">x*2</pre>')
+
+  d.md = '```a=r()\nx*2\n```'
+  t.equal(d.html, '<pre data-execute="r" data-output="a">x*2</pre>')
+
+  d.md = '```c=r(a,b)\nx*2\n```'
+  t.equal(d.html, '<pre data-execute="r" data-output="c" data-input="a,b">x*2</pre>')
+
+  t.end()
+})
+
+test('Document Pandoc Markdown "bracketed_spans" of class input to inputs', function (t) {
+  let d = new Document()
+
+  d.md = 'An inline [bracketed_span]{.class attr="foo"}.'
+  t.equal(d.html, '<p>An inline <span class="class" attr="foo">bracketed_span</span>.</p>')
+
+  d.md = 'An inline input [45]{.input name="a"}.'
+  t.equal(d.html, '<p>An inline input <input name="a" value="45">.</p>')
 
   t.end()
 })

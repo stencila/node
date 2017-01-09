@@ -25,7 +25,7 @@ class DocumentMarkdownConverter extends ComponentConverter {
 
     // Mapping of format to Pandoc reader
     format = {
-      'md': 'markdown_github+yaml_metadata_block+implicit_figures'
+      'md': 'markdown_github+yaml_metadata_block+implicit_figures+bracketed_spans'
     }[format || 'md'] || format
 
     // To extract the document's meta-data use a custom Pandoc template.
@@ -65,7 +65,7 @@ $body$`)
   /**
    * Dump a document to Markdown
    *
-   * Leading and trailing whiestpace, including newlines, are trimmed
+   * Leading and trailing whitespace, including newlines, are trimmed
    *
    * @param  {Document} document Document to dump
    * @param  {String} format   Format ( usually `md`)
