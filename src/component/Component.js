@@ -466,6 +466,7 @@ class Component {
    */
   page (options, part) {
     options = options || {}
+    options.headExtra = options.headExtra || ''
     options.header = options.header || ''
     options.footer = options.footer || ''
 
@@ -506,6 +507,7 @@ class Component {
         <head>
           ${this.page(options, 'head')}
           <link rel="stylesheet" type="text/css" href="${web}/${this.kind}.min.css">
+          ${options.headExtra}
         </head>
         <body>
           <header>
