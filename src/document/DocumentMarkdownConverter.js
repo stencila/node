@@ -113,12 +113,12 @@ $body$`)
       }
     })
 
-    // We use the Pandoc extension `bracketed_spans` to define a Markdown syntax
+    // We use the Pandoc extension `bracketed_spans` with a name option to define a Markdown syntax
     // for inputs:
     //    md:             [45]{name=a}
     //    pandoc html:    <span name="a">45</span>
     //    stencila html:  <input name="a" value="45">
-    // and for iputs of type 'select':
+    // and for inputs of type 'select':
     //    md:             [nashi]{name=a type=select apple=Apple nashi="Nashi Pear" pear=Pear}
     //    pandoc html:    <span name="a" type=select apple="Apple" nashi="Nashi Pear" pear="Pear">nashi</span>
     //    stencila html:  <select name="a"><option>....</select>
@@ -147,6 +147,28 @@ $body$`)
           this.name = 'input'
           $this.attr('value', $this.text())
           $this.empty()
+        }
+      }
+    })
+
+    // We use the Pandoc extension `bracketed_spans` with a value option to define a Markdown syntax
+    // for outputs:
+    //    md:             []{value=a format="%.2d"}
+    //    pandoc html:    <span value="a" format="%.2d">45</span>
+    //    stencila html:  <output for="a" data-format="%.2d">
+    // Note that we have already removed inputs spans with a `name` option above
+    document.content('span[value]').each(function () {
+      let $this = $(this)
+      let clas = $this.attr('class')
+      if (!clas || clas === 'output') {
+        this.name = 'output'
+        let value = $this.attr('value')
+        $this.removeAttr('value')
+        $this.attr('for', value)
+        let format = $this.attr('format')
+        if (format) {
+          $this.removeAttr('format')
+          $this.attr('data-format', format)
         }
       }
     })

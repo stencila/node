@@ -110,11 +110,26 @@ test('Document Pandoc Markdown "fenced_code_blocks" with parentheses to execute 
   t.end()
 })
 
-test('Document Pandoc Markdown "bracketed_spans" of class input to inputs', function (t) {
+test('Document Pandoc Markdown "bracketed_spans" of with a name attribute to inputs', function (t) {
   let d = new Document()
 
   d.md = 'An inline [bracketed_span]{.class attr="foo"}.'
   t.equal(d.html, '<p>An inline <span class="class" attr="foo">bracketed_span</span>.</p>')
+
+  d.md = 'An inline [bracketed_span]{.class name=foo}.' // Use a class to ensure a span with name attr does not become an <input>
+  t.equal(d.html, '<p>An inline <span class="class" name="foo">bracketed_span</span>.</p>')
+
+  d.md = 'An inline input [45]{name=a}.'
+  t.equal(d.html, '<p>An inline input <input name="a" value="45">.</p>')
+
+  d.md = 'An inline input [45]{.input name=a}.' // Can optionally use class=input
+  t.equal(d.html, '<p>An inline input <input class="input" name="a" value="45">.</p>')
+
+  t.end()
+})
+
+test('Document Pandoc Markdown "bracketed_spans" with a name attribute to <input>s', function (t) {
+  let d = new Document()
 
   d.md = 'An inline [bracketed_span]{.class name=foo}.' // Use a class to ensure a span with name attr does not become an <input>
   t.equal(d.html, '<p>An inline <span class="class" name="foo">bracketed_span</span>.</p>')
@@ -133,6 +148,24 @@ test('Document Pandoc Markdown "bracketed_spans" for a select input', function (
 
   d.md = '[nashi]{name=a type=select apple=Apple nashi="Nashi Pear" pear=Pear}'
   t.equal(d.html, '<p><select name="a"><option value="apple">Apple</option><option value="nashi" selected="true">Nashi Pear</option><option value="pear">Pear</option></select></p>')
+
+  t.end()
+})
+
+test('Document Pandoc Markdown "bracketed_spans" with a value attribute to <output>s', function (t) {
+  let d = new Document()
+
+  d.md = '[]{value=a}'
+  t.equal(d.html, '<p><output for="a"></output></p>')
+
+  d.md = '[]{value=a format="%2d"}'
+  t.equal(d.html, '<p><output for="a" data-format="%2d"></output></p>')
+
+  d.md = '[]{.class value=a}'
+  t.equal(d.html, '<p><span class="class" value="a"></span></p>')
+
+  d.md = '[]{.output value=a}'
+  t.equal(d.html, '<p><output class="output" for="a"></output></p>')
 
   t.end()
 })
