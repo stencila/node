@@ -170,6 +170,55 @@ test('Document Pandoc Markdown "bracketed_spans" with a value attribute to <outp
   t.end()
 })
 
+test('Document Pandoc Markdown with inclusion', function (t) {
+  let d = new Document()
+
+  d.md = `< address/of/some/other/document.md@fc453b6`
+  t.equal(d.html, '<div data-include="address/of/some/other/document.md@fc453b6"></div>')
+
+  d.md = `< https://address/of/a/document (var1, var2)"`
+  t.equal(d.html, '<div data-include="https://address/of/a/document" data-input="var1, var2"></div>')
+
+  d.md = `< address selector`
+  t.equal(d.html, '<div data-include="address" data-select="selector"></div>')
+
+  d.md = `< address selector can have spaces (var1, var2)`
+  t.equal(d.html, '<div data-include="address" data-select="selector can have spaces" data-input="var1, var2"></div>')
+
+  d.md = `
+< address selector1 (var1, var2)
+
+& change selector2
+:    This is the new Markdown content for the selected element
+`
+  t.equal(d.html,
+`<div data-include="address" data-select="selector1" data-input="var1, var2">
+  <div data-change="selector2">This is the new Markdown content for the selected element\n  </div>
+</div>`)
+
+  d.md = `
+< address selector1 (var1, var2)
+
+& change selector2
+:    This is the new *Markdown* content with block elements
+     
+     - One
+     - Two
+`
+  t.equal(d.html,
+`<div data-include="address" data-select="selector1" data-input="var1, var2">
+  <div data-change="selector2">
+    <p>This is the new <em>Markdown</em> content with block elements</p>
+    <ul>
+      <li>One</li>
+      <li>Two</li>
+    </ul>
+  </div>
+</div>`)
+
+  t.end()
+})
+
 test('Document select can be used to CSS select child elements', function (t) {
   let d = new Document()
 

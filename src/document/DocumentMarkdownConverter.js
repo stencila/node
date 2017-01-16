@@ -28,7 +28,7 @@ class DocumentMarkdownConverter extends ComponentConverter {
 
     // Mapping of format to Pandoc reader
     format = {
-      'md': 'markdown_github+yaml_metadata_block+implicit_figures+bracketed_spans+backtick_code_blocks+fenced_code_attributes'
+      'md': 'markdown_github+yaml_metadata_block+implicit_figures+bracketed_spans+backtick_code_blocks+fenced_code_attributes+definition_lists'
     }[format || 'md'] || format
 
     // To extract the document's meta-data use a custom Pandoc template.
@@ -169,6 +169,48 @@ $body$`)
         if (format) {
           $this.removeAttr('format')
           $this.attr('data-format', format)
+        }
+      }
+    })
+
+    // Include directives. Paragraphs beginning with `<` and `definition_lists` extension for modifiers where
+    // definition term begins with `&`
+    document.content('p').each(function () {
+      let $this = $(this)
+      let text = $this.text()
+      if (text[0] === '<') {
+        let match = text.match(/< *([^ (]+) *([^(]+)? *(\(([^)]+)\))?/)
+        if (match) {
+          this.name = 'div'
+          $this.empty()
+          let address = match[1]
+          if (address) $this.attr('data-include', address)
+          let selector = match[2]
+          if (selector) $this.attr('data-select', selector.trim())
+          let input = match[4]
+          if (input) $this.attr('data-input', input)
+
+          let $next = $this.next()
+          if ($next.is('dl')) {
+            $next.children().each(function () {
+              let $child = $(this)
+              if ($child.is('dt')) {
+                let text = $child.text()
+                if (text[0] === '&') {
+                  let match = text.match(/& *([^ ]+) *(.+)?/)
+                  if (match) {
+                    let $next = $child.next()
+                    if ($next.is('dd')) {
+                      $next[0].name = 'div'
+                      $next.attr('data-' + match[1], match[2])
+                    }
+                    $this.append($next)
+                  }
+                }
+              }
+            })
+            $next.remove()
+          }
         }
       }
     })
