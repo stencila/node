@@ -1,18 +1,18 @@
 const test = require('tape')
 
 const host = require('../../src/host/host')
-const ComponentProxy = require('../../src/component/ComponentProxy')
+const ComponentDelegate = require('../../src/component/ComponentDelegate')
 
 host.serve().then(() => {
-  test('ComponentProxy can be constructed', function (t) {
-    let c = new ComponentProxy()
+  test('ComponentDelegate can be constructed', function (t) {
+    let c = new ComponentDelegate()
 
-    t.ok(c instanceof ComponentProxy)
+    t.ok(c instanceof ComponentDelegate)
     t.end()
   })
 
-  test('ComponentProxy can get a property', function (t) {
-    let c = new ComponentProxy('document', null, null, host.url + '/+document')
+  test('ComponentDelegate can get a property', function (t) {
+    let c = new ComponentDelegate(host.url + '/+document')
     c.get('type')
       .then(function (value) {
         t.equal(value, 'document')
@@ -24,10 +24,12 @@ host.serve().then(() => {
       })
   })
 
-  test('ComponentProxy can set a property', function (t) {
-    let c = new ComponentProxy('document', null, null, host.url + '/+document')
+  test('ComponentDelegate can set a property', function (t) {
+    let d = host.create('document')
+    let c = new ComponentDelegate(d.url)
     c.set('html', '<p>Hello from Node.js</p>')
       .then(function () {
+        t.equal(d.html, '<p>Hello from Node.js</p>')
         t.end()
       })
       .catch(function (error) {
@@ -36,11 +38,11 @@ host.serve().then(() => {
       })
   })
 
-  test.skip('ComponentProxy can call a method', function (t) {
-    let c = new ComponentProxy('document', null, null, host.url + '/+jssession')
-    c.call('print', '6*7')
+  test('ComponentDelegate can call a method', function (t) {
+    let c = new ComponentDelegate(host.url + '/+js-session')
+    c.call('execute', '6*7')
       .then(function (value) {
-        t.equal(value, '42')
+        t.deepEqual(value, { errors: {}, output: { format: 'text', type: 'int', value: '42' } })
         t.end()
       })
       .catch(function (error) {

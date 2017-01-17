@@ -12,6 +12,7 @@ const names = moniker.generator([moniker.adjective])
 const tmp = require('tmp')
 
 const version = require('../../package').version
+const ComponentDelegate = require('./ComponentDelegate')
 const ComponentDataConverter = require('./ComponentDataConverter')
 const ComponentJsonConverter = require('./ComponentJsonConverter')
 const ComponentHtmlConverter = require('./ComponentHtmlConverter')
@@ -41,6 +42,8 @@ class Component {
 
     if (path) this._path = path_
     else this._path = null
+
+    this._delegate = null
 
     this._meta = {}
 
@@ -275,6 +278,18 @@ class Component {
       }
     } else {
       throw Error('Unable to split address\n address: ' + address)
+    }
+  }
+
+  set delegate (url) {
+    this._delegate = new ComponentDelegate(url)
+  }
+
+  get delegate () {
+    if (this._delegate) {
+      return this._delegate
+    } else {
+      throw new Error('This component does not have a delegate')
     }
   }
 

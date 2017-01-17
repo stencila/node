@@ -15,10 +15,9 @@ const Component = require('../component/Component')
 const Folder = require('../folder/Folder')
 const Document = require('../document/Document')
 const Sheet = require('../sheet/Sheet')
-
+const Session = require('../session/Session')
 const BashSession = require('../bash-session/BashSession')
 const JsSession = require('../js-session/JsSession')
-const SessionProxy = require('../session/SessionProxy')
 
 const HostHttpServer = require('./HostHttpServer')
 const HostDataConverter = require('./HostDataConverter')
@@ -54,6 +53,11 @@ class Host extends Component {
     return 'host'
   }
 
+  /**
+   * A list of classes that this host knows about
+   *
+   * @return {Array} An array of classes
+   */
   get classes () {
     return [
       Document, Folder, Sheet,
@@ -242,7 +246,7 @@ class Host extends Component {
    * @return {Component|null} A component, or `null` if no converter for format is found
    */
   load (address, content, format) {
-    for (let cls of [Document, Sheet]) {
+    for (let cls of this.classes) {
       try {
         // Try to get a converter
         cls.converter(format)
@@ -274,7 +278,7 @@ class Host extends Component {
       return new Folder(address, path)
     } else {
       let format = pathm.extname(path).substring(1)
-      for (let cls of [Document, Sheet]) {
+      for (let cls of this.classes) {
         try {
           // Try to get a converter
           cls.converter(format)
@@ -602,14 +606,23 @@ class Host extends Component {
           .then(function (response) {
             if (response.statusCode === 200) {
               let data = response.body
+              let kind = data.kind
               let type = data.type
-              let id = data.id
-              let address = data.address
               let url = data.url
-              if (type === 'document') {
-                resolve(new DocumentProxy(type, id, address, url))
-              } else if (type.substring(type.length - 7) === 'session') {
-                resolve(new SessionProxy(type, id, address, url))
+              let component = null
+              if (kind === 'session') {
+                component = new Session()
+              } else {
+                for (let Class in this.classes) {
+                  if (Class.type === type) {
+                    component = new Class()
+                    break
+                  }
+                }
+              }
+              if (component) {
+                component.delegate = url
+                resolve(component)
               } else {
                 reject(new Error(`Unhandled component type\n  type: ${type}`))
               }
