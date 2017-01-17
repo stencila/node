@@ -2,7 +2,7 @@ const Component = require('../component/Component')
 
 class Session extends Component {
 
-  get kind () {
+  static get kind () {
     return 'session'
   }
 

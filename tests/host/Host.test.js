@@ -2,6 +2,26 @@ const test = require('tape')
 
 const Host = require('../../src/host/Host')
 
+const Folder = require('../../src/folder/Folder')
+const Document = require('../../src/document/Document')
+const Sheet = require('../../src/sheet/Sheet')
+const JsSession = require('../../src/js-session/JsSession')
+const BashSession = require('../../src/bash-session/BashSession')
+
+test('Host can create new components', function (t) {
+  let h = new Host()
+
+  t.ok(h.create('folder') instanceof Folder, 'is folder')
+  t.ok(h.create('document') instanceof Document, 'is document')
+  t.ok(h.create('sheet') instanceof Sheet, 'is sheet')
+  t.ok(h.create('js-session') instanceof JsSession, 'is JsSession')
+  t.ok(h.create('jssession') instanceof JsSession, 'is JsSession')
+  t.ok(h.create('JsSession') instanceof JsSession, 'is JsSession')
+  t.ok(h.create('bash-session') instanceof BashSession, 'is BashSession')
+
+  t.end()
+})
+
 test('Host can serve', function (t) {
   let h = new Host()
   h.serve()

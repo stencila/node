@@ -9,7 +9,7 @@ class JsSession extends Session {
     this.impl = new JsSessionImplementation()
   }
 
-  get type () {
+  static get type () {
     return 'js-session'
   }
 

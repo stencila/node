@@ -72,16 +72,25 @@ class Component {
   }
 
   /**
-   * Get the type of this component
+   * Get the type of this component class
+   *
+   * @return {string} A string e.g. `"document"`, `"sheet"`
+   */
+  static get type () {
+    return this.name.toLowerCase()
+  }
+
+  /**
+   * Get the type of this component instance
    *
    * @return {string} A string e.g. `"document"`, `"sheet"`
    */
   get type () {
-    return this.constructor.name.toLowerCase()
+    return this.constructor.type
   }
 
   /**
-   * Get the kind of this component
+   * Get the kind of this component class
    *
    * Used to specify the user interface to be loaded for this component.
    * Usually the a component's `kind` is the same as it's `type` (e.g. `document` and `document`)
@@ -89,8 +98,17 @@ class Component {
    *
    * @return {string} A string e.g. `"session"`
    */
+  static get kind () {
+    return this.constructor.type
+  }
+
+  /**
+   * Get the kind of this component instance
+   *
+   * @return {string} A string e.g. `"document"`, `"session"`
+   */
   get kind () {
-    return this.type
+    return this.constructor.kind
   }
 
   /**

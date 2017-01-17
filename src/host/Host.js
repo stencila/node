@@ -13,10 +13,7 @@ const version = require('../../package').version
 const Component = require('../component/Component')
 
 const Folder = require('../folder/Folder')
-
 const Document = require('../document/Document')
-const DocumentProxy = require('../document/DocumentProxy')
-
 const Sheet = require('../sheet/Sheet')
 
 const BashSession = require('../bash-session/BashSession')
@@ -49,12 +46,19 @@ class Host extends Component {
     this._peers = []
   }
 
-  get type () {
-    return 'nodejs-host'
+  static get type () {
+    return 'node-host'
   }
 
-  get kind () {
+  static get kind () {
     return 'host'
+  }
+
+  get classes () {
+    return [
+      Document, Folder, Sheet,
+      BashSession, JsSession
+    ]
   }
 
   /**
@@ -155,16 +159,14 @@ class Host extends Component {
    *
    * @see  retrieve, load, clone, open
    *
-   * @param  {string} type Type of component to create e.g. `'document'`
+   * @param  {string} type Type of component or case insensitive class name e.g. `document`, `js-session`, `JsSession`
    * @return {Component|null} A new component, or `null` if `type` is unknown
    */
   create (type) {
-    if (type === 'folder') return new Folder()
-    else if (type === 'document') return new Document()
-    else if (type === 'sheet') return new Sheet()
-    else if (type === 'bash-session') return new BashSession()
-    else if (type === 'js-session') return new JsSession()
-    else return null
+    for (let Class of this.classes) {
+      if (Class.type === type || Class.name.toLowerCase() === type.toLowerCase()) return new Class()
+    }
+    return null
   }
 
   /**
@@ -259,8 +261,9 @@ class Host extends Component {
   /**
    * Read a component from a local file path
    *
-   * If the path is a directory then it will be read as a pod,
-   * otherwise the
+   * If the path is a directory then it will be read as a folder.
+   * Otherwise, this method will iterate through known component classes
+   * until it finds a class having a converter for the format.
    *
    * @param  {string} address Component address
    * @param  {string} path Local file system path
@@ -456,7 +459,7 @@ class Host extends Component {
         if (component) return resolve(component)
       }
 
-      // Attempt to retreive address
+      // Attempt to retrieve address
       let component = this.retrieve(address)
       if (component) return resolve(component)
 

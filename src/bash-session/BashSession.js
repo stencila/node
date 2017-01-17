@@ -9,7 +9,7 @@ class BashSession extends Session {
     this._bash = spawn('bash')
   }
 
-  get type () {
+  static get type () {
     return 'bash-session'
   }
 
