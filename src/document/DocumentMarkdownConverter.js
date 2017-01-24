@@ -190,26 +190,41 @@ $body$`)
           let input = match[4]
           if (input) $this.attr('data-input', input)
 
-          let $next = $this.next()
-          if ($next.is('dl')) {
-            $next.children().each(function () {
-              let $child = $(this)
-              if ($child.is('dt')) {
-                let text = $child.text()
-                if (text[0] === '&') {
-                  let match = text.match(/& *([^ ]+) *(.+)?/)
-                  if (match) {
-                    let $next = $child.next()
-                    if ($next.is('dd')) {
-                      $next[0].name = 'div'
-                      $next.attr('data-' + match[1], match[2])
+          let $sibling = $this.next()
+          while ($sibling) {
+            let $next
+            let text = $sibling.text()
+            if (text[0] === '&') {
+              let match = text.match(/& *([^ ]+) *(.+)?/)
+              let $modifier = $('<div>')
+              $modifier.attr('data-' + match[1], match[2])
+              $this.append($modifier)
+              $next = $sibling.next()
+              $sibling.remove()
+            } else if ($sibling.is('dl')) {
+              $sibling.children().each(function () {
+                let $child = $(this)
+                if ($child.is('dt')) {
+                  let text = $child.text()
+                  if (text[0] === '&') {
+                    let match = text.match(/& *([^ ]+) *(.+)?/)
+                    if (match) {
+                      let $sibling = $child.next()
+                      if ($sibling.is('dd')) {
+                        $sibling[0].name = 'div'
+                        $sibling.attr('data-' + match[1], match[2])
+                      }
+                      $this.append($sibling)
                     }
-                    $this.append($next)
                   }
                 }
-              }
-            })
-            $next.remove()
+              })
+              $next = $sibling.next()
+              $sibling.remove()
+            } else {
+              break
+            }
+            $sibling = $next
           }
         }
       }
