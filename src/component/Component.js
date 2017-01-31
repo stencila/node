@@ -102,7 +102,7 @@ class Component {
    * @return {string} A string e.g. `"session"`
    */
   static get kind () {
-    return this.constructor.type
+    return this.type
   }
 
   /**

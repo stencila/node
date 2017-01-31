@@ -14,6 +14,22 @@ test('Component can be constructed', function (t) {
   t.end()
 })
 
+test('Component type is available on constructor and instance', function (t) {
+  let c = new Component()
+
+  t.ok(Component.type, 'component')
+  t.ok(c.type, 'component')
+  t.end()
+})
+
+test('Component kind is available on constructor and instance', function (t) {
+  let c = new Component()
+
+  t.ok(Component.kind, 'component')
+  t.ok(c.kind, 'component')
+  t.end()
+})
+
 test('Component has an id', function (t) {
   let c = new Component()
 
