@@ -3,7 +3,7 @@ const Component = require('../component/Component')
 class Session extends Component {
 
   get type () {
-    return this._delegate ? this.delegate.get('type') : 'session'
+    return this._delegate ? this.delegate.get('type') : this.constructor.type
   }
 
   static get kind () {
