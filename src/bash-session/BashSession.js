@@ -29,7 +29,7 @@ class BashSession extends Session {
       bash.stdout.on('data', data => {
         resolve({
           errors: {},
-          output: pack(data.toString('utf8'))
+          output: pack(data.toString('utf8').trim())
         })
       })
 

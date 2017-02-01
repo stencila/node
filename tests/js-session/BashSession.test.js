@@ -22,7 +22,7 @@ test('BashSession.execute', function (t) {
   t.equal(typeof s.execute, 'function')
 
   s.execute('echo "foo bar"').then(result => {
-    t.deepEqual(result, {errors: {}, output: { format: 'text', type: 'txt', value: 'foo bar' }})
+    t.deepEqual(result, {errors: {}, output: { format: 'text', type: 'str', value: 'foo bar' }})
   })
 
   t.end()
