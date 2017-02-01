@@ -1,7 +1,16 @@
+const spawn = require('child_process').spawn
+const pack = require('stencila-js').pack
+
 const Session = require('../session/Session')
 
-const spawn = require('child_process').spawn
-
+/**
+ * A Bash session
+ *
+ * [Bash](https://en.wikipedia.org/wiki/Bash_(Unix_shell)) is a commonly used Unix shell language.
+ *
+ * See issue https://github.com/stencila/node/issues/4 for
+ * several things that need to be improved with this.
+ */
 class BashSession extends Session {
 
   constructor () {
@@ -14,20 +23,35 @@ class BashSession extends Session {
   }
 
   execute (code) {
-    let result = {
-      errors: null,
-      output: null,
-      pipes: null
-    }
     return new Promise((resolve, reject) => {
-      this._bash.stdout.on('data', data => {
-        result.output = {
-          format: 'text',
-          content: data.toString('utf8')
-        }
-        resolve(result)
+      let bash = this._bash
+
+      bash.stdout.on('data', data => {
+        resolve({
+          errors: {},
+          output: pack(data.toString('utf8'))
+        })
       })
-      this._bash.stdin.write(code + '\n')
+
+      bash.stderr.on('data', data => {
+        resolve({
+          errors: {
+            '0': data.toString('utf8')
+          },
+          output: null
+        })
+      })
+
+      bash.on('error', error => {
+        resolve({
+          errors: {
+            '0': error
+          },
+          output: null
+        })
+      })
+
+      bash.stdin.write(code + '\n')
     })
   }
 
