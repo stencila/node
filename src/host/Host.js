@@ -603,7 +603,7 @@ class Host extends Component {
             json: true,
             resolveWithFullResponse: true
           })
-          .then(function (response) {
+          .then(response => {
             if (response.statusCode === 200) {
               let data = response.body
               let kind = data.kind
