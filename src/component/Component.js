@@ -352,7 +352,12 @@ class Component {
     }
 
     format = format || path.extname(filepath).substring(1)
-    this.constructor.converter(format).read(this, filepath, format, options)
+    let converter = this.constructor.converter(format)
+    if (typeof converter.read === 'function') {
+      converter.read(this, filepath, format, options)
+    } else {
+      converter.load(this, fs.readFileSync(filepath, 'utf8'), format, options)
+    }
 
     this._path = filepath
 
