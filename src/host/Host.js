@@ -10,14 +10,6 @@ const git = require('nodegit')
 const request = require('request-promise')
 
 const version = require('../../package').version
-const Component = require('../component/Component')
-
-const Folder = require('../folder/Folder')
-const Document = require('../document/Document')
-const Sheet = require('../sheet/Sheet')
-const Session = require('../session/Session')
-const BashSession = require('../bash-session/BashSession')
-const JsSession = require('../js-session/JsSession')
 
 const HostHttpServer = require('./HostHttpServer')
 const HostDataConverter = require('./HostDataConverter')
@@ -31,15 +23,9 @@ let home = path.join(os.homedir(), '.stencila')
  *
  * @class      Host
  */
-class Host extends Component {
+class Host {
 
   constructor () {
-    super()
-
-    if (!Component.host) {
-      Component.host = this
-    }
-
     this._components = []
     this._servers = {}
     this._peers = []
@@ -60,8 +46,7 @@ class Host extends Component {
    */
   get classes () {
     return [
-      Document, Folder, Sheet,
-      BashSession, JsSession
+      //JsSession
     ]
   }
 

@@ -1,39 +1,17 @@
 language: node_js
 
 node_js:
+  - 7
   - 6
 
 cache:
   directories:
     - node_modules
 
-# Prevent compile issue with nodegit on Linux
-# See https://github.com/nodegit/nodegit/issues/853#issuecomment-172116071
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - libstdc++-4.9-dev
-
-install:
-  # Install Pandoc
-  - wget https://github.com/jgm/pandoc/releases/download/1.19.1/pandoc-1.19.1-1-amd64.deb
-  - sudo dpkg -i pandoc-1.19.1-1-amd64.deb
-
-  - make setup
-
 script:
   - make lint
   - make cover
+  - make docs
 
 after_success:
-  - |
-    if [[ $TRAVIS_NODE_VERSION == 6* ]]; then
-      bash <(curl -s https://codecov.io/bash);
-    fi
-
-notifications:
-  webhooks:
-    urls:
-      - secure: "c7sJb5i92rK48bkT/JEqjyrznBfLUAHcPr7vXTuFZGX5jn/g0tssCtsDiN08mvULuIJF2F2av/8SF9R2cSpeKkC69I9+YUn+uItq4zFISxzh7q3QfcWvQnbizCkjVDU+AxsTf4m9Kq3eatxwPNuAxRc6PGeaYQ5/NeMYFDkYGCk=" # Gitter
+  - bash <(curl -s https://codecov.io/bash)
