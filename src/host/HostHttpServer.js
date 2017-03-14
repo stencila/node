@@ -1,10 +1,9 @@
 const fs = require('fs')
 const http = require('http')
-const httpShutdown = require('http-shutdown')
 const pathm = require('path')
 const url = require('url')
 
-const Component = require('../component/Component')
+const httpShutdown = require('http-shutdown')
 
 /**
  * A HTTP server for a `Host`
@@ -16,14 +15,6 @@ class HostHttpServer {
     this._address = address || '127.0.0.1'
     this._port = port || 2000
     this._server = null
-  }
-
-  get address () {
-    return this._address
-  }
-
-  get port () {
-    return this._port
   }
 
   get url () {

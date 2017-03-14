@@ -1,20 +1,6 @@
-const fs = require('fs')
-const os = require('os')
-const path = require('path')
-const pathm = path
-
-const Dat = require('dat-node')
-const mkdirp = require('mkdirp')
-const mime = require('mime')
-const git = require('nodegit')
-const request = require('request-promise')
-
 const version = require('../../package').version
-
+const NodeContext = require('../node-context/NodeContext')
 const HostHttpServer = require('./HostHttpServer')
-const HostDataConverter = require('./HostDataConverter')
-
-let home = path.join(os.homedir(), '.stencila')
 
 /**
  * A `Host` orchestrates `Components` and encapsulates application state.
@@ -28,89 +14,14 @@ class Host {
   constructor () {
     this._components = []
     this._servers = {}
+
+    // Currently, this is unused
     this._peers = []
   }
 
-  static get type () {
-    return 'node-host'
-  }
-
-  static get kind () {
-    return 'host'
-  }
-
-  /**
-   * A list of classes that this host knows about
-   *
-   * @return {Array} An array of classes
-   */
-  get classes () {
-    return [
-      //JsSession
-    ]
-  }
-
-  /**
-   * Get the `Host` converter for a format
-   *
-   * @override
-   * @param {string} format Format for conversion
-   * @return {ComponentConverter} A converter object
-   */
-  static converter (format) {
-    if (format === 'data') {
-      return new HostDataConverter()
-    } else {
-      return super.converter(format)
-    }
-  }
-
-  get schemes () {
-    // TODO rather than a static enabled flag here may be better to use "builtin"
-    // and then provide a button for things that users can enable (e.g. by installing
-    // third party software)
+  get services () {
     return {
-      'new': {
-        enabled: true
-      },
-      'id': {
-        enabled: true
-      },
-      'file': {
-        enabled: true
-      },
-      'http': {
-        enabled: true
-      },
-      'https': {
-        enabled: true
-      },
-      'ftp': {
-        enabled: false
-      },
-      'git': {
-        enabled: true
-      },
-      'dat': {
-        enabled: false
-      }
-    }
-  }
-
-  get types () {
-    return {
-      'document': {
-        formats: ['html']
-      },
-      'folder': {
-        formats: []
-      },
-      'bash-session': {
-        formats: []
-      },
-      'js-session': {
-        formats: []
-      }
+      'NodeContext.new': (...args) => this.new(NodeContext, ...args)
     }
   }
 
@@ -126,8 +37,7 @@ class Host {
    * - `version`: the version of the Stencila package
    * - `id`: the id of this host
    * - `url`: the URL of this host
-   * - `schemes`: a list of schemes e.g. `git` that this host can handle
-   * - `types`: a list of types of components this host can create
+   * - `services`: a list of services this host can provide
    *
    * @return     {Object} A manifest
    */
@@ -138,24 +48,8 @@ class Host {
       version: version,
       id: this.id,
       url: this.url,
-      schemes: this.schemes,
-      types: this.types
+      services: Object.keys(this.services)
     }
-  }
-
-  /**
-   * Create a new component of a particular type
-   *
-   * @see  retrieve, load, clone, open
-   *
-   * @param  {string} type Type of component or case insensitive class name e.g. `document`, `js-session`, `JsSession`
-   * @return {Component|null} A new component, or `null` if `type` is unknown
-   */
-  create (type) {
-    for (let Class of this.classes) {
-      if (Class.type === type || Class.name.toLowerCase() === type.toLowerCase()) return new Class()
-    }
-    return null
   }
 
   /**
@@ -165,6 +59,10 @@ class Host {
    */
   get components () {
     return this._components
+  }
+
+  new (Class) {
+    this
   }
 
   /**
@@ -222,407 +120,6 @@ class Host {
     return null
   }
 
-  /**
-   * Load a component from content of a particular format
-   *
-   * @param  {string} address Component address
-   * @param  {string} content Content for component
-   * @param  {string} format The format of the content
-   * @return {Component|null} A component, or `null` if no converter for format is found
-   */
-  load (address, content, format) {
-    for (let cls of this.classes) {
-      try {
-        // Try to get a converter
-        cls.converter(format)
-      } catch (error) {
-        // No converter, keep trying...
-        continue
-      }
-      // Return component of that class
-      let component = new cls(address) // eslint-disable-line new-cap
-      component.load(content, format)
-      return component
-    }
-    return null
-  }
-
-  /**
-   * Read a component from a local file path
-   *
-   * If the path is a directory then it will be read as a folder.
-   * Otherwise, this method will iterate through known component classes
-   * until it finds a class having a converter for the format.
-   *
-   * @param  {string} address Component address
-   * @param  {string} path Local file system path
-   * @return {Component|null} A component, or `null` if no converter for format is found
-   */
-  read (address, path) {
-    if (fs.lstatSync(path).isDirectory()) {
-      return new Folder(address, path)
-    } else {
-      let format = pathm.extname(path).substring(1)
-      for (let cls of this.classes) {
-        try {
-          // Try to get a converter
-          cls.converter(format)
-        } catch (error) {
-          // No converter, keep trying...
-          continue
-        }
-        // Return component of that class
-        let component = new cls(address) // eslint-disable-line new-cap
-        component.read(path)
-        return component
-      }
-    }
-    return null
-  }
-
-  clone (address, type) {
-    return new Promise((resolve, reject) => {
-      let {scheme, path, format, version} = this.split(address) // eslint-disable-line no-unused-vars
-
-      if (scheme === 'file') {
-        fs.access(path, fs.constants.R_OK, err => {
-          if (err) {
-            reject(new Error(
-              `Local file system path does not exist or you do not have permission to read it\n  path: ${path}`
-            ))
-          } else {
-            resolve(this.read(address, path))
-          }
-        })
-      } else if (scheme === 'http' || scheme === 'https') {
-        request({
-          method: 'GET',
-          url: `${scheme}://${path}`,
-          resolveWithFullResponse: true
-        })
-        .then(response => {
-          if (response.statusCode === 200) {
-            let extension = pathm.extname(path)
-            if (!extension) {
-              type = response.headers['content-type']
-              extension = mime.extension(type)
-            }
-            let format = extension.substring(1)
-            resolve(this.load(address, response.body, format))
-          } else {
-            reject(new Error(`Error fetching address\n address: ${address}\n  message: ${response.body}`))
-          }
-        })
-        .catch(error => {
-          reject(error)
-        })
-      } else if (scheme === 'git') {
-        let match = path.match(/([\w\-\.]+)\/([\w\-]+\/[\w\-]+)(\/(.+))?$/) // eslint-disable-line no-useless-escape
-        if (match) {
-          let host = match[1]
-          let hostDir = (host === 'stenci.la') ? '' : host
-          let repo = match[2]
-          let repoDir = pathm.join(home, hostDir, repo)
-          let masterDir = pathm.join(repoDir, 'master')
-          let file = match[4]
-
-          Promise.resolve(fs.existsSync(masterDir)).then(exists => {
-            if (exists) return git.Repository.open(masterDir)
-            else return git.Clone(`https://${host}/${repo}.git`, masterDir)
-          }).then(repo => {
-            // If a version other than master is specified...
-            if (version && version !== 'master') {
-              // Find the commit matching the (possibly) shorthand version e.g. 1.0, d427bc
-              return git.AnnotatedCommit.fromRevspec(repo, version).then(annotatedCommit => {
-                return git.Commit.lookup(repo, annotatedCommit.id())
-              }).then(commit => {
-                let sha = commit.sha()
-                let versionDir = pathm.join(repoDir, sha)
-                if (fs.existsSync(versionDir)) {
-                  return versionDir
-                } else {
-                  return git.Clone(masterDir, versionDir).then(clone => {
-                    return clone.getCommit(sha).then(commit => {
-                      return git.Checkout.tree(clone, commit, { checkoutStrategy: git.Checkout.STRATEGY.FORCE })
-                    }).then(() => {
-                      return versionDir
-                    })
-                  })
-                }
-              })
-            } else {
-              return masterDir
-            }
-          }).then((dir) => {
-            let path = file ? pathm.join(dir, file) : dir
-            let component = this.read(address, path)
-            resolve(component)
-          }).catch(error => {
-            reject(error)
-          })
-        } else {
-          reject(new Error(`Unable to determine Git repository URL from address\n  address: ${address}`))
-        }
-      } else if (scheme === 'dat') {
-        // See https://github.com/datproject/dat/blob/master/commands/download.js for
-        // guidance on how to approach this
-        // Also consider using a "DIY" approach by using `hyperdrive` and `hyperdrive-archive-swarm`
-        // modules instead of the higher level `dat-js` module. See http://docs.dat-data.com/diy-dat
-        let match = path.match(/([\w]+)(\/(.+))?$/)
-        let key = match[1]
-        let subpath = match[2]
-        let dir = pathm.join(home, '.dat', key)
-        let filepath = subpath ? pathm.join(dir, subpath) : dir
-        mkdirp(dir, err => {
-          if (err) reject(err)
-
-          // If a dat already exists then `dat.download()` will go into live sync mode
-          // in which is waits for peers to update the dat. It also obtains a lock on that dat
-          // and prevents this process (and any other?) from opening it with another `dat.download`
-          // call. To avoid this situation we check for and existing dat.
-          if (fs.existsSync(pathm.join(dir, '.dat'))) {
-            resolve(this.read(address, filepath))
-          } else {
-            let dat = Dat({dir: dir, key: key})
-
-            dat.on('error', err => {
-              reject(err)
-            })
-
-            dat.download(err => {
-              // It seems that this is only called when there is an error
-              if (err) reject(err)
-            })
-
-            dat.on('connecting', () => {
-              console.log('Dat connecting')
-            })
-            dat.on('swarm-update', () => {
-              console.log('Dat swarm-update')
-            })
-            dat.on('key', key => {
-              console.log('Dat key available: ' + key)
-            })
-            dat.on('download', () => {
-              console.log('Dat downloading')
-            })
-
-            dat.on('download-finished', err => {
-              if (err) reject(err)
-              console.log('Dat download finished')
-              resolve(this.read(address, filepath))
-            })
-          }
-        })
-      } else {
-        resolve(null)
-      }
-    })
-  }
-
-  /**
-   * Open a `Component` at an address
-   *
-   * @example
-   *
-   * // Create a new document
-   * host.open('+document')
-   *
-   * @example
-   * host.open('stats/t-test')
-   *
-   * @param      {string}  address  The address
-   * @return     {Component}  { description_of_the_return_value }
-   */
-  open (address) {
-    return new Promise((resolve, reject) => {
-      // No address, return this host
-      if (address === null) resolve(this)
-
-      address = this.long(address)
-      let {scheme, path, format, version} = this.split(address) // eslint-disable-line no-unused-vars
-
-      // `new` scheme, attempt to create a component
-      if (scheme === 'new') {
-        let component = this.create(path)
-        if (component) return resolve(component)
-      }
-
-      // Attempt to retrieve address
-      let component = this.retrieve(address)
-      if (component) return resolve(component)
-
-      // Attempt to clone address
-      this.clone(address).then(component => {
-        if (component) return resolve(component)
-
-        // Not able to clone address, so ask peers
-        this.ask(address).then(component => {
-          if (component) {
-            this.register(component)
-            return resolve(component)
-          }
-
-          reject(new Error(`Unable to open address.  address: ${address}`))
-        }).catch(error => reject(error))
-      }).catch(error => reject(error))
-    })
-  }
-
-  /**
-   * A list of peers
-   *
-   * See Host#discover for how this list is populated
-   *
-   * @readonly
-   */
-  get peers () {
-    return this._peers
-  }
-
-  /**
-   * Say "hello" to a peer
-   *
-   * When a host attempts to `discover()` peers it does a HTTP `PUT` request to
-   * the `/!hello` endpoint. This method responds to that request by:
-   *
-   * 1. Recording the peer's manifest in this host's peer list (replacing or appending as appropriate)
-   * 2. Providing the peer with this host's own manifest
-   *
-   * @param      {Object}    manifest  The peer's manifest
-   * @return     {Object}    This host's manifest
-   */
-  hello (manifest) {
-    if (!manifest) throw new Error('No manifest supplied')
-
-    let replaced = false
-    for (let index in this._peers) {
-      let peer = this._peers[index]
-      if (peer.id === manifest.id) {
-        this._peers[index] = manifest
-        replaced = true
-      }
-    }
-    if (!replaced) this._peers.push(manifest)
-    return this.manifest
-  }
-
-  /**
-   * Discover peers on the local machine
-   *
-   * This method scans the ports 2000, 2010,...3000 on the 127.0.0.1 address
-   * making a `POST /!hello` request with this host's manifest.
-   * If another Stencila host is listening on the port then it will respond
-   * with it's own manifest and will be added to this host's list of peers.
-   *
-   * Since we're doing this locally only, rather than port scanning we should
-   * keep a registry of serving hosts in `~/.stencila/stencila.sqlite3` or similar
-   *
-   * Note that a peer may not be serving (it's url will be `null`) i.e. it
-   * will be able to `ask()` this host for addresses but this host won't be
-   * able to ask it for anything.
-   *
-   * @return {Host} This host
-   */
-  discover () {
-    this._peers = []
-    let thisPort = this.servers.http ? this.servers.http.port : null
-    for (let port = 2000; port <= 3000; port += 10) {
-      if (port !== thisPort) {
-        request({
-          method: 'POST',
-          url: `http://127.0.0.1:${port}/!hello`,
-          body: [
-            this.manifest
-          ],
-          json: true,
-          resolveWithFullResponse: true
-        })
-        .then(response => {
-          if (response.statusCode === 200) {
-            let manifest = response.body
-            if (manifest.stencila) {
-              this.hello(manifest)
-            }
-          }
-        })
-        .catch(error => {
-          if (error.name === 'RequestError') {
-            if (error.code !== 'ECONNREFUSED' && error.code !== 'ETIMEDOUT') {
-              return
-            }
-          }
-          throw error
-        })
-      }
-    }
-    return this
-  }
-
-  /**
-   * Ask peers to open a component
-   *
-   * If a host is unable to open a component address (e.g. because it does not
-   * know the address scheme) it will ask it's peers. This method iterates over this
-   * host's peers. If the peer is serving and the scheme of the address is amongst
-   * the peer's schemes the peer will be asked to open the address.
-   *
-   * @param {string} address The component addess to open
-   * @return {Component|null} The component
-   */
-  ask (address) {
-    return new Promise((resolve, reject) => {
-      let {scheme, path, format, version} = this.split(address) // eslint-disable-line no-unused-vars
-      let found = false
-      for (let peer of this._peers) {
-        if (
-          peer.url &&
-          (peer.schemes.indexOf(scheme) >= 0) &&
-          (
-            (scheme === 'new' && peer.types.indexOf(path) >= 0) ||
-            (peer.formats.indexOf(format) >= 0)
-          )
-        ) {
-          request({
-            url: peer.url + '/' + address,
-            json: true,
-            resolveWithFullResponse: true
-          })
-          .then(response => {
-            if (response.statusCode === 200) {
-              let data = response.body
-              let kind = data.kind
-              let type = data.type
-              let url = data.url
-              let component = null
-              if (kind === 'session') {
-                component = new Session()
-              } else {
-                for (let Class in this.classes) {
-                  if (Class.type === type) {
-                    component = new Class()
-                    break
-                  }
-                }
-              }
-              if (component) {
-                component.delegate = url
-                resolve(component)
-              } else {
-                reject(new Error(`Unhandled component type\n  type: ${type}`))
-              }
-            }
-          })
-          .catch(function (error) {
-            reject(error)
-          })
-          found = true
-        }
-      }
-      if (!found) return reject(new Error(`No peers are able to open address\n  address: ${address}\n  scheme: ${scheme}\n  path: ${path}\n  format: ${format}`))
-    })
-  }
-
   serve (on) {
     if (typeof on === 'undefined') on = true
     if (on) {
@@ -647,27 +144,6 @@ class Host {
 
   get url () {
     return this._servers.http ? this._servers.http.url : null
-  }
-
-  /**
-   * Start up this host (start servers and discover peers)
-   *
-   * @return {Host} This host
-   */
-  startup () {
-    return this.serve().then(() => {
-      return this.discover()
-    })
-  }
-
-  /**
-   * Shutdown this host (stop servers)
-   *
-   * @return {Host} This host
-   */
-  shutdown () {
-    this.serve(false)
-    return this
   }
 
 }
