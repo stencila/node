@@ -1,5 +1,8 @@
-import JsContext from 'stencila/src/js-context/JsContext'
+const {JsContext} = require('stencila')
 
-export class NodeContext extends JsContext {
+/**
+ * A Node.js context for executing Javascript code
+ */
+class NodeContext extends JsContext {}
 
-}
+module.exports = NodeContext
