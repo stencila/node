@@ -6,12 +6,8 @@ const HostHttpServer = require('./HostHttpServer')
 
 const NodeContext = require('../node-context/NodeContext')
 
-const FilesystemArchive = require('../filesystem-archive/FilesystemArchive')
-
 const SERVICES = {
-  'NodeContext': NodeContext,
-
-  'FilesystemArchive': FilesystemArchive
+  'NodeContext': NodeContext
 }
 
 /**
