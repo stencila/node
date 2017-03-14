@@ -1,149 +1,120 @@
+const child = require('child-process-promise')
+const os = require('os')
+
 const version = require('../../package').version
-const NodeContext = require('../node-context/NodeContext')
 const HostHttpServer = require('./HostHttpServer')
 
+const NodeContext = require('../node-context/NodeContext')
+
+const FilesystemArchive = require('../filesystem-archive/FilesystemArchive')
+
+const SERVICES = {
+  'NodeContext': NodeContext,
+
+  'FilesystemArchive': FilesystemArchive
+}
+
 /**
- * A `Host` orchestrates `Components` and encapsulates application state.
+ * A `Host` orchestrates `instances` and encapsulates application state.
  * This is a singleton class - there should only ever be one `Host`
  * in memory in each process (although, for purposes of testing, this is not enforced)
- *
- * @class      Host
  */
 class Host {
 
   constructor () {
-    this._components = []
     this._servers = {}
-
-    // Currently, this is unused
-    this._peers = []
+    this._instances = {}
   }
 
-  get services () {
-    return {
-      'NodeContext.new': (...args) => this.new(NodeContext, ...args)
-    }
+  options () {
+    return Promise.resolve({
+      stencila: {
+        package: 'node',
+        version: version
+      },
+      urls: Object.keys(this._servers).map(key => this._servers[key].url),
+      services: Object.keys(SERVICES),
+      instances: Object.keys(this._instances)
+    })
   }
 
-  /**
-   * Get a manifest for this host
-   *
-   * A manifest describes this host and it's capabilities. When a host
-   * says `hello` to a peer, they exchange manifests. The manifest is an object
-   * with the following properties:
-   *
-   * - `stencila`: a `true` value that simply indicates to a peer that this is a Stencila host
-   * - `package`: the name of the Stencila package
-   * - `version`: the version of the Stencila package
-   * - `id`: the id of this host
-   * - `url`: the URL of this host
-   * - `services`: a list of services this host can provide
-   *
-   * @return     {Object} A manifest
-   */
-  get manifest () {
-    return {
-      stencila: true,
-      package: 'node',
-      version: version,
-      id: this.id,
-      url: this.url,
-      services: Object.keys(this.services)
-    }
-  }
-
-  /**
-   * Get a list of components managed by this host
-   *
-   * @return     {Array<Component>}  Array of components registered with this host
-   */
-  get components () {
-    return this._components
-  }
-
-  new (Class) {
-    this
-  }
-
-  /**
-   * Register a component with this host
-   *
-   * This method is called by the `constructor()` method of
-   * the `Component` class so that each component is registered when
-   * it is constructed. It's unlikely to be used in any other context.
-   *
-   * @todo        Check that the component has not yet been registered
-   *
-   * @param      {Component}  component  The component
-   * @return {Host} This host
-   */
-  register (component) {
-    this._components.push(component)
-    return this
-  }
-
-  /**
-   * Deregister a component with this host
-   *
-   * @param  {[type]} component [description]
-   * @return {Host} This host
-   */
-  deregister (component) {
-    let index = this._components.indexOf(component)
-    if (index > -1) {
-      this._components.splice(index, 1)
-    }
-    return this
-  }
-
-  /**
-   * Retrive a component that has already been instantiated and registered.
-   *
-   * Searches for a component with a matching address in `this.components`
-   *
-   * @see  register, create, load, clone, open
-   *
-   * @param  {string} address Component address to search for
-   * @return {Component|null} The component, or `null` if not found
-   */
-  retrieve (address) {
-    address = this.long(address)
-    let {scheme, path} = this.split(address)
-    for (let index in this._components) {
-      let component = this._components[index]
-      if (scheme === 'id') {
-        if (component.id === path) return component
+  post (type) {
+    return new Promise((resolve, reject) => {
+      let Class = SERVICES[type]
+      if (Class) {
+        let instance = new Class()
+        let id = Math.floor((1 + Math.random()) * 1e6).toString(16)
+        this._instances[id] = instance
+        resolve(id)
       } else {
-        if (component.address === address) return component
+        reject(new Error(`Unknown service: ${type}`))
       }
-    }
-    return null
+    })
   }
 
-  serve (on) {
-    if (typeof on === 'undefined') on = true
-    if (on) {
+  get (id) {
+    return new Promise((resolve, reject) => {
+      let instance = this._instances[id]
+      if (instance) {
+        resolve(instance)
+      } else {
+        reject(new Error(`Unknown instance: ${id}`))
+      }
+    })
+  }
+
+  put (id, method, args) {
+    args = args || []
+    return new Promise((resolve, reject) => {
+      let instance = this._instances[id]
+      resolve(Promise.resolve(instance[method](...args)))
+    })
+  }
+
+  delete (id) {
+    return new Promise((resolve, reject) => {
+      let instance = this._instances[id]
+      if (instance) {
+        delete this._instance[id]
+        resolve()
+      } else {
+        reject(new Error(`Unknown instance: ${id}`))
+      }
+    })
+  }
+
+  start () {
+    return new Promise((resolve, reject) => {
       if (!this._servers.http) {
         var server = new HostHttpServer(this)
         this._servers.http = server
-        return server.serve().then(() => {
-          this._address = `name://local-${this._servers.http.port}-${this.type}`
-        })
+        server.start().then(resolve)
       }
-    } else {
-      for (let type in this._servers) {
-        this._servers[type].serve(false)
-        this._servers[type] = null
-      }
-    }
+      resolve()
+    })
   }
 
-  get servers () {
-    return this._servers
+  stop () {
+    return new Promise((resolve, reject) => {
+      const type = 'http'
+      let server = this._servers[type]
+      if (server) {
+        delete this._servers[type]
+        server.stop().then(resolve)
+      }
+    })
   }
 
-  get url () {
-    return this._servers.http ? this._servers.http.url : null
+  view () {
+    this.start()
+      .then(() => {
+        let url = this._servers.http.url
+        if (os.platform() === 'linux') {
+          child.exec(`2>/dev/null 1>&2 xdg-open "${url}"`)
+        } else {
+          child.exec(`open "${url}"`)
+        }
+      })
   }
 
 }

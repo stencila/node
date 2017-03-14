@@ -25,82 +25,91 @@ class HostHttpServer {
     return (this._server ? 'on' : 'off')
   }
 
-  serve (on) {
-    if (on === undefined) on = true
-
-    if (on) {
+  start () {
+    return new Promise((resolve, reject) => {
       if (!this._server) {
-        return new Promise((resolve, reject) => {
-          let server = http.createServer(this.handle.bind(this))
-          server = httpShutdown(server)
-          server.on('error', function (error) {
-            if (error.code === 'EADDRINUSE') {
-              this._port += 10
-              server.close()
-              server.listen(this._port, this._address, 511, () => {
-                resolve()
-              })
-              return
-            }
-            reject(error)
-          }.bind(this))
-          server.listen(this._port, this._address, 511, () => {
-            resolve()
-          })
-          this._server = server
+        let server = http.createServer(this.handle.bind(this))
+        server = httpShutdown(server)
+        server.on('error', function (error) {
+          if (error.code === 'EADDRINUSE') {
+            this._port += 10
+            server.close()
+            server.listen(this._port, this._address, 511, () => {
+              resolve()
+            })
+            return
+          }
+          reject(error)
+        }.bind(this))
+        server.listen(this._port, this._address, 511, () => {
+          resolve()
         })
+        this._server = server
       }
-    } else {
+      resolve()
+    })
+  }
+
+  stop () {
+    return new Promise((resolve, reject) => {
       if (this._server) {
-        return new Promise((resolve, reject) => {
-          this._server.shutdown(function () {
-            console.log('HTTP server has been shutdown')
-          })
-          this._server = null
+        this._server.shutdown(function () {
+          console.log('HTTP server has been shutdown')
         })
+        this._server = null
       }
-    }
+      resolve()
+    })
   }
 
   handle (request, response) {
     let endpoint = this.route(request.method, request.url)
-    let method = endpoint[0]
-    let args = endpoint.slice(1)
-    try {
-      method.call(this, request, response, ...args)
-    } catch (error) {
-      this.error500(request, response, error)
-    }
-  }
-
-  route (method, path) {
-    if (path === '/favicon.ico') {
-      return [this.web, 'images/favicon.ico']
-    }
-    if (path.substring(0, 5) === '/web/') {
-      return [this.web, path.substring(5)]
-    }
-    let parts = url.parse(path, true)
-    if (typeof parts.query['raw'] !== 'undefined') {
-      return [this.raw, parts.pathname.substring(1)]
-    }
-    let matches = path.match(/^\/(.+?)?!(.+)$/)
-    if (matches) {
-      let address = matches[1] || null
-      let name = matches[2]
-      if (method === 'GET') {
-        return [this.get, address, name]
-      } else if (method === 'PUT') {
-        return [this.set, address, name]
-      } else if (method === 'POST') {
-        return [this.call, address, name]
+    if (endpoint) {
+      let method = endpoint[0]
+      let args = endpoint.slice(1)
+      try {
+        method.call(this, request, response, ...args)
+      } catch (error) {
+        this.error500(request, response, error)
       }
+    } else {
+      this.error400(request, response)
     }
-    return [this.show, path.substring(1) || null]
   }
 
-  raw (request, response, path) {
-    fs.readFile(url.parse(path).pathname, (error, content) => {
+  route (verb, path) {
+    if (path === '/') return [this.home]
+    if (path === '/favicon.ico') return [this.statico, 'favicon.ico']
+    if (path.substring(0, 8) === '/static/') return [this.statico, path.substring(8)]
+
+    let matches = path.match(/^\/(.+?)(!(.+))?$/)
+    if (matches) {
+      let id = matches[1]
+      let method = matches[3]
+      if (verb === 'POST' && id) return [this.post, id]
+      else if (verb === 'GET' && id) return [this.get, id]
+      else if (verb === 'PUT' && id && method) return [this.put, id, method]
+      else if (verb === 'DELETE' && id) return [this.delete, id]
+    }
+
+    return null
+  }
+
+  home (request, response) {
+    if (!acceptsJson(request)) {
+      this.statico(request, response, 'dashboard.html')
+    } else {
+      this._host.options()
+        .then(options => {
+          response.setHeader('Content-Type', 'application/json')
+          response.end(JSON.stringify(options))
+        })
+        .catch(error => this.error500(request, response, error))
+    }
+  }
+
+  statico (request, response, path) {
+    fs.readFile('./static/' + url.parse(path).pathname, (error, content) => {
       if (error) {
         if (error.code === 'ENOENT') {
           response.writeHead(404)
@@ -129,152 +138,69 @@ class HostHttpServer {
     })
   }
 
-  /**
-   * Respond to a request for a file from the `web` package
-   *
-   * Stencila's `web` package (https://github.com/stencila/web) contains the
-   * the browser based user interfaces for Stencila components. This method
-   * serves up those interface files (Javascript, CSS, fonts etc) from alternative locations
-   * based on the `STENCILA_WEB` environment variable
-   *
-   * - a local build of the `web` package (set STENCILA_WEB to the path of the build)
-   * - a locally running `web` package development server (set STENCILA_WEB to the port number)
-   * - a remote server or CDN (STENCILA_WEB not set)
-   *
-   * When being served from a local build, any queries (e.g. ?v=1.2.3) or hashes (e.g. #id)
-   * are ignored.
-   *
-   * @param  {Request} request  Request object
-   * @param  {Response} response Response object
-   * @param  {String} path     Path to requested file
-   */
-  web (request, response, path) {
-    let source = process.env.STENCILA_WEB || 'CDN'
-    if (source === 'CDN') {
-      response.writeHead(302, {'Location': `https://unpkg.com/stencila-web/build/${path}`})
-      response.end()
-    } else if (source.match(/\d+/)) {
-      response.writeHead(302, {'Location': `http://127.0.0.1:${source}/web/${path}`})
-      response.end()
-    } else {
-      this.raw(request, response, pathm.join(source, path))
-    }
-  }
-
-  /**
-   * Get a property of a component
-   *
-   * The property is returned as a JSON string.
-   *
-   * If no component is found at the address, or if the component does not have a
-   * property with the name, a HTTP `404 Not Found` response is returned
-   *
-   * Access to "private" properties, those whose name begins with a leading underscore,
-   * is denied (HTTP `403 Forbidden` response).
-   *
-   * @param  {[type]} request  [description]
-   * @param  {[type]} response [description]
-   * @param  {[type]} address  [description]
-   * @param  {[type]} name     [description]
-   */
-  get (request, response, address, name) {
-    this._host.open(address).then(component => {
-      if (!component) return this.error404(request, response, address)
-      if (name[0] === '_') return this.error403(request, response, name)
-      let result = component[name]
-      if (typeof result === 'undefined') return this.error404(request, response, name)
-
-      response.setHeader('Content-Type', 'application/json')
-      response.end(stringify(result))
-    }).catch(error => this.error500(request, response, error))
-  }
-
-  set (request, response, address, name) {
+  post (request, response, service) {
     bodify(request).then(body => {
-      this._host.open(address).then(component => {
-        if (!component) return this.error404(request, response, address)
-        if (name[0] === '_') return this.error403(request, response, name)
-
-        if (body) {
-          let value = JSON.parse(body)
-          component[name] = value
-        }
-        response.end()
-      }).catch(error => this.error500(request, response, error))
-    })
-  }
-
-  call (request, response, address, name) {
-    bodify(request).then(body => {
-      this._host.open(address).then(component => {
-        if (!component) return this.error404(request, response, address)
-        if (name[0] === '_') return this.error403(request, response, name)
-        let method = component[name]
-        if (typeof method === 'undefined') return this.error404(request, response, name)
-
-        let result
-        if (body) {
-          let args = JSON.parse(body)
-          if (args instanceof Array) {
-            result = method.call(component, ...args)
-          } else if (args instanceof Object) {
-            // Convert object to an array
-            args = Object.keys(args).map(key => args[key])
-            result = method.call(component, ...args)
-          } else {
-            result = method.call(component, args)
-          }
-        } else {
-          result = method.call(component)
-        }
-        // Some method call's may be synchronous, others may be promises.
-        // Use Promise.resolve so that all method call results can be
-        // treated as promises.
-        Promise.resolve(result).then(result => {
+      this._host.post(service)
+        .then(id => {
           response.setHeader('Content-Type', 'application/json')
-          response.end(stringify(result))
+          response.end(JSON.stringify(id))
         })
-      }).catch(error => {
-        this.error500(request, response, error)
-      })
+        .catch(error => this.error500(request, response, error))
     })
   }
 
-  /**
-   * Show a component
-   *
-   * Is the address scheme is `new` and the request is for HTML
-   * content then the requester is redireted to the URL of the new
-   * component. This prevents new components being created on each refresh
-   * of a browser window.
-   *
-   * @param  {[type]} request  [description]
-   * @param  {[type]} response [description]
-   * @param  {[type]} address  [description]
-   */
-  show (request, response, address) {
-    let {scheme} = this._host.split(address)
-    this._host.open(address).then(component => {
-      if (component) {
-        if (acceptsJson(request)) {
-          response.setHeader('Content-Type', 'application/json')
-          response.end(component.show('json'))
+  get (request, response, id) {
+    this._host.get(id)
+      .then(instance => {
+        response.setHeader('Content-Type', 'application/json')
+        response.end(JSON.stringify(instance))
+      })
+      .catch(error => this.error500(request, response, error))
+  }
+
+  put (request, response, id, method) {
+    bodify(request).then(body => {
+      // Ensure arguments are an array
+      let args = []
+      if (body) {
+        let value = JSON.parse(body)
+        if (value instanceof Array) {
+          args = value
+        } else if (value instanceof Object) {
+          args = Object.keys(value).map(key => value[key])
         } else {
-          if (scheme === 'new') {
-            response.statusCode = 302
-            response.setHeader('Location', component.url)
-            response.end()
-          } else {
-            response.setHeader('Content-Type', 'text/html')
-            response.end(component.show('html'))
-          }
+          args = [value]
         }
-      } else {
-        this.error404(request, response)
       }
-    }).catch(error => {
-      this.error500(request, response, error)
+
+      this._host.put(id, method, args)
+        .then(result => {
+          response.setHeader('Content-Type', 'application/json')
+          response.end(JSON.stringify(result))
+        })
+        .catch(error => this.error500(request, response, error))
     })
+  }
+
+  delete (request, response, id) {
+    this._host.delete(id)
+      .then(instance => {
+        response.end()
+      })
+      .catch(error => this.error500(request, response, error))
+  }
+
+  error400 (request, response) {
+    response.statusCode = 400
+    let what = request.method + ' ' + request.url
+    let content
+    if (acceptsJson(request)) {
+      content = JSON.stringify({error: 'Bad request', what: what})
+      response.setHeader('Content-Type', 'application/json')
+    } else {
+      content = 'Bad request: ' + what
+    }
+    response.end(content)
   }
 
   error403 (request, response, what) {
@@ -330,16 +256,6 @@ function bodify (request) {
       body = Buffer.concat(body).toString()
       resolve(body)
     })
-  })
-}
-
-function stringify (object) {
-  return JSON.stringify(object, function (key, value) {
-    if (value instanceof Component) {
-      return value.dump('data')
-    } else {
-      return value
-    }
   })
 }
 
