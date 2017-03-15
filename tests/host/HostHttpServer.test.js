@@ -2,12 +2,13 @@ const test = require('tape')
 
 const HostHttpServer = require('../../src/host/HostHttpServer')
 
-test('HostHttpServer can serve', function (t) {
+test('HostHttpServer.stop+start', function (t) {
   let s = new HostHttpServer()
 
   s.start()
     .then(() => {
       t.equal(s.status, 'on')
+      t.ok(s.url)
     })
     .then(() => {
       return s.stop()
