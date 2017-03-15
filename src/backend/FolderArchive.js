@@ -43,7 +43,7 @@ class FolderArchive extends MemoryArchive {
       try {
         Object.keys(this._files).forEach((filePath) => {
           let fileData = this._files[filePath].data
-          fs.writeFileSync(filePath, fileData, 'utf8')
+          fs.writeFileSync(path.join(this.folderPath, filePath), fileData, 'utf8')
         })
       } catch(err) {
         reject(err)

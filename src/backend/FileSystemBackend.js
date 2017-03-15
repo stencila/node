@@ -54,10 +54,12 @@ class FileSystemBackend {
     Returns an archive object.
 
     TODO: We should support other archive types than FolderArchive.
-          E.g. MarkdownArchive (represented by a ), JupyterArchive
+          E.g. MarkdownArchive (represented by a .md file on disk)
   */
   getArchive (documentId) {
-    return new FolderArchive(path.join(this.userLibraryDir, documentId))
+    return new Promise((resolve) => {
+      resolve(new FolderArchive(path.join(this.userLibraryDir, documentId)))
+    })
   }
 }
 
