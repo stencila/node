@@ -4,9 +4,9 @@ const path = require('path')
 
 class FolderArchive extends MemoryArchive {
 
-  constructor (archiveURL) {
+  constructor (folderPath) {
     super()
-    this.archiveURL = archiveURL
+    this.folderPath = folderPath
   }
 
   /*
@@ -14,9 +14,9 @@ class FolderArchive extends MemoryArchive {
 
     Returns a string when isText is true, for binary data a Blob object
   */
-  readFile (filePath, isText) {
+  readFile (filePath, mimeType) {
     return new Promise((resolve, reject) => {
-      if (!isText) {
+      if (mimeType.indexOf('text/') < 0) {
         return reject(new Error('Binary data not yet supported'))
       }
 
@@ -25,7 +25,7 @@ class FolderArchive extends MemoryArchive {
         resolve(this._files[filePath])
       }
 
-      fs.readFile(path.join(this.archiveURL, path), 'utf8', (err, data) => {
+      fs.readFile(path.join(this.folderPath, filePath), 'utf8', (err, data) => {
         if (err) {
           return reject(err)
         }
@@ -53,15 +53,5 @@ class FolderArchive extends MemoryArchive {
   }
 }
 
-/*
-  TODO: do actual checking for file protocol or analyze url if really
-  a folder.
-*/
-FolderArchive.matchURL = function(url) {
-  if (url.indexOf('.stencila')) {
-    return true
-  }
-  return false
-}
 
 module.exports = FolderArchive

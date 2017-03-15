@@ -57,7 +57,7 @@ class FileSystemBackend {
           E.g. MarkdownArchive (represented by a ), JupyterArchive
   */
   getArchive (documentId) {
-    return new FolderArchive(documentId)
+    return new FolderArchive(path.join(this.userLibraryDir, documentId))
   }
 }
 
