@@ -52,6 +52,6 @@
   "dependencies": {
     "child-process-promise": "^2.2.0",
     "http-shutdown": "^1.1.0",
-    "stencila": "^0.25.0"
+    "stencila": "stencila/stencila#master"
   }
 }
