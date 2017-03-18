@@ -11,8 +11,14 @@ test('write+read: Write a text file and then read it', function (t) {
   archive.writeFile('index.html', 'text/html', 'HELLO WORLD').then(() => {
     archive.readFile('index.html', 'text/html').then((fileData) => {
       t.equal(fileData, 'HELLO WORLD')
+      t.end()
     })
   })
+})
+
+test('cleanup', function(t) {
+  rimraf.sync(TMP_FOLDER)
+  t.end()
 })
 
 function _createEmptyFolderArchive() {
