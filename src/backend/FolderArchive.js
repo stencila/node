@@ -1,11 +1,10 @@
-const { MemoryArchive } = require('stencila')
+/* globals Blob */
 const fs = require('fs')
 const path = require('path')
 
-class FolderArchive extends MemoryArchive {
+class FolderArchive {
 
   constructor (folderPath) {
-    super()
     this.folderPath = folderPath
   }
 
@@ -20,35 +19,33 @@ class FolderArchive extends MemoryArchive {
         return reject(new Error('Binary data not yet supported'))
       }
 
-      // Provide file from memory when available
-      if (this._files[filePath]) {
-        resolve(this._files[filePath])
-      }
-
       fs.readFile(path.join(this.folderPath, filePath), 'utf8', (err, data) => {
         if (err) {
           return reject(err)
         }
-        this._files[filePath] = data
         resolve(data)
       })
     })
   }
 
   /*
-    TODO: Support writing blob files as well
+    File data must either be a utf8 string or a blob object
   */
-  save () {
+  writeFile(filePath, mimeType, data) {
     return new Promise((resolve, reject) => {
-      try {
-        Object.keys(this._files).forEach((filePath) => {
-          let fileData = this._files[filePath].data
-          fs.writeFileSync(path.join(this.folderPath, filePath), fileData, 'utf8')
+      if (typeof data === 'string') {
+
+        fs.writeFile(path.join(this.folderPath, filePath), data, 'utf8', (err) => {
+          if (err) {
+            return reject(err)
+          }
+          resolve()
         })
-      } catch(err) {
-        reject(err)
+      } else if (data instanceof Blob) {
+        reject(new Error('Blobs are not yet supported'))
+      } else {
+        reject(new Error('MemoryFileSystem only supports utf-8 strings and blobs'))
       }
-      resolve()
     })
   }
 }
