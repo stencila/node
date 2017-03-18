@@ -51,10 +51,10 @@ class HostHttpServer {
   }
 
   stop () {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       if (this._server) {
         this._server.shutdown(function () {
-          console.log('HTTP server has been shutdown')
+          console.log('HTTP server has been shutdown') // eslint-disable-line no-console
         })
         this._server = null
       }
@@ -139,7 +139,7 @@ class HostHttpServer {
   }
 
   post (request, response, service) {
-    bodify(request).then(body => {
+    bodify(request).then(body => { // eslint-disable-line no-unused-vars
       this._host.post(service)
         .then(id => {
           response.setHeader('Content-Type', 'application/json')
@@ -184,7 +184,7 @@ class HostHttpServer {
 
   delete (request, response, id) {
     this._host.delete(id)
-      .then(instance => {
+      .then(() => {
         response.end()
       })
       .catch(error => this.error500(request, response, error))
@@ -248,12 +248,12 @@ function acceptsJson (request) {
 }
 
 function bodify (request) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     var body = []
     request.on('data', function (chunk) {
       body.push(chunk)
     }).on('end', function () {
-      body = Buffer.concat(body).toString()
+      body = Buffer.concat(body).toString() // eslint-disable-line no-undef
       resolve(body)
     })
   })
