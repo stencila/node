@@ -61,7 +61,7 @@ class Host {
 
   put (id, method, args) {
     args = args || []
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       let instance = this._instances[id]
       resolve(Promise.resolve(instance[method](...args)))
     })
@@ -80,7 +80,7 @@ class Host {
   }
 
   start () {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       if (!this._servers.http) {
         var server = new HostHttpServer(this)
         this._servers.http = server
@@ -91,7 +91,7 @@ class Host {
   }
 
   stop () {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const type = 'http'
       let server = this._servers[type]
       if (server) {
