@@ -35,6 +35,10 @@ class HostHttpServer {
   start () {
     return new Promise((resolve, reject) => {
       if (!this._server) {
+        if (process.getuid && process.getuid() === 0) {
+          return reject(new Error('Serving host while root user is dangerous and is not allowed'))
+        }
+
         let server = http.createServer(this.handle.bind(this))
         server = httpShutdown(server)
         server.on('error', function (error) {
