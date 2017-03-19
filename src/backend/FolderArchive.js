@@ -6,6 +6,11 @@ class FolderArchive {
 
   constructor (folderPath) {
     this.folderPath = folderPath
+    // If folderPath does not exit, create it
+    // This allows to create empty folder archives
+    if (!fs.existsSync(folderPath)) {
+      fs.mkdirSync(folderPath)
+    }
   }
 
   /*
@@ -15,10 +20,9 @@ class FolderArchive {
   */
   readFile (filePath, mimeType) {
     return new Promise((resolve, reject) => {
-      if (mimeType.indexOf('text/') < 0) {
+      if (mimeType.indexOf('text/') < 0 && mimeType.indexOf('application/json') < 0) {
         return reject(new Error('Binary data not yet supported'))
       }
-
       fs.readFile(path.join(this.folderPath, filePath), 'utf8', (err, data) => {
         if (err) {
           return reject(err)
@@ -34,7 +38,6 @@ class FolderArchive {
   writeFile(filePath, mimeType, data) {
     return new Promise((resolve, reject) => {
       if (typeof data === 'string') {
-
         fs.writeFile(path.join(this.folderPath, filePath), data, 'utf8', (err) => {
           if (err) {
             return reject(err)
@@ -49,6 +52,5 @@ class FolderArchive {
     })
   }
 }
-
 
 module.exports = FolderArchive

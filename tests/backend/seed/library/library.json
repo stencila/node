@@ -1,0 +1,14 @@
+{
+  "internal-doc": {
+    "type": "document",
+    "storage": {
+      "storerType": "filesystem",
+      "contentType": "html",
+      "folderPath": "",
+      "fileName": ""
+    },
+    "title": "No title available yet",
+    "createdAt": "2017-03-10T00:03:12.060Z",
+    "updatedAt": "2017-03-10T00:03:12.060Z"
+  }
+}
