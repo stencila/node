@@ -1,5 +1,7 @@
-import FolderArchive from './FolderArchive'
+const FolderArchive = require('./FolderArchive')
 
-export class FileSystemStorer extends FolderArchive {
+class FileSystemStorer extends FolderArchive {
 
 }
+
+module.exports = FileSystemStorer

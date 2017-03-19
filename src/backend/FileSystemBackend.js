@@ -1,13 +1,13 @@
 const FolderArchive = require('./FolderArchive')
 const path = require('path')
 const fs = require('fs')
-const HTMLConverter = require('./HTMLConverter')
+const DocumentHTMLConverter = require('./DocumentHTMLConverter')
 const FileSystemStorer = require('./FileSystemStorer')
 const { uuid } = require('stencila')
 
 // Available converters
 const CONVERTERS = [
-  HTMLConverter
+  DocumentHTMLConverter
 ]
 
 class FileSystemBackend {
@@ -49,7 +49,7 @@ class FileSystemBackend {
     let documentPath = path.join(this.userLibraryDir, documentId)
     let storageDir = path.join(documentPath, 'storage')
     let persistedDocumentFilePath = path.join(storageDir, 'index.html')
-    let internalArchive = this._createFolderArchive(documentPath)
+    let internalArchive = new FolderArchive(documentPath)
     let sourceArchive = new FileSystemStorer(storageDir)
     let manifest = {
       "type": "document",
@@ -63,7 +63,7 @@ class FileSystemBackend {
       "updatedAt": new Date().toJSON()
     }
 
-    internalArchive.writeFile(
+    return internalArchive.writeFile(
       'index.html',
       'text/html',
       html
@@ -139,7 +139,7 @@ class FileSystemBackend {
   _writeLibrary(libraryData) {
     let libraryPath = path.join(this.userLibraryDir, 'library.json')
     return new Promise((resolve, reject) => {
-      fs.writeFile(libraryPath, libraryData, 'utf8', (err) => {
+      fs.writeFile(libraryPath, JSON.stringify(libraryData, null, '  '), 'utf8', (err) => {
         if (err) {
           return reject(err)
         } else {
