@@ -11,10 +11,10 @@ const httpShutdown = require('http-shutdown')
  */
 class HostHttpServer {
 
-  constructor (host, address, port) {
+  constructor (host, port = 2000) {
     this._host = host
-    this._address = address || '127.0.0.1'
-    this._port = port || 2000
+    this._address = '127.0.0.1'
+    this._port = port
     this._server = null
   }
 
