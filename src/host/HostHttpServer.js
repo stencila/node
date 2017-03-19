@@ -1,8 +1,9 @@
 const fs = require('fs')
 const http = require('http')
-const pathm = require('path')
+const path = require('path')
 const url = require('url')
 
+var pathIsInside = require('path-is-inside')
 const httpShutdown = require('http-shutdown')
 
 /**
@@ -17,14 +18,20 @@ class HostHttpServer {
     this._server = null
   }
 
-  get url () {
-    return 'http://' + this._address + ':' + this._port
+  /**
+   * Get the URL of this server
+   *   
+   * @return {string} - Server's URL, `null` if not serving
+   */
+  url () {
+    return this._server ? ('http://' + this._address + ':' + this._port) : null
   }
 
-  get status () {
-    return (this._server ? 'on' : 'off')
-  }
-
+  /**
+   * Start this server
+   * 
+   * @return {Promise}
+   */
   start () {
     return new Promise((resolve, reject) => {
       if (!this._server) {
@@ -50,33 +57,45 @@ class HostHttpServer {
     })
   }
 
+  /**
+   * Stop this server
+   * 
+   * @return {Promise}
+   */
   stop () {
     return new Promise((resolve) => {
       if (this._server) {
-        this._server.shutdown(function () {
-          console.log('HTTP server has been shutdown') // eslint-disable-line no-console
-        })
+        this._server.shutdown()
         this._server = null
       }
       resolve()
     })
   }
 
+  /**
+   * Handle a HTTP request
+   */
   handle (request, response) {
     let endpoint = this.route(request.method, request.url)
     if (endpoint) {
       let method = endpoint[0]
       let args = endpoint.slice(1)
-      try {
-        method.call(this, request, response, ...args)
-      } catch (error) {
-        this.error500(request, response, error)
-      }
+      return method.call(this, request, response, ...args)
+                   .catch(error => this.error500(request, response, error))
     } else {
       this.error400(request, response)
+      return Promise.resolve()
     }
   }
 
+  /**
+   * Route a HTTP request
+   *
+   * @param {string} verb - The request's HTTP verb (aka. "method") eg. GET
+   * @param {string} path - The requested path
+   * @return {array} - An array with first element being the method to call, 
+   *                   and subsequent elements being the call arguments
+   */
   route (verb, path) {
     if (path === '/') return [this.home]
     if (path === '/favicon.ico') return [this.statico, 'favicon.ico']
@@ -97,147 +116,145 @@ class HostHttpServer {
 
   home (request, response) {
     if (!acceptsJson(request)) {
-      this.statico(request, response, 'dashboard.html')
+      return this.statico(request, response, 'index.html')
     } else {
-      this._host.options()
+      return this._host.options()
         .then(options => {
           response.setHeader('Content-Type', 'application/json')
           response.end(JSON.stringify(options))
         })
-        .catch(error => this.error500(request, response, error))
     }
   }
 
-  statico (request, response, path) {
-    fs.readFile('./static/' + url.parse(path).pathname, (error, content) => {
-      if (error) {
-        if (error.code === 'ENOENT') {
-          response.writeHead(404)
-        } else {
-          response.writeHead(500)
-        }
-        response.end()
+  statico (request, response, path_) {
+    return new Promise((resolve) => {
+      let staticPath = path.join(__dirname, '../../static')
+      let requestedPath = path.join(staticPath, url.parse(path_).pathname)
+      if (!pathIsInside(requestedPath, staticPath)) {
+        this.error403(request, response, path_)
+        resolve()
       } else {
-        let contentType = {
-          '.html': 'text/html',
-          '.js': 'text/javascript',
-          '.css': 'text/css',
-          '.json': 'application/json',
-          '.png': 'image/png',
-          '.jpg': 'image/jpg',
-          '.gif': 'image/gif',
-          '.woff': 'application/font-woff',
-          '.ttf': 'application/font-ttf',
-          '.eot': 'application/vnd.ms-fontobject',
-          '.otf': 'application/font-otf',
-          '.svg': 'application/image/svg+xml'
-        }[String(pathm.extname(path)).toLowerCase()] || 'application/octect-stream'
-        response.writeHead(200, { 'Content-Type': contentType })
-        response.end(content, 'utf-8')
+        fs.readFile(requestedPath, (error, content) => {
+          if (error) {
+            if (error.code === 'ENOENT') {
+              this.error404(request, response, path_)
+            } else {
+              this.error500(request, response, error)
+            }
+            response.end()
+          } else {
+            let contentType = {
+              '.html': 'text/html',
+              '.js': 'text/javascript',
+              '.css': 'text/css',
+              '.json': 'application/json',
+
+              '.png': 'image/png',
+              '.jpg': 'image/jpg',
+              '.gif': 'image/gif',
+              '.svg': 'image/svg+xml',
+
+              '.woff': 'application/font-woff',
+              '.ttf': 'application/font-ttf',
+              '.eot': 'application/vnd.ms-fontobject',
+              '.otf': 'application/font-otf'
+            }[String(path.extname(path_)).toLowerCase()] || 'application/octect-stream'
+            response.setHeader('Content-Type', contentType)
+            response.end(content, 'utf-8')
+          }
+          resolve()
+        })
       }
     })
   }
 
-  post (request, response, service) {
-    bodify(request).then(body => { // eslint-disable-line no-unused-vars
-      this._host.post(service)
-        .then(id => {
-          response.setHeader('Content-Type', 'application/json')
-          response.end(JSON.stringify(id))
-        })
-        .catch(error => this.error500(request, response, error))
-    })
+  post (request, response, type) {
+    return bodify(request)
+      .then(body => {
+        let options = body ? JSON.parse(body) : {}
+        return this._host.post(type, options)
+          .then(id => {
+            response.setHeader('Content-Type', 'application/json')
+            response.end(id)
+          })
+      })
   }
 
   get (request, response, id) {
-    this._host.get(id)
+    return this._host.get(id)
       .then(instance => {
         response.setHeader('Content-Type', 'application/json')
         response.end(JSON.stringify(instance))
       })
-      .catch(error => this.error500(request, response, error))
   }
 
   put (request, response, id, method) {
-    bodify(request).then(body => {
-      // Ensure arguments are an array
-      let args = []
-      if (body) {
-        let value = JSON.parse(body)
-        if (value instanceof Array) {
-          args = value
-        } else if (value instanceof Object) {
-          args = Object.keys(value).map(key => value[key])
-        } else {
-          args = [value]
+    return bodify(request)
+      .then(body => {
+        // Ensure arguments are an array
+        let args = []
+        if (body) {
+          let value = JSON.parse(body)
+          if (value instanceof Array) {
+            args = value
+          } else if (value instanceof Object) {
+            args = Object.keys(value).map(key => value[key])
+          } else {
+            args = [value]
+          }
         }
-      }
-
-      this._host.put(id, method, args)
-        .then(result => {
-          response.setHeader('Content-Type', 'application/json')
-          response.end(JSON.stringify(result))
-        })
-        .catch(error => this.error500(request, response, error))
-    })
+        return args
+      })
+      .then(args => {
+        return this._host.put(id, method, args)
+          .then(result => {
+            response.setHeader('Content-Type', 'application/json')
+            response.end(JSON.stringify(result))
+          })
+      })
   }
 
   delete (request, response, id) {
-    this._host.delete(id)
+    return this._host.delete(id)
       .then(() => {
         response.end()
       })
-      .catch(error => this.error500(request, response, error))
+  }
+
+  error (request, response, status, error) {
+    response.statusCode = status
+    let content = JSON.stringify(error)
+    if (acceptsJson(request)) response.setHeader('Content-Type', 'application/json')
+    response.end(content)
   }
 
   error400 (request, response) {
-    response.statusCode = 400
-    let what = request.method + ' ' + request.url
-    let content
-    if (acceptsJson(request)) {
-      content = JSON.stringify({error: 'Bad request', what: what})
-      response.setHeader('Content-Type', 'application/json')
-    } else {
-      content = 'Bad request: ' + what
-    }
-    response.end(content)
+    this.error(request, response, 400, {error: 'Bad request', details: request.method + ' ' + request.url})
   }
 
-  error403 (request, response, what) {
-    response.statusCode = 403
-    let content
-    if (acceptsJson(request)) {
-      content = JSON.stringify({error: 'Access denied', what: what})
-      response.setHeader('Content-Type', 'application/json')
-    } else {
-      content = 'Access denied' + (what ? (': ' + what) : '')
-    }
-    response.end(content)
+  error403 (request, response, details) {
+    this.error(request, response, 403, {error: 'Access denied', details: details})
   }
 
-  error404 (request, response, what) {
-    response.statusCode = 404
-    let content
-    if (acceptsJson(request)) {
-      content = JSON.stringify({error: 'Not found', what: what})
-      response.setHeader('Content-Type', 'application/json')
-    } else {
-      content = 'Not found' + (what ? (': ' + what) : '')
-    }
-    response.end(content)
+  error404 (request, response, details) {
+    this.error(request, response, 404, {error: 'Not found', details: details})
   }
 
   error500 (request, response, error) {
-    response.statusCode = 500
-    let content
-    let what = error ? error.stack : ''
-    if (acceptsJson(request)) {
-      content = JSON.stringify({error: 'Internal error', what: what})
-      response.setHeader('Content-Type', 'application/json')
-    } else {
-      content = 'Internal error' + (what ? (': ' + what) : '')
-    }
-    response.end(content)
+    // Ignore this for code coverage it's difficult to test
+    /* istanbul ignore next */
+    (function () {
+      response.statusCode = 500
+      let content
+      let what = error ? error.stack : ''
+      if (acceptsJson(request)) {
+        content = JSON.stringify({error: 'Internal error', what: what})
+        response.setHeader('Content-Type', 'application/json')
+      } else {
+        content = 'Internal error' + (what ? (': ' + what) : '')
+      }
+      response.end(content)
+    }())
   }
 
 }
@@ -249,13 +266,21 @@ function acceptsJson (request) {
 
 function bodify (request) {
   return new Promise((resolve) => {
-    var body = []
-    request.on('data', function (chunk) {
-      body.push(chunk)
-    }).on('end', function () {
-      body = Buffer.concat(body).toString() // eslint-disable-line no-undef
-      resolve(body)
-    })
+    // Check if in tests and using a mock request
+    if (request._setBody) resolve(request.body)
+    else {
+      // Ignore this for code coverage it's difficult to test
+      /* istanbul ignore next */
+      (function () {
+        var body = []
+        request.on('data', function (chunk) {
+          body.push(chunk)
+        }).on('end', function () {
+          body = Buffer.concat(body).toString() // eslint-disable-line no-undef
+          resolve(body)
+        })
+      }())
+    }
   })
 }
 

@@ -49,7 +49,7 @@ class Host {
         package: 'node',
         version: version
       },
-      urls: Object.keys(this._servers).map(key => this._servers[key].url),
+      urls: Object.keys(this._servers).map(key => this._servers[key].url()),
       types: Object.keys(TYPES),
       instances: Object.keys(this._instances)
     })
@@ -181,7 +181,7 @@ class Host {
     Promise.resolve(
       this.start()
         .then(() => {
-          let url = this._servers.http.url
+          let url = this._servers.http.url()
           if (os.platform() === 'linux') {
             child.exec(`2>/dev/null 1>&2 xdg-open "${url}"`)
           } else {
