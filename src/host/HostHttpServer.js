@@ -250,8 +250,13 @@ class HostHttpServer {
    */
   error (request, response, status, error) {
     response.statusCode = status
-    let content = JSON.stringify(error)
-    if (acceptsJson(request)) response.setHeader('Content-Type', 'application/json')
+    let content
+    if (acceptsJson(request)) {
+      response.setHeader('Content-Type', 'application/json')
+      content = JSON.stringify(error)
+    } else {
+      content = error.error + '\n\n' + error.details
+    }
     response.end(content)
   }
 
@@ -268,20 +273,8 @@ class HostHttpServer {
   }
 
   error500 (request, response, error) {
-    // Ignore this for code coverage it's difficult to test
     /* istanbul ignore next */
-    (function () {
-      response.statusCode = 500
-      let content
-      let what = error ? error.stack : ''
-      if (acceptsJson(request)) {
-        content = JSON.stringify({error: 'Internal error', what: what})
-        response.setHeader('Content-Type', 'application/json')
-      } else {
-        content = 'Internal error' + (what ? (': ' + what) : '')
-      }
-      response.end(content)
-    }())
+    this.error(request, response, 500, {error: 'Not found', details: error ? error.stack : ''})
   }
 
 }
