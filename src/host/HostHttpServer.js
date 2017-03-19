@@ -43,23 +43,23 @@ class HostHttpServer {
 
         let server = http.createServer(this.handle.bind(this))
         server = httpShutdown(server)
-        server.on('error', function (error) {
+        server.on('error', error => {
           if (error.code === 'EADDRINUSE') {
             this._port += 10
             server.close()
-            server.listen(this._port, this._address, 511, () => {
-              resolve()
-            })
-            return
+            server.listen(this._port, this._address, 511)
+          } else {
+            reject(error)
           }
-          reject(error)
-        }.bind(this))
-        server.listen(this._port, this._address, 511, () => {
+        })
+        server.on('listening', () => {
           resolve()
         })
+        server.listen(this._port, this._address, 511)
         this._server = server
+      } else {
+        resolve()
       }
-      resolve()
     })
   }
 

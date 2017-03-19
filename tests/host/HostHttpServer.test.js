@@ -22,41 +22,28 @@ test('HostHttpServer.stop+start', function (t) {
     })
 })
 
-// Test which starts multiple servers designed to test binding to 
-// a new port if previous attempt to bind to a port fails
-// Currently passes but one of the servers is not shutting down
-// fully so the test process keeps serving
-test.skip('HostHttpServer.stop+start multiple', function (t) {
+test('HostHttpServer.stop+start multiple', function (t) {
   let s1 = new HostHttpServer()
   let s2 = new HostHttpServer()
 
-  console.log('Starting 1:' + s1.url())
   s1.start()
     .then(() => {
-      console.log('Started 1:' + s1.url())
       t.ok(s1.url().match(/http:\/\/127.0.0.1:(\d+)/))
     })
     .then(() => {
-      console.log('Starting 2:' + s2.url())
       return s2.start()
     })
     .then(() => {
-      console.log('Started 2:' + s2.url())
       t.ok(s2.url().match(/http:\/\/127.0.0.1:(\d+)/))
       t.notEqual(s2.url(), s1.url())
     })
     .then(() => {
-      console.log('Stopping 1:' + s1.url())
       return s1.stop()
     })
     .then(() => {
-      console.log('Stopped 1:' + s1.url())
-      console.log('Stopping 2:' + s2.url())
       return s2.stop()
     })
     .then(() => {
-      console.log('Stopped 2:' + s2.url())
-
       t.equal(s1.url(), null)
       t.equal(s2.url(), null)
       t.end()
