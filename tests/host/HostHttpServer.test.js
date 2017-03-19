@@ -141,7 +141,7 @@ test('HostHttpServer.statico', function (t) {
   s.statico(mock2.req, mock2.res, '/foo')
     .then(() => {
       t.equal(mock2.res.statusCode, 404)
-      t.equal(mock2.res._getData(), '{"error":"Not found","details":"/foo"}')
+      t.equal(mock2.res._getData(), 'Not found\n\n/foo')
     })
     .catch(error => {
       t.notOk(error)
@@ -151,7 +151,7 @@ test('HostHttpServer.statico', function (t) {
   s.statico(mock3.req, mock3.res, '../../../foo')
     .then(() => {
       t.equal(mock3.res.statusCode, 403)
-      t.equal(mock3.res._getData(), '{"error":"Access denied","details":"../../../foo"}')
+      t.equal(mock3.res._getData(), 'Access denied\n\n../../../foo')
     })
     .catch(error => {
       t.notOk(error)
