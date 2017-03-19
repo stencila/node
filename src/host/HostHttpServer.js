@@ -120,6 +120,9 @@ class HostHttpServer {
     return null
   }
 
+  /**
+   * Handle a request to `home`
+   */
   home (request, response) {
     if (!acceptsJson(request)) {
       return this.statico(request, response, 'index.html')
@@ -132,6 +135,9 @@ class HostHttpServer {
     }
   }
 
+  /**
+   * Handle a request a static file
+   */
   statico (request, response, path_) {
     return new Promise((resolve) => {
       let staticPath = path.join(__dirname, '../../static')
@@ -174,6 +180,9 @@ class HostHttpServer {
     })
   }
 
+  /**
+   * Handle a request to `post`
+   */
   post (request, response, type) {
     return bodify(request)
       .then(body => {
@@ -186,6 +195,9 @@ class HostHttpServer {
       })
   }
 
+  /**
+   * Handle a request to `get`
+   */
   get (request, response, id) {
     return this._host.get(id)
       .then(instance => {
@@ -194,6 +206,9 @@ class HostHttpServer {
       })
   }
 
+  /**
+   * Handle a request to `put`
+   */
   put (request, response, id, method) {
     return bodify(request)
       .then(body => {
@@ -220,6 +235,9 @@ class HostHttpServer {
       })
   }
 
+  /**
+   * Handle a request to `delete`
+   */
   delete (request, response, id) {
     return this._host.delete(id)
       .then(() => {
@@ -227,6 +245,9 @@ class HostHttpServer {
       })
   }
 
+  /**
+   * General error handling
+   */
   error (request, response, status, error) {
     response.statusCode = status
     let content = JSON.stringify(error)
