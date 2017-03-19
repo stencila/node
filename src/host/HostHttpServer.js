@@ -3,8 +3,10 @@ const http = require('http')
 const path = require('path')
 const url = require('url')
 
-var pathIsInside = require('path-is-inside')
+const pathIsInside = require('path-is-inside')
 const httpShutdown = require('http-shutdown')
+
+const isSuperUser = require('../util/isSuperUser')
 
 /**
  * A HTTP server for a `Host`
@@ -35,8 +37,8 @@ class HostHttpServer {
   start () {
     return new Promise((resolve, reject) => {
       if (!this._server) {
-        if (process.getuid && process.getuid() === 0) {
-          return reject(new Error('Serving host while root user is dangerous and is not allowed'))
+        if (isSuperUser()) {
+          return reject(new Error('Serving host as a super user is dangerous and is not allowed'))
         }
 
         let server = http.createServer(this.handle.bind(this))
