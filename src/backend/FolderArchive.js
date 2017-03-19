@@ -27,7 +27,7 @@ class FolderArchive {
         if (err) {
           return reject(err)
         }
-        resolve(data)
+        resolve(data, this)
       })
     })
   }
@@ -42,7 +42,7 @@ class FolderArchive {
           if (err) {
             return reject(err)
           }
-          resolve()
+          resolve(this)
         })
       } else if (data instanceof Blob) {
         reject(new Error('Blobs are not yet supported'))

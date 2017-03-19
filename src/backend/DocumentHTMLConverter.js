@@ -37,7 +37,7 @@ class HTMLConverter {
       return internalArchive.writeFile(
         'stencila-manifest.json',
         'application/json',
-        JSON.stringify(manifest)
+        JSON.stringify(manifest, null, '  ')
       )
     }).then(() => {
       return manifest
@@ -49,7 +49,7 @@ class HTMLConverter {
   */
   exportDocument(internalArchive, sourceArchive, folderPath, fileName) {
     return internalArchive.readFile('index.html', 'text/html').then((htmlFile) => {
-      sourceArchive.writeFile(fileName, 'text/html', htmlFile)
+      return sourceArchive.writeFile(fileName, 'text/html', htmlFile)
     })
   }
 }

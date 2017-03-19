@@ -25,17 +25,20 @@ class FileSystemBackend {
   importFile(filePath) {
     let sourceDir = path.dirname(filePath)
     let sourceArchive = new FileSystemStorer(sourceDir)
-    let originalFileName = path.basename(filePath)
-    let converter = this._getConverter(filePath)
+    let fileName = path.basename(filePath)
+    let converter = this._getConverter(fileName)
     let documentId = uuid()
     let documentPath = path.join(this.userLibraryDir, documentId)
-    let internalArchive = this._createFolderArchive(documentPath)
-    return converter.import(
+    let internalArchive = new FolderArchive(documentPath)
+    return converter.importDocument(
       sourceArchive,
       internalArchive,
-      originalFileName
+      sourceDir,
+      fileName
     ).then((manifest) => {
       return this._createLibraryRecord(documentId, manifest)
+    }).then(() => {
+      return documentId
     })
   }
 
@@ -48,7 +51,6 @@ class FileSystemBackend {
     documentId = documentId || uuid()
     let documentPath = path.join(this.userLibraryDir, documentId)
     let storageDir = path.join(documentPath, 'storage')
-    let persistedDocumentFilePath = path.join(storageDir, 'index.html')
     let internalArchive = new FolderArchive(documentPath)
     let sourceArchive = new FileSystemStorer(storageDir)
     let manifest = {
@@ -56,7 +58,8 @@ class FileSystemBackend {
       "storage": {
         "storerType": "filesystem",
         "contentType": "html",
-        "filePath": persistedDocumentFilePath
+        "folderPath": storageDir,
+        "fileName": 'index.html'
       },
       "title": "No title available yet",
       "createdAt": new Date().toJSON(),
@@ -73,7 +76,7 @@ class FileSystemBackend {
       return internalArchive.writeFile(
         'stencila-manifest.json',
         'application/json',
-        JSON.stringify(manifest)
+        JSON.stringify(manifest, null, '  ')
       )
     }).then(() => {
       // Library record is a weak copy of the document manifest
@@ -86,13 +89,16 @@ class FileSystemBackend {
     may involve conversion. E.g. when the content type is Markdown
   */
   storeArchive(internalArchive) {
-    internalArchive.readFile('stencila-manifest.json').then((manifest) => {
-      let filePath = manifest.storage.filePath
-      let storageDir = path.dirname(filePath)
-      let fileName = path.basename(filePath)
-      let converter = this._getConverter(filePath)
-      let sourceArchive = new FileSystemStorer(storageDir)
-      converter.export(internalArchive, sourceArchive, fileName)
+    return internalArchive.readFile(
+      'stencila-manifest.json',
+      'application/json'
+    ).then((manifest) => {
+      manifest = JSON.parse(manifest)
+      let folderPath = manifest.storage.folderPath
+      let fileName = manifest.storage.fileName
+      let converter = this._getConverter(fileName)
+      let storer = new FileSystemStorer(folderPath)
+      return converter.exportDocument(internalArchive, storer, folderPath, fileName)
     })
   }
 
@@ -109,7 +115,7 @@ class FileSystemBackend {
   */
   _getConverter(filePath) {
     let converter
-    for (var i = 0; i < CONVERTERS.length -1 && !converter; i++) {
+    for (var i = 0; i < CONVERTERS.length && !converter; i++) {
       let ConverterClass = CONVERTERS[i]
       if (ConverterClass.match(filePath)) {
         converter = new ConverterClass()
@@ -119,12 +125,11 @@ class FileSystemBackend {
   }
 
   /*
-    Reads and parses the library file. If it does not exist, it will be created within
-    userLibraryDir.
+    Reads and parses the library file. If it does not exist, it will be created
+    within userLibraryDir.
   */
   getLibrary() {
     let libraryPath = path.join(this.userLibraryDir, 'library.json')
-
     return new Promise((resolve, reject) => {
       fs.readFile(libraryPath, 'utf8', (err, data) => {
         if (err) {
