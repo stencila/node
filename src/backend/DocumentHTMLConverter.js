@@ -54,8 +54,8 @@ class HTMLConverter {
   }
 }
 
-HTMLConverter.match = function(filePath) {
-  return filePath.indexOf('.html') >= 0
+HTMLConverter.match = function(fileName) {
+  return fileName.indexOf('.html') >= 0
 }
 
 module.exports = HTMLConverter
