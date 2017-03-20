@@ -148,7 +148,7 @@ class FileSystemBackend {
         if (err) {
           return reject(err)
         } else {
-          resolve()
+          resolve(this)
         }
       })
     })
