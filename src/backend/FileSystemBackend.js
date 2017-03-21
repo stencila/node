@@ -216,7 +216,6 @@ class FileSystemBackend {
         'application/json',
         JSON.stringify(manifest, null, '  ')
       ).then(() => {
-        console.log('updated manifest.')
         return this._setLibraryRecord(documentId, manifest)
       })
     })
