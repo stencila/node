@@ -36,7 +36,7 @@ class FileSystemBackend {
       sourceDir,
       fileName
     ).then((manifest) => {
-      return this._createLibraryRecord(documentId, manifest)
+      return this._setLibraryRecord(documentId, manifest)
     }).then(() => {
       return documentId
     })
@@ -46,6 +46,8 @@ class FileSystemBackend {
     Create a new document (used by the dashboard)
 
     Takes an html template and an optional documentId
+
+    TODO: should extract the title from the source file
   */
   createDocument(html, documentId) {
     documentId = documentId || uuid()
@@ -61,7 +63,7 @@ class FileSystemBackend {
         "folderPath": storageDir,
         "fileName": 'index.html'
       },
-      "title": "No title available yet",
+      "title": "Untitled",
       "createdAt": new Date().toJSON(),
       "updatedAt": new Date().toJSON()
     }
@@ -80,7 +82,9 @@ class FileSystemBackend {
       )
     }).then(() => {
       // Library record is a weak copy of the document manifest
-      return this._createLibraryRecord(documentId, manifest)
+      return this._setLibraryRecord(documentId, manifest)
+    }).then(() => {
+      return documentId
     })
   }
 
@@ -102,8 +106,10 @@ class FileSystemBackend {
     })
   }
 
-  _createLibraryRecord(documentId, manifest) {
+  _setLibraryRecord(documentId, manifest) {
+    let state = {}
     return this.getLibrary().then((libraryData) => {
+      state.libraryData = libraryData
       libraryData[documentId] = manifest
       return this._writeLibrary(libraryData)
     })
@@ -187,6 +193,32 @@ class FileSystemBackend {
   getArchive (documentId) {
     return new Promise((resolve) => {
       resolve(new FolderArchive(path.join(this.userLibraryDir, documentId)))
+    })
+  }
+
+  /*
+    Updates the manifest file in the buffer as well as the weak copy in
+    library.json.
+
+    Used to update the document title when it has changed, as well as the
+    updatedAt timestamp.
+  */
+  updateManifest(documentId, props) {
+    let state = {}
+    return this.getArchive(documentId).then((buffer) => {
+      state.buffer = buffer
+      return buffer.readFile('stencila-manifest.json', 'application/json')
+    }).then((manifest) => {
+      manifest = JSON.parse(manifest)
+      Object.assign(manifest, props)
+      state.buffer.writeFile(
+        'stencila-manifest.json',
+        'application/json',
+        JSON.stringify(manifest, null, '  ')
+      ).then(() => {
+        console.log('updated manifest.')
+        return this._setLibraryRecord(documentId, manifest)
+      })
     })
   }
 }

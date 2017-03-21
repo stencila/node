@@ -19,7 +19,7 @@ class HTMLConverter {
         "folderPath": folderPath,
         "fileName": fileName
       },
-      "title": "No title available yet",
+      "title": "Untitled",
       "createdAt": "2017-03-10T00:03:12.060Z",
       "updatedAt": "2017-03-10T00:03:12.060Z"
     }

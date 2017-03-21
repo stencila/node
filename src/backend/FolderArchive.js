@@ -27,7 +27,7 @@ class FolderArchive {
         if (err) {
           return reject(err)
         }
-        resolve(data, this)
+        resolve(data)
       })
     })
   }
