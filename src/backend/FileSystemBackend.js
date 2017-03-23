@@ -205,8 +205,6 @@ class FileSystemBackend {
     })
   }
 
-
-
   /*
     Updates the manifest file in the buffer as well as the weak copy in
     library.json.
