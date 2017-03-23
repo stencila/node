@@ -2,19 +2,19 @@
 const fs = require('fs')
 const path = require('path')
 
-class FolderArchive {
+class FileSystemBuffer {
 
-  constructor (folderPath) {
-    this.folderPath = folderPath
-    // If folderPath does not exit, create it
-    // This allows to create empty folder archives
-    if (!fs.existsSync(folderPath)) {
-      fs.mkdirSync(folderPath)
+  constructor (archivePath) {
+    this.archivePath = archivePath
+    // If buffer root does not exit, create it
+    // This allows to write to not yet existing folders
+    if (!fs.existsSync(archivePath)) {
+      fs.mkdirSync(archivePath)
     }
   }
 
   /*
-    Reads a file from the archive
+    Reads a file from the buffer
 
     Returns a string when isText is true, for binary data a Blob object
   */
@@ -23,7 +23,7 @@ class FolderArchive {
       if (mimeType.indexOf('text/') < 0 && mimeType.indexOf('application/json') < 0) {
         return reject(new Error('Binary data not yet supported'))
       }
-      fs.readFile(path.join(this.folderPath, filePath), 'utf8', (err, data) => {
+      fs.readFile(path.join(this.archivePath, filePath), 'utf8', (err, data) => {
         if (err) {
           return reject(err)
         }
@@ -38,7 +38,7 @@ class FolderArchive {
   writeFile(filePath, mimeType, data) {
     return new Promise((resolve, reject) => {
       if (typeof data === 'string') {
-        fs.writeFile(path.join(this.folderPath, filePath), data, 'utf8', (err) => {
+        fs.writeFile(path.join(this.archivePath, filePath), data, 'utf8', (err) => {
           if (err) {
             return reject(err)
           }
@@ -53,4 +53,4 @@ class FolderArchive {
   }
 }
 
-module.exports = FolderArchive
+module.exports = FileSystemBuffer

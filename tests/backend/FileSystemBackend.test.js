@@ -16,8 +16,8 @@ let TMP_FOLDER = path.join(__dirname, 'tmp-folder')
 test('Create a new document', function (t) {
   let backend = _initBackend()
   backend.createDocument(helloWorld, 'hello-world').then(() => {
-    backend.getArchive('hello-world').then((archive) => {
-      archive.readFile('index.html', 'text/html').then((data) => {
+    backend.getBuffer('hello-world').then((buffer) => {
+      buffer.readFile('index.html', 'text/html').then((data) => {
         t.equal(data, helloWorld)
         // TODO: Test manifest (did title get extracted from doc properly?)
         t.end()
@@ -30,8 +30,8 @@ test('Import an HTML document', function (t) {
   let backend = _initBackend()
   let filePath = path.join(__dirname, 'seed', 'hello-world.html')
   backend.importFile(filePath).then((documentId) => {
-    backend.getArchive(documentId).then((archive) => {
-      archive.readFile('index.html', 'text/html').then((data) => {
+    backend.getBuffer(documentId).then((buffer) => {
+      buffer.readFile('index.html', 'text/html').then((data) => {
         t.equal(data, helloWorld)
         // TODO: Test manifest (did title get extracted from doc properly?)
         t.end()
@@ -43,17 +43,35 @@ test('Import an HTML document', function (t) {
 test('Saving / exporting a document', function (t) {
   let backend = _initBackend()
   backend.createDocument(helloWorld, 'hello-world').then(() => {
-    return backend.getArchive('hello-world')
-  }).then((archive) => {
-    return archive.writeFile('index.html', 'text/html', helloWorldModified)
-  }).then((archive) => {
-    return backend.storeArchive(archive)
+    return backend.getBuffer('hello-world')
+  }).then((buffer) => {
+    return buffer.writeFile('index.html', 'text/html', helloWorldModified)
+  }).then((buffer) => {
+    return backend.storeBuffer(buffer)
   }).then(() => {
     let updatedFile = fs.readFileSync(
       path.join(TMP_FOLDER, 'hello-world', 'storage', 'index.html'),
       'utf8'
     )
     t.equal(updatedFile, helloWorldModified)
+    t.end()
+  })
+})
+
+test('Discard a buffer and restore last saved version', function (t) {
+  let backend = _initBackend()
+  backend.createDocument(helloWorld, 'hello-world').then(() => {
+    return backend.getBuffer('hello-world')
+  }).then((buffer) => {
+    return buffer.writeFile('index.html', 'text/html', helloWorldModified)
+  }).then((buffer) => {
+    return backend.discardBuffer(buffer, 'hello-world')
+  }).then(() => {
+    let updatedFile = fs.readFileSync(
+      path.join(TMP_FOLDER, 'hello-world', 'index.html'),
+      'utf8'
+    )
+    t.equal(updatedFile, helloWorld)
     t.end()
   })
 })

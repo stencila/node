@@ -2,7 +2,7 @@ const rimraf = require('rimraf')
 const fs = require('fs')
 const path = require('path')
 const test = require('tape')
-const FolderArchive = require('../../src/backend/FolderArchive')
+const FileSystemBuffer = require('../../src/backend/FileSystemBuffer')
 
 let TMP_FOLDER = path.join(__dirname, 'tmp-folder')
 
@@ -26,5 +26,5 @@ function _createEmptyFolderArchive() {
   rimraf.sync(TMP_FOLDER)
   fs.mkdirSync(TMP_FOLDER)
   // Setup
-  return new FolderArchive(TMP_FOLDER)
+  return new FileSystemBuffer(TMP_FOLDER)
 }

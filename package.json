@@ -1,6 +1,6 @@
 {
   "name": "stencila-node",
-  "version": "0.25.0-preview.0",
+  "version": "0.25.0-preview.1",
   "description": "Stencila for Node.js",
   "main": "index.js",
   "directories": {
@@ -51,6 +51,7 @@
     "tape": "^4.6.0"
   },
   "dependencies": {
+    "rimraf": "2.6.1",
     "path-is-inside": "^1.0.2",
     "child-process-promise": "^2.2.0",
     "http-shutdown": "^1.1.0",

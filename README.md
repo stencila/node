@@ -6,11 +6,6 @@
 [![Dependency status](https://david-dm.org/stencila/node.svg)](https://david-dm.org/stencila/node)
 [![Chat](https://badges.gitter.im/stencila/stencila.svg)](https://gitter.im/stencila/stencila)
 
-### Status
-
-![](http://blog.stenci.la/wip.png)
-
-This is very much a work in progress. See our [main repo](https://github.com/stencila/stencila) for more details.
 
 ### Install
 

@@ -1,9 +1,9 @@
-const FolderArchive = require('./FolderArchive')
+const FileSystemBuffer = require('./FileSystemBuffer')
 const path = require('path')
 const fs = require('fs')
-const DocumentHTMLConverter = require('./DocumentHTMLConverter')
+const rimraf = require('rimraf')
 const FileSystemStorer = require('./FileSystemStorer')
-const { uuid } = require('stencila')
+const { uuid, DocumentHTMLConverter } = require('stencila')
 
 // Available converters
 const CONVERTERS = [
@@ -18,23 +18,21 @@ class FileSystemBackend {
 
   /*
     Reads a file from the file system (e.g. HTML or Markdown) converts it into
-    a Stencila archive and adds it to the library.
+    a Stencila buffer and adds it to the library.
 
     NOTE: We hard-code the FileSystemStorer for now
   */
   importFile(filePath) {
-    let sourceDir = path.dirname(filePath)
-    let sourceArchive = new FileSystemStorer(sourceDir)
-    let fileName = path.basename(filePath)
-    let converter = this._getConverter(fileName)
+    let storageArchivePath = path.dirname(filePath)
+    let mainFileName = path.basename(filePath)
+    let storer = new FileSystemStorer(storageArchivePath, mainFileName, 'external')
+    let converter = this._getConverter(mainFileName)
     let documentId = uuid()
     let documentPath = path.join(this.userLibraryDir, documentId)
-    let internalArchive = new FolderArchive(documentPath)
+    let buffer = new FileSystemBuffer(documentPath)
     return converter.importDocument(
-      sourceArchive,
-      internalArchive,
-      sourceDir,
-      fileName
+      storer,
+      buffer
     ).then((manifest) => {
       return this._setLibraryRecord(documentId, manifest)
     }).then(() => {
@@ -52,65 +50,86 @@ class FileSystemBackend {
   createDocument(html, documentId) {
     documentId = documentId || uuid()
     let documentPath = path.join(this.userLibraryDir, documentId)
-    let storageDir = path.join(documentPath, 'storage')
-    let internalArchive = new FolderArchive(documentPath)
-    let sourceArchive = new FileSystemStorer(storageDir)
-    let manifest = {
-      "type": "document",
-      "storage": {
-        "storerType": "filesystem",
-        "contentType": "html",
-        "folderPath": storageDir,
-        "fileName": 'index.html'
-      },
-      "title": "Untitled",
-      "createdAt": new Date().toJSON(),
-      "updatedAt": new Date().toJSON()
-    }
+    let storageArchivePath = path.join(documentPath, 'storage')
+    let buffer = new FileSystemBuffer(documentPath)
+    let mainFileName = 'index.html'
+    let storer = new FileSystemStorer(storageArchivePath, mainFileName)
+    let converter = this._getConverter(mainFileName)
 
-    return internalArchive.writeFile(
-      'index.html',
-      'text/html',
-      html
-    ).then(() => {
-      return sourceArchive.writeFile('index.html', 'text/html', html)
-    }).then(() => {
-      return internalArchive.writeFile(
-        'stencila-manifest.json',
-        'application/json',
-        JSON.stringify(manifest, null, '  ')
-      )
-    }).then(() => {
-      // Library record is a weak copy of the document manifest
-      return this._setLibraryRecord(documentId, manifest)
-    }).then(() => {
-      return documentId
+    return storer.writeFile('index.html', 'text/html', html).then(() => {
+      return converter.importDocument(
+        storer,
+        buffer
+      ).then((manifest) => {
+        return this._setLibraryRecord(documentId, manifest)
+      }).then(() => {
+        return documentId
+      })
+    })
+  }
+
+  deleteDocument(documentId) {
+    let documentPath = path.join(this.userLibraryDir, documentId)
+    return new Promise((resolve, reject) => {
+      rimraf(documentPath, (err) => {
+        if (err) {
+          reject(err)
+        } else {
+          this._deleteLibraryRecord(documentId).then(() => {
+            resolve()
+          })
+        }
+      })
     })
   }
 
   /*
-    Takes an internal archive and stores it in the original location. This step
-    may involve conversion. E.g. when the content type is Markdown
+    Takes an internal buffer and stores it in the original location. This step
+    involves conversion. E.g. when the content type is Markdown
   */
-  storeArchive(internalArchive) {
-    return internalArchive.readFile(
+  storeBuffer(buffer) {
+    return buffer.readFile(
       'stencila-manifest.json',
       'application/json'
     ).then((manifest) => {
       manifest = JSON.parse(manifest)
-      let folderPath = manifest.storage.folderPath
-      let fileName = manifest.storage.fileName
-      let converter = this._getConverter(fileName)
-      let storer = new FileSystemStorer(folderPath)
-      return converter.exportDocument(internalArchive, storer, folderPath, fileName)
+      let archivePath = manifest.storage.archivePath
+      let mainFilePath = manifest.storage.mainFilePath
+      let converter = this._getConverter(mainFilePath)
+      let storer = new FileSystemStorer(archivePath, mainFilePath)
+      return converter.exportDocument(buffer, storer)
+    })
+  }
+
+  /*
+    Discards unsaved changes and restores from the latest stored version
+  */
+  discardBuffer(buffer, documentId) {
+    return buffer.readFile(
+      'stencila-manifest.json',
+      'application/json'
+    ).then((manifest) => {
+      manifest = JSON.parse(manifest)
+      let archivePath = manifest.storage.archivePath
+      let mainFilePath = manifest.storage.mainFilePath
+      let converter = this._getConverter(mainFilePath)
+      let storer = new FileSystemStorer(archivePath, mainFilePath)
+      return converter.importDocument(storer, buffer).then((manifest) => {
+        return this._setLibraryRecord(documentId, manifest)
+      })
     })
   }
 
   _setLibraryRecord(documentId, manifest) {
-    let state = {}
     return this.getLibrary().then((libraryData) => {
-      state.libraryData = libraryData
       libraryData[documentId] = manifest
+      return this._writeLibrary(libraryData)
+    })
+  }
+
+  _deleteLibraryRecord(documentId) {
+    return this.getLibrary().then((libraryData) => {
+      delete libraryData[documentId]
       return this._writeLibrary(libraryData)
     })
   }
@@ -168,31 +187,21 @@ class FileSystemBackend {
   listDocuments () {
     return this.getLibrary().then((libraryData) => {
       let documentEntries = []
-
-      Object.keys(libraryData).forEach((address) => {
-        let doc = libraryData[address]
-        documentEntries.push({
-          type: doc.type,
-          address: address,
-          title: doc.title,
-          openedAt: doc.openedAt,
-          createAt: doc.modifiedAt,
-          modifiedAt: doc.modifiedAt
-        })
+      Object.keys(libraryData).forEach((documentId) => {
+        let manifest = libraryData[documentId]
+        let entry = Object.assign({}, manifest, {id: documentId})
+        documentEntries.push(entry)
       })
       return documentEntries
     })
   }
 
   /*
-    Returns an archive object.
-
-    TODO: We should support other archive types than FolderArchive.
-          E.g. MarkdownArchive (represented by a .md file on disk)
+    Returns a Stencila buffer object.
   */
-  getArchive (documentId) {
+  getBuffer (documentId) {
     return new Promise((resolve) => {
-      resolve(new FolderArchive(path.join(this.userLibraryDir, documentId)))
+      resolve(new FileSystemBuffer(path.join(this.userLibraryDir, documentId)))
     })
   }
 
@@ -205,7 +214,7 @@ class FileSystemBackend {
   */
   updateManifest(documentId, props) {
     let state = {}
-    return this.getArchive(documentId).then((buffer) => {
+    return this.getBuffer(documentId).then((buffer) => {
       state.buffer = buffer
       return buffer.readFile('stencila-manifest.json', 'application/json')
     }).then((manifest) => {
@@ -216,7 +225,6 @@ class FileSystemBackend {
         'application/json',
         JSON.stringify(manifest, null, '  ')
       ).then(() => {
-        console.log('updated manifest.')
         return this._setLibraryRecord(documentId, manifest)
       })
     })
