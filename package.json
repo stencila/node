@@ -1,6 +1,6 @@
 {
   "name": "stencila-node",
-  "version": "0.25.0-preview.2",
+  "version": "0.25.0",
   "description": "Stencila for Node.js",
   "main": "index.js",
   "directories": {
@@ -55,6 +55,6 @@
     "path-is-inside": "^1.0.2",
     "child-process-promise": "^2.2.0",
     "http-shutdown": "^1.1.0",
-    "stencila": "0.25-preview"
+    "stencila": "^0.25.2"
   }
 }
