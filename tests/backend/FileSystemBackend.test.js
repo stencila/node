@@ -40,6 +40,31 @@ test('Import an HTML document', function (t) {
   })
 })
 
+test('List documents', function (t) {
+  let backend = _initBackend()
+  backend.createDocument('content', 'my-document').then(() => {
+    return backend.listDocuments()
+  }).then(list => {
+    t.equal(list.length, 1)
+    t.equal(list[0].id, 'my-document')
+    t.equal(list[0].type, 'document')
+    t.end()
+  })
+})
+
+test('Update manifest', function (t) {
+  let backend = _initBackend()
+  backend.createDocument('content', 'my-document').then(() => {
+    return backend.updateManifest('my-document', {})
+  }).then(manifest => {
+    t.equal(manifest, undefined)
+    t.end()
+  }).catch(error => {
+    t.notOk(error)
+    t.end()
+  })
+})
+
 test('Saving / exporting a document', function (t) {
   let backend = _initBackend()
   backend.createDocument(helloWorld, 'hello-world').then(() => {
@@ -75,6 +100,24 @@ test('Discard a buffer and restore last saved version', function (t) {
     t.end()
   })
 })
+
+test('Delete a document', function (t) {
+  let backend = _initBackend()
+  backend.createDocument(helloWorld, 'hello-world').then(documentId => {
+    return backend.deleteDocument(documentId)
+  }).then(() => {
+    return backend.getBuffer('hello-world')
+  }).then(buffer => {
+    buffer.readFile('index.html', 'text/html').then(() => {
+      t.fail("shouldn't get here")
+      t.end()
+    }).catch(error => {
+      t.ok(error.message.match('no such file or directory'))
+      t.end()
+    })
+  })
+})
+
 
 test('cleanup', function(t) {
   rimraf.sync(TMP_FOLDER)
