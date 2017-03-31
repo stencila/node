@@ -2,6 +2,9 @@
 const fs = require('fs')
 const path = require('path')
 
+/**
+ * A buffer that resides on the local file system
+ */
 class FileSystemBuffer {
 
   constructor (archivePath) {

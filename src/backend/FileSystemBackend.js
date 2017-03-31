@@ -10,6 +10,9 @@ const CONVERTERS = [
   DocumentHTMLConverter
 ]
 
+/**
+ * A backend for the local file system
+ */
 class FileSystemBackend {
 
   constructor (userLibraryDir) {
