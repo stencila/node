@@ -6,12 +6,23 @@
 [![Dependency status](https://david-dm.org/stencila/node.svg)](https://david-dm.org/stencila/node)
 [![Chat](https://badges.gitter.im/stencila/stencila.svg)](https://gitter.im/stencila/stencila)
 
+Provides a Node.js execution context. Also includes backend services for Stencila user intefarces including [`stencila/desktop`](https://github.com/stencila/desktop).
+
+### Install
+
+```sh
+npm install stencila-node
+```
 
 ### Use
 
+Run the `stencila-node` script,
+
+```sh
+./node_modules/.bin/stencila-node
 ```
-npm install stencila-node
-```
+
+This will serve a `Host` on localhost which will be asked by Stencila user interfaces to create a new `NodeContext` when necessary.
 
 Documentation is available at https://stencila.github.io/node.
 
