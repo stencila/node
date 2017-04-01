@@ -10,6 +10,9 @@ const CONVERTERS = [
   DocumentHTMLConverter
 ]
 
+/**
+ * A backend for the local file system
+ */
 class FileSystemBackend {
 
   constructor (userLibraryDir) {
@@ -157,11 +160,9 @@ class FileSystemBackend {
     let libraryPath = path.join(this.userLibraryDir, 'library.json')
     return new Promise((resolve, reject) => {
       fs.readFile(libraryPath, 'utf8', (err, data) => {
-        if (err) {
-          return reject(err)
-        } else {
-          resolve(JSON.parse(data))
-        }
+        /* istanbul ignore next */
+        if (err) reject(err)
+        else resolve(JSON.parse(data))
       })
     })
   }
@@ -170,11 +171,9 @@ class FileSystemBackend {
     let libraryPath = path.join(this.userLibraryDir, 'library.json')
     return new Promise((resolve, reject) => {
       fs.writeFile(libraryPath, JSON.stringify(libraryData, null, '  '), 'utf8', (err) => {
-        if (err) {
-          return reject(err)
-        } else {
-          resolve(this)
-        }
+        /* istanbul ignore next */
+        if (err) reject(err)
+        else resolve(this)
       })
     })
   }

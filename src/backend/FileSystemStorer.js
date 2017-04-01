@@ -1,5 +1,8 @@
 const FileSystemBuffer = require('./FileSystemBuffer')
 
+/**
+ * A storer for the local file system
+ */
 class FileSystemStorer extends FileSystemBuffer {
   constructor (archivePath, mainFilePath, isExternal) {
     super(archivePath)
