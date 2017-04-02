@@ -6,7 +6,7 @@
 [![Dependency status](https://david-dm.org/stencila/node.svg)](https://david-dm.org/stencila/node)
 [![Chat](https://badges.gitter.im/stencila/stencila.svg)](https://gitter.im/stencila/stencila)
 
-Provides a Node.js execution context. Also includes backend services for Stencila user intefarces including [`stencila/desktop`](https://github.com/stencila/desktop).
+Provides a Node.js execution context. Also includes backend services for integration into Stencila applications e.g. [`stencila/desktop`](https://github.com/stencila/desktop).
 
 ### Install
 
