@@ -189,6 +189,7 @@ class Host {
    * Opens the default browser at the URL of this host
    */
   view () {
+    // Difficult to test headlessly, so don't include in coverage
     /* istanbul ignore next */
     Promise.resolve(
       this.start()
