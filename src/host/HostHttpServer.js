@@ -25,7 +25,7 @@ class HostHttpServer {
    *   
    * @return {string} - Server's URL, `null` if not serving
    */
-  url () {
+  get url () {
     return this._server ? ('http://' + this._address + ':' + this._port) : null
   }
 

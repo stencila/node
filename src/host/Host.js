@@ -12,7 +12,7 @@ const TYPES = {
 
 /**
  * A `Host` allows you to create, get, run methods of, and delete instances of various types.
- * The types can be thought of a "services" provides by the host e.g. `NoteContext`, `FilesystemStorer`
+ * The types can be thought of a "services" provided by the host e.g. `NoteContext`, `FilesystemStorer`
  *
  * The API of a host is similar to that of a HTTP server. It's methods names
  * (e.g. `post`, `get`) are similar to HTTP methods (e.g. `POST`, `GET`) but
