@@ -172,6 +172,18 @@ class Host {
   }
 
   /**
+   * Get a list of server names for this host
+   *
+   * Servers are identified by the protocol shorthand
+   * e.g. `http` for `HostHttpServer`
+   * 
+   * @return {array} Array of strings
+   */
+  get servers () {
+    return Object.keys(this._servers)
+  }
+
+  /**
    * View this host in the browser
    *
    * Opens the default browser at the URL of this host

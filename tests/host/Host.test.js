@@ -140,15 +140,17 @@ test('Host.delete', t => {
     })
 })
 
-test('Host.start+stop', t => {
+test('Host.start+stop+servers', t => {
   let h = new Host()
 
   h.start()
     .then(() => {
       t.ok(h._servers.http)
+      t.deepEqual(h.servers, ['http'])
       h.stop()
         .then(() => {
           t.notOk(h._servers.http)
+          t.deepEqual(h.servers, [])
           t.end()
         })
     })
