@@ -106,7 +106,9 @@ test('HostHttpServer.home', function (t) {
     .then(() => {
       t.equal(mock1.res.statusCode, 200)
       let manifest = JSON.parse(mock1.res._getData())
-      t.equal(manifest.stencila.package, 'node')
+      h.options().then(expected => {
+        t.deepEqual(manifest, expected)
+      })
     })
     .catch(error => {
       t.notOk(error)
@@ -167,7 +169,7 @@ test('HostHttpServer.post', function (t) {
   s.post(req, res, 'NodeContext') // Testing this
     .then(() => {
       t.equal(res.statusCode, 200)
-      let id = res._getData()
+      let id = JSON.parse(res._getData())
       t.ok(h._instances[id])
       t.end()
     })

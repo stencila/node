@@ -103,6 +103,8 @@ class HostHttpServer {
    *                   and subsequent elements being the call arguments
    */
   route (verb, path) {
+    if (verb === 'OPTIONS') return [this.options]
+
     if (path === '/') return [this.home]
     if (path === '/favicon.ico') return [this.statico, 'favicon.ico']
     if (path.substring(0, 8) === '/static/') return [this.statico, path.substring(8)]
@@ -121,6 +123,15 @@ class HostHttpServer {
   }
 
   /**
+   * Handle an OPTIONS request
+   *
+   * Necessary for preflighted CORS requests (https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS#Preflighted_requests)
+   */
+  options (request, response) {
+    response.end()
+  }
+
+  /**
    * Handle a request to `home`
    */
   home (request, response) {
@@ -136,7 +147,7 @@ class HostHttpServer {
   }
 
   /**
-   * Handle a request a static file
+   * Handle a request for a static file
    */
   statico (request, response, path_) {
     return new Promise((resolve) => {
@@ -190,7 +201,7 @@ class HostHttpServer {
         return this._host.post(type, options)
           .then(id => {
             response.setHeader('Content-Type', 'application/json')
-            response.end(id)
+            response.end(JSON.stringify(id))
           })
       })
   }
