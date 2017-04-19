@@ -11,13 +11,13 @@ test('HostHttpServer.stop+start', function (t) {
 
   s.start()
     .then(() => {
-      t.ok(s.url().match(/http:\/\/127.0.0.1:(\d+)/))
+      t.ok(s.url.match(/http:\/\/127.0.0.1:(\d+)/))
     })
     .then(() => {
       return s.stop()
     })
     .then(() => {
-      t.equal(s.url(), null)
+      t.equal(s.url, null)
       t.end()
     })
 })
@@ -28,14 +28,14 @@ test('HostHttpServer.stop+start multiple', function (t) {
 
   s1.start()
     .then(() => {
-      t.ok(s1.url().match(/http:\/\/127.0.0.1:(\d+)/))
+      t.ok(s1.url.match(/http:\/\/127.0.0.1:(\d+)/))
     })
     .then(() => {
       return s2.start()
     })
     .then(() => {
-      t.ok(s2.url().match(/http:\/\/127.0.0.1:(\d+)/))
-      t.notEqual(s2.url(), s1.url())
+      t.ok(s2.url.match(/http:\/\/127.0.0.1:(\d+)/))
+      t.notEqual(s2.url, s1.url)
     })
     .then(() => {
       return s1.stop()
@@ -44,8 +44,8 @@ test('HostHttpServer.stop+start multiple', function (t) {
       return s2.stop()
     })
     .then(() => {
-      t.equal(s1.url(), null)
-      t.equal(s2.url(), null)
+      t.equal(s1.url, null)
+      t.equal(s2.url, null)
       t.end()
     })
 })
@@ -106,7 +106,9 @@ test('HostHttpServer.home', function (t) {
     .then(() => {
       t.equal(mock1.res.statusCode, 200)
       let manifest = JSON.parse(mock1.res._getData())
-      t.equal(manifest.stencila.package, 'node')
+      h.options().then(expected => {
+        t.deepEqual(manifest, expected)
+      })
     })
     .catch(error => {
       t.notOk(error)
@@ -167,7 +169,7 @@ test('HostHttpServer.post', function (t) {
   s.post(req, res, 'NodeContext') // Testing this
     .then(() => {
       t.equal(res.statusCode, 200)
-      let id = res._getData()
+      let id = JSON.parse(res._getData())
       t.ok(h._instances[id])
       t.end()
     })

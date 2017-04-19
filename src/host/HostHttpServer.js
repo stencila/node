@@ -13,9 +13,9 @@ const isSuperUser = require('../util/isSuperUser')
  */
 class HostHttpServer {
 
-  constructor (host, port = 2000) {
+  constructor (host, address = '127.0.0.1', port = 2000) {
     this._host = host
-    this._address = '127.0.0.1'
+    this._address = address
     this._port = port
     this._server = null
   }
@@ -25,7 +25,7 @@ class HostHttpServer {
    *   
    * @return {string} - Server's URL, `null` if not serving
    */
-  url () {
+  get url () {
     return this._server ? ('http://' + this._address + ':' + this._port) : null
   }
 
@@ -84,6 +84,13 @@ class HostHttpServer {
   handle (request, response) {
     let endpoint = this.route(request.method, request.url)
     if (endpoint) {
+      // CORS headers added to all requests to allow direct access by browsers
+      // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
+      response.setHeader('Access-Control-Allow-Origin', '*')
+      response.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+      response.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+      response.setHeader('Access-Control-Max-Age', '1728000')
+
       let method = endpoint[0]
       let args = endpoint.slice(1)
       return method.call(this, request, response, ...args)
@@ -103,6 +110,8 @@ class HostHttpServer {
    *                   and subsequent elements being the call arguments
    */
   route (verb, path) {
+    if (verb === 'OPTIONS') return [this.options]
+
     if (path === '/') return [this.home]
     if (path === '/favicon.ico') return [this.statico, 'favicon.ico']
     if (path.substring(0, 8) === '/static/') return [this.statico, path.substring(8)]
@@ -121,6 +130,15 @@ class HostHttpServer {
   }
 
   /**
+   * Handle an OPTIONS request
+   *
+   * Necessary for preflighted CORS requests (https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS#Preflighted_requests)
+   */
+  options (request, response) {
+    return Promise.resolve(response.end())
+  }
+
+  /**
    * Handle a request to `home`
    */
   home (request, response) {
@@ -136,7 +154,7 @@ class HostHttpServer {
   }
 
   /**
-   * Handle a request a static file
+   * Handle a request for a static file
    */
   statico (request, response, path_) {
     return new Promise((resolve) => {
@@ -187,10 +205,10 @@ class HostHttpServer {
     return bodify(request)
       .then(body => {
         let options = body ? JSON.parse(body) : {}
-        return this._host.post(type, options)
+        return this._host.post(type, options.name, options)
           .then(id => {
             response.setHeader('Content-Type', 'application/json')
-            response.end(id)
+            response.end(JSON.stringify(id))
           })
       })
   }

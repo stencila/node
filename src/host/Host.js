@@ -6,13 +6,15 @@ const HostHttpServer = require('./HostHttpServer')
 
 const NodeContext = require('../node-context/NodeContext')
 
-const TYPES = {
+// Look up for classes available under the 
+// `new` sheme
+const NEW = {
   'NodeContext': NodeContext
 }
 
 /**
  * A `Host` allows you to create, get, run methods of, and delete instances of various types.
- * The types can be thought of a "services" provides by the host e.g. `NoteContext`, `FilesystemStorer`
+ * The types can be thought of a "services" provided by the host e.g. `NoteContext`, `FilesystemStorer`
  *
  * The API of a host is similar to that of a HTTP server. It's methods names
  * (e.g. `post`, `get`) are similar to HTTP methods (e.g. `POST`, `GET`) but
@@ -44,13 +46,19 @@ class Host {
    * @return {Promise} Resolves to a manifest object
    */
   options () {
+    let new_ = {}
+    for (let name of Object.keys(NEW)) {
+      new_[name] = NEW[name].spec
+    }
     return Promise.resolve({
       stencila: {
         package: 'node',
         version: version
       },
-      urls: Object.keys(this._servers).map(key => this._servers[key].url()),
-      types: Object.keys(TYPES),
+      urls: this.urls,
+      schemes: {
+        new: new_
+      },
       instances: Object.keys(this._instances)
     })
   }
@@ -58,18 +66,17 @@ class Host {
   /**
    * Create a new instance of a type
    * 
-   * @param  {string} type - Type of instance
+   * @param  {string} address - Type of instance
    * @param  {object} options - Options to be passed to type constructor
    * @return {Promise} - Resolves to the ID string of newly created instance
    */
-  post (type, options) {
+  post (type, name, options) {
     return new Promise((resolve, reject) => {
-      let Class = TYPES[type]
+      let Class = NEW[type]
       if (Class) {
-        let instance = new Class(options)
-        let id = Math.floor((1 + Math.random()) * 1e6).toString(16)
-        this._instances[id] = instance
-        resolve(id)
+        let address = `name://${name || Math.floor((1 + Math.random()) * 1e6).toString(16)}`
+        this._instances[address] = new Class(options)
+        resolve(address)
       } else {
         reject(new Error(`Unknown type: ${type}`))
       }
@@ -172,16 +179,38 @@ class Host {
   }
 
   /**
+   * Get a list of server names for this host
+   *
+   * Servers are identified by the protocol shorthand
+   * e.g. `http` for `HostHttpServer`
+   * 
+   * @return {array} Array of strings
+   */
+  get servers () {
+    return Object.keys(this._servers)
+  }
+
+  /**
+   * Get a list of URLs for this host
+   * 
+   * @return {array} Array of strings
+   */
+  get urls () {
+    return Object.values(this._servers).map(server => server.url)
+  }
+
+  /**
    * View this host in the browser
    *
    * Opens the default browser at the URL of this host
    */
   view () {
+    // Difficult to test headlessly, so don't include in coverage
     /* istanbul ignore next */
     Promise.resolve(
       this.start()
         .then(() => {
-          let url = this._servers.http.url()
+          let url = this._servers.http.url
           if (os.platform() === 'linux') {
             child.exec(`2>/dev/null 1>&2 xdg-open "${url}"`)
           } else {
