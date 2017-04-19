@@ -47,7 +47,7 @@ class Host {
    */
   options () {
     let new_ = {}
-    for (let name in NEW) {
+    for (let name of Object.keys(NEW)) {
       new_[name] = NEW[name].spec
     }
     return Promise.resolve({
