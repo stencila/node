@@ -13,9 +13,9 @@ const isSuperUser = require('../util/isSuperUser')
  */
 class HostHttpServer {
 
-  constructor (host, port = 2000) {
+  constructor (host, address = '127.0.0.1', port = 2000) {
     this._host = host
-    this._address = '127.0.0.1'
+    this._address = address
     this._port = port
     this._server = null
   }
@@ -84,6 +84,13 @@ class HostHttpServer {
   handle (request, response) {
     let endpoint = this.route(request.method, request.url)
     if (endpoint) {
+      // CORS headers added to all requests to allow direct access by browsers
+      // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
+      response.setHeader('Access-Control-Allow-Origin', '*')
+      response.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+      response.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+      response.setHeader('Access-Control-Max-Age', '1728000')
+
       let method = endpoint[0]
       let args = endpoint.slice(1)
       return method.call(this, request, response, ...args)
@@ -128,7 +135,7 @@ class HostHttpServer {
    * Necessary for preflighted CORS requests (https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS#Preflighted_requests)
    */
   options (request, response) {
-    response.end()
+    return Promise.resolve(response.end())
   }
 
   /**
@@ -198,7 +205,7 @@ class HostHttpServer {
     return bodify(request)
       .then(body => {
         let options = body ? JSON.parse(body) : {}
-        return this._host.post(type, options)
+        return this._host.post(type, options.name, options)
           .then(id => {
             response.setHeader('Content-Type', 'application/json')
             response.end(JSON.stringify(id))

@@ -5,4 +5,10 @@ const {JsContext} = require('stencila')
  */
 class NodeContext extends JsContext {}
 
+NodeContext.spec = {
+  name: 'NodeContext',
+  base: 'Context',
+  aliases: ['node']
+}
+
 module.exports = NodeContext

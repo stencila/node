@@ -1,6 +1,7 @@
 const test = require('tape')
 
 const Host = require('../../src/host/Host')
+const NodeContext = require('../../src/node-context/NodeContext')
 const version = require('../../package').version
 
 test('Host', t => {
@@ -19,7 +20,7 @@ test('Host.options', t => {
       t.equal(manifest.stencila.package, 'node')
       t.equal(manifest.stencila.version, version)
       t.equal(manifest.instances.length, 0)
-      t.ok(manifest.types.length > 0)
+      t.deepEqual(manifest.schemes.new.NodeContext, NodeContext.spec)
       t.end()
     })
     .catch(error => {

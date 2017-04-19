@@ -8,5 +8,5 @@ console.log(('Stencila CLI for Node.js ' + stencila.version + '\n').green) // es
 
 // Start up the host and notify user
 stencila.host.start().then(function () {
-  console.log('Stencila host is being served at ' + stencila.host._servers.http.url()) // eslint-disable-line no-console
+  console.log('Host is served at: ' + stencila.host.urls.join(', ')) // eslint-disable-line no-console
 })
