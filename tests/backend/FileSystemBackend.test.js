@@ -26,7 +26,7 @@ test('Create a new document', function (t) {
   })
 })
 
-test('Import an HTML document', function (t) {
+test('Import a document', function (t) {
   let backend = _initBackend()
   let filePath = path.join(__dirname, 'seed', 'hello-world.html')
   backend.importFile(filePath).then((documentId) => {

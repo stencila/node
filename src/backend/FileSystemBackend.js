@@ -3,11 +3,16 @@ const path = require('path')
 const fs = require('fs')
 const rimraf = require('rimraf')
 const FileSystemStorer = require('./FileSystemStorer')
-const { uuid, DocumentHTMLConverter } = require('stencila')
+const { 
+  uuid, 
+  DocumentHTMLConverter, 
+  DocumentMarkdownConverter
+} = require('stencila')
 
 // Available converters
 const CONVERTERS = [
-  DocumentHTMLConverter
+  DocumentHTMLConverter,
+  DocumentMarkdownConverter
 ]
 
 /**
