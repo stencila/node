@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset='utf-8' />
-  <title>stencila-node 0.25.0 | Documentation</title>
+  <title>stencila-node 0.26.0 | Documentation</title>
   <meta name='viewport' content='width=device-width,initial-scale=1'>
   <link href='assets/bass.css' type='text/css' rel='stylesheet' />
   <link href='assets/style.css' type='text/css' rel='stylesheet' />
@@ -14,7 +14,7 @@
       <div class='fixed xs-hide fix-3 overflow-auto max-height-100'>
         <div class='py1 px2'>
           <h3 class='mb0 no-anchor'>stencila-node</h3>
-          <div class='mb1'><code>0.25.0</code></div>
+          <div class='mb1'><code>0.26.0</code></div>
           <input
             placeholder='Filter'
             id='filter-input'
@@ -90,6 +90,18 @@
                       </a></li>
                       
                       <li><a
+                        href='#Host#servers'
+                        class='regular pre-open'>
+                        #servers
+                      </a></li>
+                      
+                      <li><a
+                        href='#Host#urls'
+                        class='regular pre-open'>
+                        #urls
+                      </a></li>
+                      
+                      <li><a
                         href='#Host#view'
                         class='regular pre-open'>
                         #view
@@ -147,6 +159,12 @@
                       </a></li>
                       
                       <li><a
+                        href='#HostHttpServer#options'
+                        class='regular pre-open'>
+                        #options
+                      </a></li>
+                      
+                      <li><a
                         href='#HostHttpServer#home'
                         class='regular pre-open'>
                         #home
@@ -192,6 +210,36 @@
                   
                   
                 </div>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#filesystembackend'
+                  class="">
+                  FileSystemBackend
+                  
+                </a>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#filesystembuffer'
+                  class="">
+                  FileSystemBuffer
+                  
+                </a>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#filesystemstorer'
+                  class="">
+                  FileSystemStorer
+                  
+                </a>
                 
                 </li>
               
@@ -295,7 +343,7 @@
   
 
   <p>A <code>Host</code> allows you to create, get, run methods of, and delete instances of various types.
-The types can be thought of a &quot;services&quot; provides by the host e.g. <code>NoteContext</code>, <code>FilesystemStorer</code></p>
+The types can be thought of a &quot;services&quot; provided by the host e.g. <code>NoteContext</code>, <code>FilesystemStorer</code></p>
 <p>The API of a host is similar to that of a HTTP server. It&#x27;s methods names
 (e.g. <code>post</code>, <code>get</code>) are similar to HTTP methods (e.g. <code>POST</code>, <code>GET</code>) but
 the sematics sometimes differ (e.g. a host&#x27;s <code>put()</code> method is used to call an
@@ -393,7 +441,7 @@ which &quot;instances&quot; have already been instantiated.</p>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>post(type, options)</span>
+            <span class='code strong strong truncate'>post(address, type, name, options)</span>
         </div>
       </div>
       <div class="clearfix display-none toggle-target">
@@ -404,7 +452,7 @@ which &quot;instances&quot; have already been instantiated.</p>
   <p>Create a new instance of a type</p>
 
 
-  <div class='pre p1 fill-light mt0'>post(type: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, options: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
+  <div class='pre p1 fill-light mt0'>post(address: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, type: Any, name: Any, options: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
 
   
 
@@ -420,8 +468,22 @@ which &quot;instances&quot; have already been instantiated.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>type</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> Type of instance
+            <span class='code bold'>address</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> Type of instance
 
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>type</span> <code class='quiet'>(Any)</code> 
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>name</span> <code class='quiet'>(Any)</code> 
           </div>
           
         </div>
@@ -782,6 +844,114 @@ for hosts. We plan to implement a <code>HostWebsocketServer</code> soon.</p>
       </div>
     </div>
   
+    <div class='border-bottom' id='Host#servers'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>servers</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Get a list of server names for this host</p>
+<p>Servers are identified by the protocol shorthand
+e.g. <code>http</code> for <code>HostHttpServer</code></p>
+
+
+  <div class='pre p1 fill-light mt0'>servers</div>
+
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">array</a></code>:
+        Array of strings
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='Host#urls'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>urls</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Get a list of URLs for this host</p>
+
+
+  <div class='pre p1 fill-light mt0'>urls</div>
+
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">array</a></code>:
+        Array of strings
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
     <div class='border-bottom' id='Host#view'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
@@ -882,7 +1052,7 @@ for hosts. We plan to implement a <code>HostWebsocketServer</code> soon.</p>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>url()</span>
+            <span class='code strong strong truncate'>url</span>
         </div>
       </div>
       <div class="clearfix display-none toggle-target">
@@ -893,7 +1063,7 @@ for hosts. We plan to implement a <code>HostWebsocketServer</code> soon.</p>
   <p>Get the URL of this server</p>
 
 
-  <div class='pre p1 fill-light mt0'>url(): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></div>
+  <div class='pre p1 fill-light mt0'>url</div>
 
   
 
@@ -1176,6 +1346,71 @@ and subsequent elements being the call arguments
       </div>
     </div>
   
+    <div class='border-bottom' id='HostHttpServer#options'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>options(request, response)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Handle an OPTIONS request</p>
+<p>Necessary for preflighted CORS requests (<a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS#Preflighted_requests">https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS#Preflighted_requests</a>)</p>
+
+
+  <div class='pre p1 fill-light mt0'>options(request: Any, response: Any)</div>
+
+  
+
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>request</span> <code class='quiet'>(Any)</code> 
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>response</span> <code class='quiet'>(Any)</code> 
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
     <div class='border-bottom' id='HostHttpServer#home'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
@@ -1252,7 +1487,7 @@ and subsequent elements being the call arguments
 
   
 
-  <p>Handle a request a static file</p>
+  <p>Handle a request for a static file</p>
 
 
   <div class='pre p1 fill-light mt0'>statico(request: Any, response: Any, path_: Any)</div>
@@ -1681,6 +1916,145 @@ and subsequent elements being the call arguments
     </div>
   
 </div>
+
+  
+
+  
+</section>
+
+          
+        
+          
+            <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    <h3 class='fl m0' id='filesystembackend'>
+      FileSystemBackend
+    </h3>
+    
+  </div>
+  
+
+  <p>A backend for the local file system</p>
+
+
+  <div class='pre p1 fill-light mt0'>new FileSystemBackend()</div>
+
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+            <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    <h3 class='fl m0' id='filesystembuffer'>
+      FileSystemBuffer
+    </h3>
+    
+  </div>
+  
+
+  <p>A buffer that resides on the local file system</p>
+
+
+  <div class='pre p1 fill-light mt0'>new FileSystemBuffer()</div>
+
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+            <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    <h3 class='fl m0' id='filesystemstorer'>
+      FileSystemStorer
+    </h3>
+    
+  </div>
+  
+
+  <p>A storer for the local file system</p>
+
+
+  <div class='pre p1 fill-light mt0'>new FileSystemStorer()</div>
+
+  
+    <p>
+      Extends
+      
+        <a href="#filesystembuffer">FileSystemBuffer</a>
+      
+    </p>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
 
   
 
