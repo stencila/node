@@ -51,10 +51,11 @@
     "tape": "^4.6.0"
   },
   "dependencies": {
-    "rimraf": "2.6.1",
-    "path-is-inside": "^1.0.2",
     "child-process-promise": "^2.2.0",
+    "dat-node": "^3.1.1",
     "http-shutdown": "^1.1.0",
+    "path-is-inside": "^1.0.2",
+    "rimraf": "2.6.1",
     "stencila": "^0.26.2"
   }
 }
