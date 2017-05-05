@@ -10,6 +10,10 @@ class FileSystemStorer extends FileSystemBuffer {
     this._isExternal = isExternal
   }
 
+  match() {
+    return true
+  }
+
   getArchivePath() {
     return this.archivePath
   }

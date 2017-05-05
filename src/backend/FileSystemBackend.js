@@ -1,15 +1,22 @@
-const FileSystemBuffer = require('./FileSystemBuffer')
 const path = require('path')
 const fs = require('fs')
 const rimraf = require('rimraf')
-const FileSystemStorer = require('./FileSystemStorer')
+
 const { 
   uuid, 
   DocumentHTMLConverter, 
   DocumentMarkdownConverter
 } = require('stencila')
 
-// Available converters
+const FileSystemBuffer = require('./FileSystemBuffer')
+const FileSystemStorer = require('./FileSystemStorer')
+const DatStorer = require('./DatStorer')
+
+const STORERS = [
+  FileSystemStorer,
+  DatStorer
+]
+
 const CONVERTERS = [
   DocumentHTMLConverter,
   DocumentMarkdownConverter
@@ -33,7 +40,7 @@ class FileSystemBackend {
   importFile(filePath) {
     let storageArchivePath = path.dirname(filePath)
     let mainFileName = path.basename(filePath)
-    let storer = new FileSystemStorer(storageArchivePath, mainFileName, 'external')
+    let storer = this._getStorer(storageArchivePath, )
     let converter = this._getConverter(mainFileName)
     let documentId = uuid()
     let documentPath = path.join(this.userLibraryDir, documentId)
@@ -140,6 +147,20 @@ class FileSystemBackend {
       delete libraryData[documentId]
       return this._writeLibrary(libraryData)
     })
+  }
+
+
+  /*
+    Get the Storer for a archivePath
+  */
+  _getStorer(archivePath, mainFileName) {
+    let Storer
+    for (var i = 0; i < STORERS.length; i++) {
+      Storer = STORERS[i]
+      if (Storer.match(archivePath)) break
+    }
+    if (!Storer) Storer = FileSystemStorer
+    return storer = new Storer(this.userLibraryDir, archivePath, mainFileName, true)
   }
 
   /*
