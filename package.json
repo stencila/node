@@ -48,12 +48,14 @@
     "istanbul": "^0.4.5",
     "node-mocks-http": "^1.6.1",
     "tap-spec": "^4.1.1",
-    "tape": "^4.6.0"
+    "tape": "^4.6.0",
+    "tmp": "0.0.31"
   },
   "dependencies": {
     "child-process-promise": "^2.2.0",
-    "dat-node": "^3.1.1",
+    "dat-node": "^3.2.3",
     "http-shutdown": "^1.1.0",
+    "mkdirp": "^0.5.1",
     "path-is-inside": "^1.0.2",
     "rimraf": "2.6.1",
     "stencila": "^0.26.2"

@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset='utf-8' />
-  <title>stencila-node 0.26.0 | Documentation</title>
+  <title>stencila-node 0.26.2 | Documentation</title>
   <meta name='viewport' content='width=device-width,initial-scale=1'>
   <link href='assets/bass.css' type='text/css' rel='stylesheet' />
   <link href='assets/style.css' type='text/css' rel='stylesheet' />
@@ -14,7 +14,7 @@
       <div class='fixed xs-hide fix-3 overflow-auto max-height-100'>
         <div class='py1 px2'>
           <h3 class='mb0 no-anchor'>stencila-node</h3>
-          <div class='mb1'><code>0.26.0</code></div>
+          <div class='mb1'><code>0.26.2</code></div>
           <input
             placeholder='Filter'
             id='filter-input'
@@ -108,6 +108,7 @@
                       </a></li>
                       
                     </ul>
+                  
                   
                   
                 </div>
@@ -209,6 +210,7 @@
                     </ul>
                   
                   
+                  
                 </div>
                 
                 </li>
@@ -266,6 +268,58 @@
                   
                   
                   
+                  
+                </div>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#datstorer'
+                  class=" toggle-sibling">
+                  DatStorer
+                  <span class='icon'>▸</span>
+                </a>
+                
+                <div class='toggle-target display-none'>
+                  
+                  <ul class='list-reset py1-ul pl1'>
+                    <li class='h5'><span>Static members</span></li>
+                    
+                      <li><a
+                        href='#DatStorer.match'
+                        class='regular pre-open'>
+                        .match
+                      </a></li>
+                    
+                    </ul>
+                  
+                  
+                    <ul class='list-reset py1-ul pl1'>
+                      <li class='h5'><span>Instance members</span></li>
+                      
+                      <li><a
+                        href='#DatStorer#path'
+                        class='regular pre-open'>
+                        #path
+                      </a></li>
+                      
+                      <li><a
+                        href='#DatStorer#key'
+                        class='regular pre-open'>
+                        #key
+                      </a></li>
+                      
+                      <li><a
+                        href='#DatStorer#readFile'
+                        class='regular pre-open'>
+                        #readFile
+                      </a></li>
+                      
+                    </ul>
+                  
+                  
+                  
                 </div>
                 
                 </li>
@@ -284,9 +338,11 @@
 
   
   <div class='clearfix'>
+    
     <h3 class='fl m0' id='nodecontext'>
       NodeContext
     </h3>
+    
     
   </div>
   
@@ -295,7 +351,7 @@
 
 
   <div class='pre p1 fill-light mt0'>new NodeContext()</div>
-
+  
   
     <p>
       Extends
@@ -305,6 +361,7 @@
     </p>
   
 
+  
   
   
   
@@ -335,20 +392,22 @@
 
   
   <div class='clearfix'>
+    
     <h3 class='fl m0' id='host'>
       Host
     </h3>
+    
     
   </div>
   
 
   <p>A <code>Host</code> allows you to create, get, run methods of, and delete instances of various types.
-The types can be thought of a &quot;services&quot; provided by the host e.g. <code>NoteContext</code>, <code>FilesystemStorer</code></p>
-<p>The API of a host is similar to that of a HTTP server. It&#x27;s methods names
+The types can be thought of a "services" provided by the host e.g. <code>NoteContext</code>, <code>FilesystemStorer</code></p>
+<p>The API of a host is similar to that of a HTTP server. It's methods names
 (e.g. <code>post</code>, <code>get</code>) are similar to HTTP methods (e.g. <code>POST</code>, <code>GET</code>) but
-the sematics sometimes differ (e.g. a host&#x27;s <code>put()</code> method is used to call an
+the sematics sometimes differ (e.g. a host's <code>put()</code> method is used to call an
 instance method)</p>
-<p>A <code>Host</code> is not limited to beng served by HTTP and it&#x27;s methods are exposed by both <code>HostHttpServer</code>
+<p>A <code>Host</code> is not limited to beng served by HTTP and it's methods are exposed by both <code>HostHttpServer</code>
 and <code>HostWebsocketServer</code>. Those other classes are responsible for tasks associated with
 their communication protocol (e.g. serialising and deserialising objects).</p>
 <p>This is a singleton class. There should only ever be one <code>Host</code>
@@ -356,9 +415,10 @@ in memory in each process (although, for purposes of testing, this is not enforc
 
 
   <div class='pre p1 fill-light mt0'>new Host()</div>
-
+  
   
 
+  
   
   
   
@@ -394,15 +454,16 @@ in memory in each process (although, for purposes of testing, this is not enforc
   
 
   <p>Get a manifest for this host</p>
-<p>The manifest describes the host and it&#x27;s capabilities. It is used
-by peer hosts to determine which &quot;types&quot; this host provides and
-which &quot;instances&quot; have already been instantiated.</p>
+<p>The manifest describes the host and it's capabilities. It is used
+by peer hosts to determine which "types" this host provides and
+which "instances" have already been instantiated.</p>
 
 
   <div class='pre p1 fill-light mt0'>options(): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-
+  
   
 
+  
   
   
   
@@ -441,7 +502,7 @@ which &quot;instances&quot; have already been instantiated.</p>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>post(address, type, name, options)</span>
+            <span class='code strong strong truncate'>post(type, name, options, address)</span>
         </div>
       </div>
       <div class="clearfix display-none toggle-target">
@@ -452,10 +513,11 @@ which &quot;instances&quot; have already been instantiated.</p>
   <p>Create a new instance of a type</p>
 
 
-  <div class='pre p1 fill-light mt0'>post(address: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, type: Any, name: Any, options: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-
+  <div class='pre p1 fill-light mt0'>post(type: any, name: any, options: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, address: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
+  
   
 
+  
   
   
   
@@ -468,7 +530,24 @@ which &quot;instances&quot; have already been instantiated.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>address</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> Type of instance
+            <span class='code bold'>type</span> <code class='quiet'>(any)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>name</span> <code class='quiet'>(any)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>options</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    Options to be passed to type constructor
 
           </div>
           
@@ -476,21 +555,8 @@ which &quot;instances&quot; have already been instantiated.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>type</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>name</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>options</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code> Options to be passed to type constructor
+            <span class='code bold'>address</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    Type of instance
 
           </div>
           
@@ -541,9 +607,10 @@ which &quot;instances&quot; have already been instantiated.</p>
 
 
   <div class='pre p1 fill-light mt0'>get(id: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-
+  
   
 
+  
   
   
   
@@ -556,7 +623,8 @@ which &quot;instances&quot; have already been instantiated.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>id</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> ID of instance
+            <span class='code bold'>id</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    ID of instance
 
           </div>
           
@@ -607,9 +675,10 @@ which &quot;instances&quot; have already been instantiated.</p>
 
 
   <div class='pre p1 fill-light mt0'>put(id: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, method: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, args: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">array</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-
+  
   
 
+  
   
   
   
@@ -622,7 +691,8 @@ which &quot;instances&quot; have already been instantiated.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>id</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> ID of instance
+            <span class='code bold'>id</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    ID of instance
 
           </div>
           
@@ -630,7 +700,8 @@ which &quot;instances&quot; have already been instantiated.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>method</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> Name of instance method
+            <span class='code bold'>method</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    Name of instance method
 
           </div>
           
@@ -638,7 +709,8 @@ which &quot;instances&quot; have already been instantiated.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>args</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">array</a>)</code> An array of method arguments
+            <span class='code bold'>args</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">array</a>)</code>
+	    An array of method arguments
 
           </div>
           
@@ -689,9 +761,10 @@ which &quot;instances&quot; have already been instantiated.</p>
 
 
   <div class='pre p1 fill-light mt0'>delete(id: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-
+  
   
 
+  
   
   
   
@@ -704,7 +777,8 @@ which &quot;instances&quot; have already been instantiated.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>id</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> ID of the instance
+            <span class='code bold'>id</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    ID of the instance
 
           </div>
           
@@ -720,6 +794,7 @@ which &quot;instances&quot; have already been instantiated.</p>
       <div class='py1 quiet mt1 prose-big'>Returns</div>
       <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
         
+
       
     
   
@@ -756,9 +831,10 @@ for hosts. We plan to implement a <code>HostWebsocketServer</code> soon.</p>
 
 
   <div class='pre p1 fill-light mt0'>start(): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-
+  
   
 
+  
   
   
   
@@ -774,6 +850,7 @@ for hosts. We plan to implement a <code>HostWebsocketServer</code> soon.</p>
       <div class='py1 quiet mt1 prose-big'>Returns</div>
       <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
         
+
       
     
   
@@ -808,9 +885,10 @@ for hosts. We plan to implement a <code>HostWebsocketServer</code> soon.</p>
 
 
   <div class='pre p1 fill-light mt0'>stop(): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-
+  
   
 
+  
   
   
   
@@ -826,6 +904,7 @@ for hosts. We plan to implement a <code>HostWebsocketServer</code> soon.</p>
       <div class='py1 quiet mt1 prose-big'>Returns</div>
       <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
         
+
       
     
   
@@ -862,9 +941,10 @@ e.g. <code>http</code> for <code>HostHttpServer</code></p>
 
 
   <div class='pre p1 fill-light mt0'>servers</div>
-
+  
   
 
+  
   
   
   
@@ -915,9 +995,10 @@ e.g. <code>http</code> for <code>HostHttpServer</code></p>
 
 
   <div class='pre p1 fill-light mt0'>urls</div>
-
+  
   
 
+  
   
   
   
@@ -969,9 +1050,10 @@ e.g. <code>http</code> for <code>HostHttpServer</code></p>
 
 
   <div class='pre p1 fill-light mt0'>view()</div>
-
+  
   
 
+  
   
   
   
@@ -1012,9 +1094,11 @@ e.g. <code>http</code> for <code>HostHttpServer</code></p>
 
   
   <div class='clearfix'>
+    
     <h3 class='fl m0' id='hosthttpserver'>
       HostHttpServer
     </h3>
+    
     
   </div>
   
@@ -1023,9 +1107,10 @@ e.g. <code>http</code> for <code>HostHttpServer</code></p>
 
 
   <div class='pre p1 fill-light mt0'>new HostHttpServer()</div>
-
+  
   
 
+  
   
   
   
@@ -1064,9 +1149,10 @@ e.g. <code>http</code> for <code>HostHttpServer</code></p>
 
 
   <div class='pre p1 fill-light mt0'>url</div>
-
+  
   
 
+  
   
   
   
@@ -1081,7 +1167,7 @@ e.g. <code>http</code> for <code>HostHttpServer</code></p>
     
       <div class='py1 quiet mt1 prose-big'>Returns</div>
       <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>:
-        Server&#x27;s URL, 
+        Server's URL, 
 <code>null</code>
  if not serving
 
@@ -1119,9 +1205,10 @@ e.g. <code>http</code> for <code>HostHttpServer</code></p>
 
 
   <div class='pre p1 fill-light mt0'>start(): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-
+  
   
 
+  
   
   
   
@@ -1137,6 +1224,7 @@ e.g. <code>http</code> for <code>HostHttpServer</code></p>
       <div class='py1 quiet mt1 prose-big'>Returns</div>
       <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
         
+
       
     
   
@@ -1171,9 +1259,10 @@ e.g. <code>http</code> for <code>HostHttpServer</code></p>
 
 
   <div class='pre p1 fill-light mt0'>stop(): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-
+  
   
 
+  
   
   
   
@@ -1189,6 +1278,7 @@ e.g. <code>http</code> for <code>HostHttpServer</code></p>
       <div class='py1 quiet mt1 prose-big'>Returns</div>
       <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
         
+
       
     
   
@@ -1222,10 +1312,11 @@ e.g. <code>http</code> for <code>HostHttpServer</code></p>
   <p>Handle a HTTP request</p>
 
 
-  <div class='pre p1 fill-light mt0'>handle(request: Any, response: Any)</div>
-
+  <div class='pre p1 fill-light mt0'>handle(request: any, response: any)</div>
+  
   
 
+  
   
   
   
@@ -1238,14 +1329,16 @@ e.g. <code>http</code> for <code>HostHttpServer</code></p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>request</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>request</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>response</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>response</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
@@ -1287,9 +1380,10 @@ e.g. <code>http</code> for <code>HostHttpServer</code></p>
 
 
   <div class='pre p1 fill-light mt0'>route(verb: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, path: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">array</a></div>
-
+  
   
 
+  
   
   
   
@@ -1302,7 +1396,8 @@ e.g. <code>http</code> for <code>HostHttpServer</code></p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>verb</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> The request&#x27;s HTTP verb (aka. &quot;method&quot;) eg. GET
+            <span class='code bold'>verb</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    The request's HTTP verb (aka. "method") eg. GET
 
           </div>
           
@@ -1310,7 +1405,8 @@ e.g. <code>http</code> for <code>HostHttpServer</code></p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>path</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> The requested path
+            <span class='code bold'>path</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    The requested path
 
           </div>
           
@@ -1362,10 +1458,11 @@ and subsequent elements being the call arguments
 <p>Necessary for preflighted CORS requests (<a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS#Preflighted_requests">https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS#Preflighted_requests</a>)</p>
 
 
-  <div class='pre p1 fill-light mt0'>options(request: Any, response: Any)</div>
-
+  <div class='pre p1 fill-light mt0'>options(request: any, response: any)</div>
+  
   
 
+  
   
   
   
@@ -1378,14 +1475,16 @@ and subsequent elements being the call arguments
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>request</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>request</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>response</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>response</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
@@ -1426,10 +1525,11 @@ and subsequent elements being the call arguments
   <p>Handle a request to <code>home</code></p>
 
 
-  <div class='pre p1 fill-light mt0'>home(request: Any, response: Any)</div>
-
+  <div class='pre p1 fill-light mt0'>home(request: any, response: any)</div>
+  
   
 
+  
   
   
   
@@ -1442,14 +1542,16 @@ and subsequent elements being the call arguments
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>request</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>request</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>response</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>response</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
@@ -1490,10 +1592,11 @@ and subsequent elements being the call arguments
   <p>Handle a request for a static file</p>
 
 
-  <div class='pre p1 fill-light mt0'>statico(request: Any, response: Any, path_: Any)</div>
-
+  <div class='pre p1 fill-light mt0'>statico(request: any, response: any, path_: any)</div>
+  
   
 
+  
   
   
   
@@ -1506,21 +1609,24 @@ and subsequent elements being the call arguments
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>request</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>request</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>response</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>response</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>path_</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>path_</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
@@ -1561,10 +1667,11 @@ and subsequent elements being the call arguments
   <p>Handle a request to <code>post</code></p>
 
 
-  <div class='pre p1 fill-light mt0'>post(request: Any, response: Any, type: Any)</div>
-
+  <div class='pre p1 fill-light mt0'>post(request: any, response: any, type: any)</div>
+  
   
 
+  
   
   
   
@@ -1577,21 +1684,24 @@ and subsequent elements being the call arguments
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>request</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>request</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>response</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>response</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>type</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>type</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
@@ -1632,10 +1742,11 @@ and subsequent elements being the call arguments
   <p>Handle a request to <code>get</code></p>
 
 
-  <div class='pre p1 fill-light mt0'>get(request: Any, response: Any, id: Any)</div>
-
+  <div class='pre p1 fill-light mt0'>get(request: any, response: any, id: any)</div>
+  
   
 
+  
   
   
   
@@ -1648,21 +1759,24 @@ and subsequent elements being the call arguments
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>request</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>request</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>response</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>response</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>id</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>id</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
@@ -1703,10 +1817,11 @@ and subsequent elements being the call arguments
   <p>Handle a request to <code>put</code></p>
 
 
-  <div class='pre p1 fill-light mt0'>put(request: Any, response: Any, id: Any, method: Any)</div>
-
+  <div class='pre p1 fill-light mt0'>put(request: any, response: any, id: any, method: any)</div>
+  
   
 
+  
   
   
   
@@ -1719,28 +1834,32 @@ and subsequent elements being the call arguments
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>request</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>request</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>response</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>response</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>id</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>id</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>method</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>method</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
@@ -1781,10 +1900,11 @@ and subsequent elements being the call arguments
   <p>Handle a request to <code>delete</code></p>
 
 
-  <div class='pre p1 fill-light mt0'>delete(request: Any, response: Any, id: Any)</div>
-
+  <div class='pre p1 fill-light mt0'>delete(request: any, response: any, id: any)</div>
+  
   
 
+  
   
   
   
@@ -1797,21 +1917,24 @@ and subsequent elements being the call arguments
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>request</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>request</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>response</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>response</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>id</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>id</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
@@ -1852,10 +1975,11 @@ and subsequent elements being the call arguments
   <p>General error handling</p>
 
 
-  <div class='pre p1 fill-light mt0'>error(request: Any, response: Any, status: Any, error: Any)</div>
-
+  <div class='pre p1 fill-light mt0'>error(request: any, response: any, status: any, error: any)</div>
+  
   
 
+  
   
   
   
@@ -1868,28 +1992,32 @@ and subsequent elements being the call arguments
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>request</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>request</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>response</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>response</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>status</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>status</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>error</span> <code class='quiet'>(Any)</code> 
+            <span class='code bold'>error</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
@@ -1929,9 +2057,11 @@ and subsequent elements being the call arguments
 
   
   <div class='clearfix'>
+    
     <h3 class='fl m0' id='filesystembackend'>
       FileSystemBackend
     </h3>
+    
     
   </div>
   
@@ -1940,9 +2070,10 @@ and subsequent elements being the call arguments
 
 
   <div class='pre p1 fill-light mt0'>new FileSystemBackend()</div>
-
+  
   
 
+  
   
   
   
@@ -1973,9 +2104,11 @@ and subsequent elements being the call arguments
 
   
   <div class='clearfix'>
+    
     <h3 class='fl m0' id='filesystembuffer'>
       FileSystemBuffer
     </h3>
+    
     
   </div>
   
@@ -1984,9 +2117,10 @@ and subsequent elements being the call arguments
 
 
   <div class='pre p1 fill-light mt0'>new FileSystemBuffer()</div>
-
+  
   
 
+  
   
   
   
@@ -2017,9 +2151,11 @@ and subsequent elements being the call arguments
 
   
   <div class='clearfix'>
+    
     <h3 class='fl m0' id='filesystemstorer'>
       FileSystemStorer
     </h3>
+    
     
   </div>
   
@@ -2028,7 +2164,7 @@ and subsequent elements being the call arguments
 
 
   <div class='pre p1 fill-light mt0'>new FileSystemStorer()</div>
-
+  
   
     <p>
       Extends
@@ -2043,6 +2179,7 @@ and subsequent elements being the call arguments
   
   
   
+  
 
   
 
@@ -2068,9 +2205,11 @@ and subsequent elements being the call arguments
 
   
   <div class='clearfix'>
+    
     <h3 class='fl m0' id='util'>
       util
     </h3>
+    
     
   </div>
   
@@ -2079,9 +2218,10 @@ and subsequent elements being the call arguments
 
 
   <div class='pre p1 fill-light mt0'>util</div>
-
+  
   
 
+  
   
   
   
@@ -2118,9 +2258,10 @@ and subsequent elements being the call arguments
 
 
   <div class='pre p1 fill-light mt0'>isSuperUser()</div>
-
+  
   
 
+  
   
   
   
@@ -2150,6 +2291,276 @@ and subsequent elements being the call arguments
 </div>
 
   
+
+  
+
+  
+</section>
+
+          
+        
+          
+            <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='datstorer'>
+      DatStorer
+    </h3>
+    
+    
+  </div>
+  
+
+  <p>A storer for <a href="http://datproject.org">Dat</a></p>
+
+
+  <div class='pre p1 fill-light mt0'>new DatStorer()</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Static Members</div>
+    <div class="clearfix">
+  
+    <div class='border-bottom' id='DatStorer.match'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>match(address)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Does this storer handle an address?</p>
+
+
+  <div class='pre p1 fill-light mt0'>match(address: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>address</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    Long address
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+</div>
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Instance Members</div>
+    <div class="clearfix">
+  
+    <div class='border-bottom' id='DatStorer#path'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>path</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Local filesystem path where the dat will be written</p>
+
+
+  <div class='pre p1 fill-light mt0'>path</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='DatStorer#key'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>key</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>The dat's key as a hex string</p>
+
+
+  <div class='pre p1 fill-light mt0'>key</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='DatStorer#readFile'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>readFile(filePath)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Read a file from the Dat</p>
+
+
+  <div class='pre p1 fill-light mt0'>readFile(filePath: any)</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>filePath</span> <code class='quiet'>(any)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+</div>
 
   
 

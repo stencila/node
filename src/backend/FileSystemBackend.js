@@ -40,7 +40,7 @@ class FileSystemBackend {
   importFile(filePath) {
     let storageArchivePath = path.dirname(filePath)
     let mainFileName = path.basename(filePath)
-    let storer = this._getStorer(storageArchivePath, )
+    let storer = this._getStorer(storageArchivePath, mainFileName)
     let converter = this._getConverter(mainFileName)
     let documentId = uuid()
     let documentPath = path.join(this.userLibraryDir, documentId)
@@ -68,7 +68,7 @@ class FileSystemBackend {
     let storageArchivePath = path.join(documentPath, 'storage')
     let buffer = new FileSystemBuffer(documentPath)
     let mainFileName = 'index.html'
-    let storer = new FileSystemStorer(storageArchivePath, mainFileName)
+    let storer = new FileSystemStorer(this.userLibraryDir, storageArchivePath, mainFileName)
     let converter = this._getConverter(mainFileName)
 
     return storer.writeFile('index.html', 'text/html', html).then(() => {
@@ -111,7 +111,7 @@ class FileSystemBackend {
       let archivePath = manifest.storage.archivePath
       let mainFilePath = manifest.storage.mainFilePath
       let converter = this._getConverter(mainFilePath)
-      let storer = new FileSystemStorer(archivePath, mainFilePath)
+      let storer = new FileSystemStorer(this.userLibraryDir, archivePath, mainFilePath)
       return converter.exportDocument(buffer, storer)
     })
   }
@@ -128,7 +128,7 @@ class FileSystemBackend {
       let archivePath = manifest.storage.archivePath
       let mainFilePath = manifest.storage.mainFilePath
       let converter = this._getConverter(mainFilePath)
-      let storer = new FileSystemStorer(archivePath, mainFilePath)
+      let storer = new FileSystemStorer(this.userLibraryDir, archivePath, mainFilePath)
       return converter.importDocument(storer, buffer).then((manifest) => {
         return this._setLibraryRecord(documentId, manifest)
       })
@@ -160,7 +160,7 @@ class FileSystemBackend {
       if (Storer.match(archivePath)) break
     }
     if (!Storer) Storer = FileSystemStorer
-    return storer = new Storer(this.userLibraryDir, archivePath, mainFileName, true)
+    return new Storer(this.userLibraryDir, archivePath, mainFileName, true)
   }
 
   /*

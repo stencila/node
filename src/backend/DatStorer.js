@@ -1,100 +1,103 @@
+const fs = require('fs')
+const path = require('path')
+const mkdirp = require('mkdirp')
+
 const Dat = require('dat-node')
 
 /**
- * A storer for dat
+ * A storer for [Dat](http://datproject.org)
  */
 class DatStorer {
-  constructor (userLibraryDir, datKey, dat) {
-    this.datPath = path.join(userLibraryDir, 'dats', datKey)
-    this.datKey = datKey
-    this.dat = dat
+
+  constructor (home, key) {
+    // Make the folder for dats to live in i it doesn't
+    // exist yet
+    const datsFolder = path.join(home, 'dat')
+    if (!fs.existsSync(datsFolder)) mkdirp.sync(datsFolder)
+
+    /**
+     * Local filesystem path where the dat will be written
+     * @type string
+     */
+    this.path = path.join(datsFolder, key)
+
+    /**
+     * The dat's key as a hex string
+     * @type {string}
+     */
+    this.key = key
+  }
+
+  /**
+   * Does this storer handle an address?
+   * @param  {string} address Long address
+   */
+  static match(address) {
+    return address.indexOf('dat://') > -1
+  }
+
+  /**
+    Read a file from the Dat
+  */
+  readFile (filePath) {
+    return new Promise((resolve, reject) => {
+      var dat = this.dat
+
+      function readFile() {
+        dat.archive.readFile(filePath, 'utf8', (err, data) => {
+          if (err) return reject(err)
+          dat.close(error => {
+            if (error) reject(error)
+            else resolve(data)
+          })
+        })
+      }
+
+      if (dat) readFile()
+      else {
+        Dat(this.path, { key: this.key, sparse: true, latest: true }, (err, _dat) => {
+          if (err) return reject(err)
+          
+          dat = _dat
+          dat.joinNetwork(error => {
+            if (error) reject(error)
+            
+            if (!dat.network.connected) {
+              reject(new Error('No users currently online for that key.'))
+            } else {
+              readFile()
+            }
+          })
+        })
+      }
+    })
   }
 
   /*
-    Reads a file from the buffer
-
-    Returns a string when isText is true, for binary data a Blob object
+    Write a file to a dat
   */
-  readFile (filePath, mimeType) {
+  writeFile(filePath, mimeType, data) {
     return new Promise((resolve, reject) => {
-      if (mimeType.indexOf('text/') < 0 && mimeType.indexOf('application/json') < 0) {
-        return reject(new Error('FileSystemBuffer only supports reading text and json'))
-      }
       var dat = this.dat
-      if (dat) return sendFile()
+      if (dat) return writeFile()
 
-      Dat(this.datPath, { key: this.datKey, sparse: true, latest:true }, (err, _dat) => {
+      Dat(this.datPath, {key: this.datKey, latest: true}, (err, _dat) => {
         if (err) return reject(err)
         dat = _dat
-        var stats = dat.trackStats()
-        stats.get() // { files: 200, bytesLength: 100 }
-        stats.peers // { total, complete }
-        stats.network // { uploadSpeed, downloadSpeed }
-        dat.joinNetwork(function () {
-          if (stats.peers.total === 0) exit()
-          console.log('network callback, connections:', dat.network.connected)
-        })
+        if (!dat.writable) {
+          console.error('cannot write to this dat')
+        }
+        // dat.joinNetwork()
+        writeFile()
       })
 
-      function sendFile () {
-        dat.archive.readFile(path.join(this.archivePath, filePath), 'utf8', (err, data) => {
+      function writeFile () {
+        dat.archive.writeFile(filePath, data, 'utf8', (err, data) => {
           if (err) return reject(err)
           resolve(data)
         })
       }
     })
-  }
-
-  /*
-    File data must either be a utf8 string or a blob object
-  */
-  writeFile(filePath, mimeType, data) {
-    return new Promise((resolve, reject) => {
-      if (typeof data === 'string') {
-        var dat = this.dat
-        if (dat) return writeFile()
-
-        Dat(this.datPath, {key: this.datKey, latest: true}, (err, _dat) => {
-          if (err) return reject(err)
-          dat = _dat
-          if (!dat.writable) {
-            console.error('cannot write to this dat')
-          }
-          // dat.joinNetwork()
-          writeFile()
-        })
-
-        function writeFile () {
-          dat.archive.writeFile(filePath, data, 'utf8', (err, data) => {
-            if (err) return reject(err)
-            resolve(data)
-          })
-        }
-      }
-      /* istanbul ignore next */ // Can't be tested under Node
-      else if (typeof Blob !== 'undefined' && data instanceof Blob) reject(new Error('FileSystemBuffer does not support writing blobs yet'))
-      else reject(new Error('FileSystemBuffer only supports writing utf-8 strings and blobs'))
-    })
-  }
-
-  match(key) {
-    return key.indexOf('dat://') > -1
-  }
-
-  // getArchivePath() {
-  //   return this.archivePath
-  // }
-
-  // getMainFilePath() {
-  //   return this.mainFilePath
-  // }
-
-  // isExternal() {
-  //   return this._isExternal
-  // }
-
-  getType() {
-    return 'dat'
   }
 }
 
