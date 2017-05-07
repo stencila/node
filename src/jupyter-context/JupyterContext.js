@@ -1,104 +1,60 @@
-const {Context, value} = require('stencila')
+const {Context} = require('stencila')
 
 /**
- * A context for executing code within a Jupyter kernel
+ * A JupyterContext for executing code in Jupyter kernels
  *
- * Currently this is just a very preliminary stub with some ideas for implementation
+ * Note that this class only starts a new Jupyter kernel by 
+ * reading what it needs to from the filesystem and running
+ * a system command. Communication with the kernel is
+ * done by the `JupyterContextClient` in the stencila/stencila repo
  *
  * @extends {Context}
  */
 class JupyterContext extends Context {
 
-  constructor (language, kernel) {
+  constructor (kernel) {
     super()
 
     /**
-     * Langauge code for this context. Used as the basis for
-     * wrapper code
-     */
-    this.langauage = language
-
-    /**
-     * Kernel code (? used to connect to the right Jupyter kernel)
+     * Kernel code (used to connect to the right Jupyter kernel)
      */
     this.kernel = kernel
+
+    // Look for which kernels are available on the machine by listing directories
+    // in  `~/.local/share/jupyter/kernels` (on linux)
+
+    // For each kernel, load the kernelspec e.g. `~/.local/share/jupyter/kernels/ir/kernel.json` (on linux)
+
+    // Create a connection object e.g. 
+    this.connection =  {
+      ip: "127.0.0.1",
+      transport: "tcp",
+      // These port numbers should be dynamic
+      control_port: 50160,
+      shell_port: 57503,        
+      stdin_port: 52597,
+      hb_port: 42540,
+      iopub_port: 40885,
+      signature_scheme: "hmac-sha256",
+      key: "a0436f6c-1916-498b-8eb9-e81ab9368e84"
+    }
+
+    // Save the connection object to a "connection file"
+
+    // Run the commands specified in the kernelspec with the connection file as argument
+    // to launch the kernel
+    
+    // `JupyterContextClient` will request this info in a GET so that it can connect
+    // directly to the Jupyter kernel
+
   }
 
-  /**
-   * Run code within the context's global scope (i.e. execute a code "chunk")
-   *
-   * @override
-   */
-  runCode (code, options) {
-    // Ask the kernel to execute the code
-
-    // Get the `execute_result` or `display_data` and pack it
-    // from mimetype -> value -> pack
-
-    return Promise.resolve()
-  }
-
-  /**
-   * Execute code within a local function scope (i.e. execute a code "cell")
-   *
-   * @override
-   */
-  callCode (code, args, options) {
-    // Do we need to initialize the kernel with functions for pack/unpack/value for each language
-
-    // Wrap the code into a "self executing function"
-    let wrapper = callCodeWrappers[this.language]
-    let selfExecFunc = wrapper(code, args)
-
-    // Ask the kernel to execute the code
-    //selfExecFunc
-
-    // Get the `execute_result` or `display_data` and pack it
-
-    return this.runCode(func)
-  }
-
-  /**
-   * Does the context provide a function?
-   *
-   * @override
-   */
-  hasFunction (name) {
-    return Promise.reject(new Error('Not implemented'))
-  }
-
-  /**
-   * Call a function
-   *
-   * @override
-   */
-  callFunction (name, args, options) {
-    return Promise.reject(new Error('Not implemented'))
-  }
-
-  /**
-   * Get the dependencies for a piece of code
-   *
-   * @override
-   */
-  codeDependencies (code) {
-    return Promise.reject(new Error('Not implemented'))
-  }
-
-  /**
-   * Complete a piece of code
-   *
-   * @override
-   */
-  codeComplete (code) {
-    return Promise.reject(new Error('Not implemented'))
-  }
 }
 
-const callCodeWrappers = {
-  r: (code, args) => {
-    return `(function(${Object.keys(args)}) { ${code} })()`
-  }
+JupyterContext.spec = {
+  name: 'JupyterContext',
+  client: 'JupyterContextClient', // Tell the client host to use a JupyterContextClient for this
+  aliases: ['jupyter_ir'] // This needs to get expanded into a list of the available Jupyter kernels
 }
 
 module.exports = JupyterContext
