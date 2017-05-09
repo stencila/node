@@ -58,8 +58,8 @@ class JupyterContext {
     let options = {}
     // Pass `kernels` to `launch()` as an optimization to prevent another kernelspecs search of filesystem
     return spawnteract.launch(this.kernel, options, JupyterContext.spec.kernels).then(kernel => {
-      this.process = kernel.spawn // The running process, from child_process.spawn(...)
-      this.connectionFile = kernel.connectionFile // Connection file path
+      this._process = kernel.spawn // The running process, from child_process.spawn(...)
+      this._connectionFile = kernel.connectionFile // Connection file path
       this.config = kernel.config // Connection information from the file
     })
   }
@@ -69,13 +69,13 @@ class JupyterContext {
    * @return {Promise} A promise
    */
   stop () {
-    if (this.process) {
-      this.process.kill()
-      this.process = null
+    if (this._process) {
+      this._process.kill()
+      this._process = null
     }
-    if (this.connectionFile) {
-      fs.unlink(this.connectionFile)
-      this.connectionFile = null
+    if (this._connectionFile) {
+      fs.unlink(this._connectionFile)
+      this._connectionFile = null
     }
     if (this.config) {
       this.config = null
