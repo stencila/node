@@ -1,4 +1,4 @@
-const {Context} = require('stencila')
+const kernelspecs = require('kernelspecs')
 
 /**
  * A JupyterContext for executing code in Jupyter kernels
@@ -7,23 +7,15 @@ const {Context} = require('stencila')
  * reading what it needs to from the filesystem and running
  * a system command. Communication with the kernel is
  * done by the `JupyterContextClient` in the stencila/stencila repo
- *
- * @extends {Context}
  */
-class JupyterContext extends Context {
+class JupyterContext {
 
   constructor (kernel) {
-    super()
 
     /**
      * Kernel code (used to connect to the right Jupyter kernel)
      */
     this.kernel = kernel
-
-    // Look for which kernels are available on the machine by listing directories
-    // in  `~/.local/share/jupyter/kernels` (on linux)
-
-    // For each kernel, load the kernelspec e.g. `~/.local/share/jupyter/kernels/ir/kernel.json` (on linux)
 
     // Create a connection object e.g. 
     this.connection =  {
@@ -49,12 +41,33 @@ class JupyterContext extends Context {
 
   }
 
+  /**
+   * Initialize this context class
+   *
+   * Looks for Jupyter kernels that have been installed on the system
+   * and puts an alias in each for in `JupyterContext.spec.aliases`
+   * 
+   * @return {object} Context specification object
+   */
+  static initialize () {
+    // Create a list of kernel aliases 
+    return kernelspecs.findAll().then(kernelspecs => {
+      let aliases = []
+      for (let name of Object.keys(kernelspecs)) {
+        //let kernelspec = kernelspecs[name]
+        aliases.push(`jupyter(${name})`)
+        aliases.push(name)
+      }
+      JupyterContext.spec.aliases = aliases
+    })
+  }
+
 }
 
 JupyterContext.spec = {
   name: 'JupyterContext',
   client: 'JupyterContextClient', // Tell the client host to use a JupyterContextClient for this
-  aliases: ['jupyter_ir'] // This needs to get expanded into a list of the available Jupyter kernels
+  aliases: [] // Aliases for each kernelspec installed on this machine. Populated by updateSpec()
 }
 
 module.exports = JupyterContext
