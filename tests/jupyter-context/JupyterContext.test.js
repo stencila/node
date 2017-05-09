@@ -15,8 +15,8 @@ test('JupyterContext.initialize', t => {
         t.pass('JupyterContext.kernel: ' + c.kernel)
         c.start().then(() => {
           t.pass('JupyterContext.config: ' + JSON.stringify(c.config))
-          t.ok(c.connectionFile)
-          t.ok(c.process)
+          t.ok(c._connectionFile)
+          t.ok(c._process)
           return c.stop()
         }).then(() => {
           t.end()
