@@ -10,7 +10,7 @@ test('JupyterContext.initialize', t => {
     // If at least one kernel insalled can continue
     if (Object.keys(JupyterContext.spec.kernels).length >= 1) {
       t.test('JupyterContext', t => {
-        let c = new JupyterContext(null, false)
+        let c = new JupyterContext()
         
         t.pass('JupyterContext.kernel: ' + c.kernel)
         c.start().then(() => {

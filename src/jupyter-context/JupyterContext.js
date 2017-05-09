@@ -28,9 +28,7 @@ class JupyterContext {
     })
   }
 
-  constructor (kernel, start) {
-    if (start!==false) start = true
-
+  constructor (kernel) {
     const kernels = JupyterContext.spec.kernels
     const kernelNames = Object.keys(kernels)
 
@@ -45,8 +43,6 @@ class JupyterContext {
       else kernel = kernelNames[0]
     }
     this.kernel = kernel
-
-    if (start) this.start()
   }
 
   /**
@@ -54,14 +50,18 @@ class JupyterContext {
    * @return {Promise} A promise
    */
   start () {
-    // Options to [child_process.spawn]{@link https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options}
-    let options = {}
-    // Pass `kernels` to `launch()` as an optimization to prevent another kernelspecs search of filesystem
-    return spawnteract.launch(this.kernel, options, JupyterContext.spec.kernels).then(kernel => {
-      this._process = kernel.spawn // The running process, from child_process.spawn(...)
-      this._connectionFile = kernel.connectionFile // Connection file path
-      this.config = kernel.config // Connection information from the file
-    })
+    if (this._process) return Promise.resolve()
+    else {
+      // Options to [child_process.spawn]{@link https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options}
+      let options = {}
+      // Pass `kernels` to `launch()` as an optimization to prevent another kernelspecs search of filesystem
+      return spawnteract.launch(this.kernel, options, JupyterContext.spec.kernels).then(kernel => {
+        this._process = kernel.spawn // The running process, from child_process.spawn(...)
+        this._connectionFile = kernel.connectionFile // Connection file path
+        this.config = kernel.config // Connection information from the file
+        this.spec = kernel.kernelSpec
+      })
+    }
   }
 
   /**
@@ -77,9 +77,8 @@ class JupyterContext {
       fs.unlink(this._connectionFile)
       this._connectionFile = null
     }
-    if (this.config) {
-      this.config = null
-    }
+    this.config = null
+    this.spec = null
     return Promise.resolve()
   }
 
