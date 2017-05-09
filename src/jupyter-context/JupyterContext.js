@@ -1,4 +1,7 @@
+const fs = require('fs')
+
 const kernelspecs = require('kernelspecs')
+const spawnteract = require('spawnteract')
 
 /**
  * A JupyterContext for executing code in Jupyter kernels
@@ -10,37 +13,6 @@ const kernelspecs = require('kernelspecs')
  */
 class JupyterContext {
 
-  constructor (kernel) {
-
-    /**
-     * Kernel code (used to connect to the right Jupyter kernel)
-     */
-    this.kernel = kernel
-
-    // Create a connection object e.g. 
-    this.connection =  {
-      ip: "127.0.0.1",
-      transport: "tcp",
-      // These port numbers should be dynamic
-      control_port: 50160,
-      shell_port: 57503,        
-      stdin_port: 52597,
-      hb_port: 42540,
-      iopub_port: 40885,
-      signature_scheme: "hmac-sha256",
-      key: "a0436f6c-1916-498b-8eb9-e81ab9368e84"
-    }
-
-    // Save the connection object to a "connection file"
-
-    // Run the commands specified in the kernelspec with the connection file as argument
-    // to launch the kernel
-    
-    // `JupyterContextClient` will request this info in a GET so that it can connect
-    // directly to the Jupyter kernel
-
-  }
-
   /**
    * Initialize this context class
    *
@@ -50,24 +22,73 @@ class JupyterContext {
    * @return {object} Context specification object
    */
   static initialize () {
-    // Create a list of kernel aliases 
+    // Create a list of kernel names and aliases 
     return kernelspecs.findAll().then(kernelspecs => {
-      let aliases = []
-      for (let name of Object.keys(kernelspecs)) {
-        //let kernelspec = kernelspecs[name]
-        aliases.push(`jupyter(${name})`)
-        aliases.push(name)
-      }
-      JupyterContext.spec.aliases = aliases
+      JupyterContext.spec.kernels = kernelspecs
     })
+  }
+
+  constructor (kernel, start) {
+    if (start!==false) start = true
+
+    const kernels = JupyterContext.spec.kernels
+    const kernelNames = Object.keys(kernels)
+
+    if (!kernelNames.length) {
+      throw new Error('No Jupyter kernels available on this machine')
+    }
+    if (kernel && !kernels[kernel]) {
+      throw new Error(`Jupyter kernel "${kernel}" not available on this machine`)
+    }
+    if (!kernel) {
+      if (kernelNames.indexOf('python3') >= 0) kernel = 'python3'
+      else kernel = kernelNames[0]
+    }
+    this.kernel = kernel
+
+    if (start) this.start()
+  }
+
+  /**
+   * Start the context
+   * @return {Promise} A promise
+   */
+  start () {
+    // Options to [child_process.spawn]{@link https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options}
+    let options = {}
+    // Pass `kernels` to `launch()` as an optimization to prevent another kernelspecs search of filesystem
+    return spawnteract.launch(this.kernel, options, JupyterContext.spec.kernels).then(kernel => {
+      this.process = kernel.spawn // The running process, from child_process.spawn(...)
+      this.connectionFile = kernel.connectionFile // Connection file path
+      this.config = kernel.config // Connection information from the file
+    })
+  }
+
+  /**
+   * Stop the context
+   * @return {Promise} A promise
+   */
+  stop () {
+    if (this.process) {
+      this.process.kill()
+      this.process = null
+    }
+    if (this.connectionFile) {
+      fs.unlink(this.connectionFile)
+      this.connectionFile = null
+    }
+    if (this.config) {
+      this.config = null
+    }
+    return Promise.resolve()
   }
 
 }
 
 JupyterContext.spec = {
   name: 'JupyterContext',
-  client: 'JupyterContextClient', // Tell the client host to use a JupyterContextClient for this
-  aliases: [] // Aliases for each kernelspec installed on this machine. Populated by updateSpec()
+  client: 'JupyterContextClient',
+  aliases: ['jupyter']
 }
 
 module.exports = JupyterContext
