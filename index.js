@@ -14,7 +14,7 @@ const install = function () {
   return host.install()
 }
 const environ = function () {
-  return JSON.stringify(host.environ(), null, '  ')
+  return console.log(JSON.stringify(host.environ(), null, '  ')) // eslint-disable-line no-console
 }
 const start = function (address='127.0.0.1', port=2000) {
   return host.start(address, port)
