@@ -12,10 +12,10 @@ test('Host', t => {
   t.end()
 })
 
-test('Host.options', t => {
+test('Host.manifest', t => {
   let h = new Host()
 
-  h.options()
+  h.manifest()
     .then(manifest => {
       t.equal(manifest.stencila.package, 'node')
       t.equal(manifest.stencila.version, version)
