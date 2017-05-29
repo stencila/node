@@ -22,8 +22,8 @@ const start = function (address='127.0.0.1', port=2000) {
 const stop = function () {
   return host.stop()
 }
-const run = function () {
-  return host.run()
+const run = function (address='127.0.0.1', port=2000) {
+  return host.run(address, port)
 }
 
 module.exports = {
