@@ -37,6 +37,17 @@ class Host {
   }
 
   /**
+   * Get the environment of this host including the version of Node.js and versions
+   * of installed packages (local and globals)
+   * 
+   * @return {Object} The environment as a object
+   */
+  environ () {
+    // TODO see https://github.com/stencila/r/blob/8575f43096b6472fcc039e513a5f82a274864241/R/host.R#L91
+    return {}
+  }
+
+  /**
    * Get a manifest for this host
    *
    * The manifest describes the host and it's capabilities. It is used
@@ -45,7 +56,7 @@ class Host {
    *   
    * @return {Promise} Resolves to a manifest object
    */
-  options () {
+  manifest () {
     let new_ = {}
     for (let name of Object.keys(NEW)) {
       new_[name] = NEW[name].spec
@@ -61,6 +72,17 @@ class Host {
       },
       instances: Object.keys(this._instances)
     })
+  }
+
+  /**
+   * Install this Stencila Host on this machine.
+   *
+   * Installation of a host involves creating a file `node.json` inside of
+   * the user's Stencila data (see `user_dir()`) directory which describes
+   * the capabilities of this host.
+   */
+  install () {
+    // TODO see https://github.com/stencila/r/blob/8575f43096b6472fcc039e513a5f82a274864241/R/host.R#L152
   }
 
   /**
@@ -151,10 +173,12 @@ class Host {
    * 
    * @return {Promise}
    */
-  start () {
+  start (address='127.0.0.1', port=2000) {
+    // TODO : register as a running host
+    // See https://github.com/stencila/r/blob/8575f43096b6472fcc039e513a5f82a274864241/R/host.R#L261
     return new Promise((resolve) => {
       if (!this._servers.http) {
-        var server = new HostHttpServer(this)
+        var server = new HostHttpServer(this, address, port)
         this._servers.http = server
         server.start().then(resolve)
       }
@@ -168,6 +192,8 @@ class Host {
    * @return {Promise}
    */
   stop () {
+    // TODO : deregister as a running host
+    // See https://github.com/stencila/r/blob/8575f43096b6472fcc039e513a5f82a274864241/R/host.R#L283
     return new Promise((resolve) => {
       const type = 'http'
       let server = this._servers[type]
@@ -176,6 +202,18 @@ class Host {
         server.stop().then(resolve)
       }
     })
+  }
+
+  /**
+   * Start serving this host and wait for connections
+   * indefinitely
+   * 
+   * @return {Promise}
+   */
+  run (address='127.0.0.1', port=2000) {
+    // TODO : properly handling interrupts
+    // See https://github.com/stencila/r/blob/8575f43096b6472fcc039e513a5f82a274864241/R/host.R#L293
+    return this.start(address, port)
   }
 
   /**

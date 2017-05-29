@@ -145,10 +145,10 @@ class HostHttpServer {
     if (!acceptsJson(request)) {
       return this.statico(request, response, 'index.html')
     } else {
-      return this._host.options()
-        .then(options => {
+      return this._host.manifest()
+        .then(manifest => {
           response.setHeader('Content-Type', 'application/json')
-          response.end(JSON.stringify(options))
+          response.end(JSON.stringify(manifest))
         })
     }
   }
