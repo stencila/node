@@ -1,4 +1,8 @@
 const child = require('child-process-promise')
+const crypto = require('crypto')
+const fs = require('fs')
+const mkdirp = require('mkdirp')
+const path = require('path')
 const os = require('os')
 
 const version = require('../../package').version
@@ -32,10 +36,46 @@ const NEW = {
 class Host {
 
   constructor () {
+    this._id = `node-${crypto.randomBytes(24).toString('hex')}`
     this._servers = {}
     this._instances = {}
     this._started = null;
     this._heartbeat = null;
+  }
+
+  /**
+   * Get unique ID of this host
+   */
+  get id () {
+    return this._id
+  }
+
+  /**
+   * Get the current user's Stencila data directory
+   */
+  userDir () {
+    switch(process.platform) {
+      case 'darwin':
+        return path.join(process.env.HOME, 'Library', 'Preferences', 'Stencila')
+      case 'linux':
+        return path.join(process.env.HOME, '.local', 'share', 'stencila')
+      case 'windows':
+        return path.join(process.env.APPDATA, 'Stencila')
+      default:
+        return path.join(process.env.HOME, 'stencila')
+    }
+  }
+
+  /**
+   * Get the current Stencila temporary directory
+   */
+  tempDir () {
+    switch(process.platform) {
+      case 'linux':
+        return path.join(os.tmpdir(), 'stencila')
+      default:
+        return path.join(os.tmpdir(), 'Stencila')
+    }
   }
 
   /**
@@ -45,8 +85,14 @@ class Host {
    * @return {Object} The environment as a object
    */
   environ () {
-    // TODO see https://github.com/stencila/r/blob/8575f43096b6472fcc039e513a5f82a274864241/R/host.R#L91
-    return {}
+    // TODO package names and versions
+    // See for example https://github.com/stencila/r/blob/8575f43096b6472fcc039e513a5f82a274864241/R/host.R#L91
+    return {
+      version: process.version,
+      platform: process.platform,
+      arch: process.arch,
+      packages: {}
+    }
   }
 
   /**
@@ -58,33 +104,47 @@ class Host {
    *   
    * @return {Promise} Resolves to a manifest object
    */
-  manifest () {
+  manifest (complete=true) {
     let new_ = {}
     for (let name of Object.keys(NEW)) {
       new_[name] = NEW[name].spec
     }
-    return Promise.resolve({
+    let manifest = {
       stencila: {
         package: 'node',
         version: version
       },
-      urls: this.urls,
+      run: [process.execPath, '-e', "require('stencila-node').run()"],
       schemes: {
         new: new_
-      },
-      instances: Object.keys(this._instances)
-    })
+      }
+    }
+    if (complete) {
+      manifest = Object.assign(manifest, {
+        id: this.id,
+        urls: this.urls,
+        instances: Object.keys(this._instances),
+        environ: this.environ()
+      })
+    }
+    return manifest
   }
 
   /**
    * Install this Stencila Host on this machine.
    *
    * Installation of a host involves creating a file `node.json` inside of
-   * the user's Stencila data (see `user_dir()`) directory which describes
+   * the user's Stencila data (see `userDir()`) directory which describes
    * the capabilities of this host.
    */
   install () {
-    // TODO see https://github.com/stencila/r/blob/8575f43096b6472fcc039e513a5f82a274864241/R/host.R#L152
+    let dir = path.join(this.userDir(), 'hosts')
+    mkdirp(dir, error => {
+      if (error) throw error
+      fs.writeFile(path.join(dir, 'node.json'), JSON.stringify(this.manifest(false), null, '  '), error => {
+        if (error) throw error
+      })
+    })
   }
 
   /**
@@ -176,14 +236,22 @@ class Host {
    * @return {Promise}
    */
   start (address='127.0.0.1', port=2000) {
-    // TODO : register as a running host
-    // See https://github.com/stencila/r/blob/8575f43096b6472fcc039e513a5f82a274864241/R/host.R#L261
     return new Promise((resolve) => {
       if (!this._servers.http) {
+        // Start HTTP server
         var server = new HostHttpServer(this, address, port)
         this._servers.http = server
         server.start().then(() => {
+          // Record start time
           this._started = new Date()
+          // Register as a running host by creating a run file
+          let file = path.join(this.tempDir(), 'hosts', this.id + '.json')
+          mkdirp(path.dirname(file), error => {
+            if (error) throw error
+            fs.writeFile(file, JSON.stringify(this.manifest(), null, '  '), { mode: '600' }, error => {
+              if (error) throw error
+            })
+          })
           console.log('Host has started at: ' + this.urls.join(', ')) // eslint-disable-line no-console
           resolve()
         })
@@ -203,14 +271,15 @@ class Host {
    * @return {Promise}
    */
   stop () {
-    // TODO : deregister as a running host
-    // See https://github.com/stencila/r/blob/8575f43096b6472fcc039e513a5f82a274864241/R/host.R#L283
     return new Promise((resolve) => {
       const type = 'http'
       let server = this._servers[type]
       if (server) {
         delete this._servers[type]
         server.stop().then(() => {
+          // Deregister as a running host by removing run file
+          let file = path.join(this.tempDir(), 'hosts', this.id + '.json')
+          fs.unlink(file)
           console.log('Host has stopped.') // eslint-disable-line no-console
           resolve()
         })
