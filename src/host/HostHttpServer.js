@@ -116,13 +116,13 @@ class HostHttpServer {
     if (path === '/favicon.ico') return [this.statico, 'favicon.ico']
     if (path.substring(0, 8) === '/static/') return [this.statico, path.substring(8)]
 
-    let matches = path.match(/^\/(.+?)(!(.+))?$/)
+    let matches = path.match(/^\/(.*?)(!(.+))?$/)
     if (matches) {
       let id = matches[1]
       let method = matches[3]
       if (verb === 'POST' && id) return [this.post, id]
       else if (verb === 'GET' && id) return [this.get, id]
-      else if (verb === 'PUT' && id && method) return [this.put, id, method]
+      else if (verb === 'PUT' && method) return [this.put, id, method]
       else if (verb === 'DELETE' && id) return [this.delete, id]
     }
 

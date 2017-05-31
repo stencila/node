@@ -34,6 +34,8 @@ class Host {
   constructor () {
     this._servers = {}
     this._instances = {}
+    this._started = null;
+    this._heartbeat = null;
   }
 
   /**
@@ -133,7 +135,7 @@ class Host {
   put (id, method, args) {
     args = args || []
     return new Promise((resolve, reject) => {
-      let instance = this._instances[id]
+      let instance = id ? this._instances[id] : this
       if (instance) {
         let func = instance[method]
         if (func) {
@@ -180,10 +182,19 @@ class Host {
       if (!this._servers.http) {
         var server = new HostHttpServer(this, address, port)
         this._servers.http = server
-        server.start().then(resolve)
+        server.start().then(() => {
+          this._started = new Date()
+          console.log('Host has started at: ' + this.urls.join(', ')) // eslint-disable-line no-console
+          resolve()
+        })
       }
       resolve()
     })
+  }
+
+  heartbeat () {
+    this._heartbeat = new Date()
+    return this._heartbeat
   }
 
   /**
@@ -199,7 +210,10 @@ class Host {
       let server = this._servers[type]
       if (server) {
         delete this._servers[type]
-        server.stop().then(resolve)
+        server.stop().then(() => {
+          console.log('Host has stopped.') // eslint-disable-line no-console
+          resolve()
+        })
       }
     })
   }
@@ -210,9 +224,31 @@ class Host {
    * 
    * @return {Promise}
    */
-  run (address='127.0.0.1', port=2000) {
-    // TODO : properly handling interrupts
-    // See https://github.com/stencila/r/blob/8575f43096b6472fcc039e513a5f82a274864241/R/host.R#L293
+  run (address='127.0.0.1', port=2000, timeout=Infinity, duration=Infinity) {
+    const stop = () => {
+      this.stop().then(() => {
+        process.exit()
+      })
+    }
+
+    // Setup timer to check timeout and duration every minute
+    setInterval(()=>{
+      const time = new Date()
+      if ((time - this._heartbeat)/1000 > timeout || (time - this._started)/1000 >= duration) {
+        stop();
+      }
+    }, 60 * 1000)    
+
+    // Handle interrupt
+    if (process.platform === "win32") {
+      var rl = require("readline").createInterface({
+        input: process.stdin,
+        output: process.stdout
+      })
+      rl.on("SIGINT", () => process.emit("SIGINT"))
+    }
+    process.on("SIGINT", stop)
+
     return this.start(address, port)
   }
 

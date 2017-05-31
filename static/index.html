@@ -11,5 +11,12 @@
 console.info(<span style="color: #c91630">"work in progress. dashboard coming soon!"</span>)
       </pre>
     </div>
+    <script>
+    setInterval(function(){
+      var xhr = new XMLHttpRequest();
+      xhr.open("PUT", "/!heartbeat");
+      xhr.send();
+    }, 60 * 1000)
+    </script>
   </body>
 </html>
