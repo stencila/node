@@ -242,8 +242,9 @@ class Host {
         var server = new HostHttpServer(this, address, port)
         this._servers.http = server
         server.start().then(() => {
-          // Record start time
+          // Record start times
           this._started = new Date()
+          this._heartbeat = new Date()
           // Register as a running host by creating a run file
           let file = path.join(this.tempDir(), 'hosts', this.id + '.json')
           mkdirp(path.dirname(file), error => {
