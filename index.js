@@ -10,20 +10,20 @@ const util = require('./src/util')
 
 const version = require('./package').version
 
-const install = function () {
-  return host.install()
+const install = function (...args) {
+  return host.install(...args)
 }
 const environ = function () {
   return console.log(JSON.stringify(host.environ(), null, '  ')) // eslint-disable-line no-console
 }
-const start = function (address='127.0.0.1', port=2000) {
-  return host.start(address, port)
+const start = function (...args) {
+  return host.start(...args)
 }
-const stop = function () {
-  return host.stop()
+const stop = function (...args) {
+  return host.stop(...args)
 }
-const run = function (address='127.0.0.1', port=2000, timeout=Infinity, duration=Infinity) {
-  return host.run(address, port, timeout, duration)
+const run = function (...args) {
+  return host.run(...args)
 }
 
 module.exports = {
