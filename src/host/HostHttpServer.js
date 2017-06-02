@@ -145,11 +145,11 @@ class HostHttpServer {
     if (!acceptsJson(request)) {
       return this.statico(request, response, 'index.html')
     } else {
-      return this._host.manifest()
-        .then(manifest => {
-          response.setHeader('Content-Type', 'application/json')
-          response.end(JSON.stringify(manifest))
-        })
+      return Promise.resolve().then(() => {
+        let manifest = this._host.manifest()
+        response.setHeader('Content-Type', 'application/json')
+        response.end(JSON.stringify(manifest))
+      })
     }
   }
 

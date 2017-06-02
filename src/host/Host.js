@@ -1,5 +1,5 @@
-const child = require('child-process-promise')
 const crypto = require('crypto')
+const execa = require('execa')
 const fs = require('fs')
 const mkdirp = require('mkdirp')
 const path = require('path')
@@ -38,9 +38,10 @@ class Host {
   constructor () {
     this._id = `node-${crypto.randomBytes(24).toString('hex')}`
     this._servers = {}
+    this._started = null
+    this._heartbeat = null
     this._instances = {}
-    this._started = null;
-    this._heartbeat = null;
+    this._peers = []
   }
 
   /**
@@ -122,9 +123,9 @@ class Host {
     if (complete) {
       manifest = Object.assign(manifest, {
         id: this.id,
+        process: process.pid,
         urls: this.urls,
-        instances: Object.keys(this._instances),
-        environ: this.environ()
+        instances: Object.keys(this._instances)
       })
     }
     return manifest
@@ -280,7 +281,7 @@ class Host {
         server.stop().then(() => {
           // Deregister as a running host by removing run file
           let file = path.join(this.tempDir(), 'hosts', this.id + '.json')
-          fs.unlink(file)
+          fs.unlink(file, () => {})
           console.log('Host has stopped.') // eslint-disable-line no-console
           resolve()
         })
@@ -356,12 +357,77 @@ class Host {
         .then(() => {
           let url = this._servers.http.url
           if (os.platform() === 'linux') {
-            child.exec(`2>/dev/null 1>&2 xdg-open "${url}"`)
+            execa(`2>/dev/null 1>&2 xdg-open "${url}"`)
           } else {
-            child.exec(`open "${url}"`)
+            execa(`open "${url}"`)
           }
         })
     )
+  }
+
+  /**
+   * Get this host's peers
+   */
+  get peers () {
+    return this._peers
+  }
+
+  /**
+   * Discover peers
+   *
+   * Looks for peer hosts in the following locations:
+   *
+   * - `/tmp/stencila/hosts` - hosts that are currently active (i.e. running)
+   * - `~/.local/share/stencila/hosts` - hosts that are installed but inactive
+   *
+   * Set the `interval` parameter to trigger ongoing discovery.
+   *
+   * @param {number} interval - The interval (seconds) between discovery attempts
+   */
+  discover (interval=0) {
+    let discoverDir = dir => {
+      fs.readdir(dir, (error, files) => {
+        if (error) throw error
+        for (let file of files) {
+          let manifest = JSON.parse(fs.readFileSync(path.join(dir, file), { encoding: 'utf8' }))
+          // If the manifest defines a `process` then check that process is actually running
+          if (manifest.process) {
+            try {
+              process.kill(manifest.process, 0)
+            } catch (exception) {
+              continue
+            }
+          }
+          // TODO Check that peer is not already in this._peers
+          this._peers.push(manifest)
+        }
+      })
+    }
+
+    // Discover active hosts first
+    discoverDir(path.join(this.tempDir(), 'hosts'))
+    discoverDir(path.join(this.userDir(), 'hosts'))
+
+    if (interval) setTimeout(() => this.discover(interval), interval*1000)
+  }
+
+  /**
+   * Spawn a peer from an inactive host manifest
+   * 
+   * @param  {[type]} peer [description]
+   * @return {[type]}      [description]
+   */
+  spawn (host) {
+    return new Promise((resolve) => {
+      let run = host.run
+      let child = execa(run[0], run.slice(1))
+      child.stdout.on('data', data => {
+        let manifest = JSON.parse(data.toString())
+        // Place at start of peers list
+        this._peers.unshift(manifest)
+        resolve(manifest)
+      })
+    })
   }
 
 }

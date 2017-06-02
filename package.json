@@ -51,7 +51,7 @@
     "tape": "^4.6.0"
   },
   "dependencies": {
-    "child-process-promise": "^2.2.0",
+    "execa": "^0.6.3",
     "http-shutdown": "^1.1.0",
     "mkdirp": "^0.5.1",
     "path-is-inside": "^1.0.2",
