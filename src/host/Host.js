@@ -71,12 +71,7 @@ class Host {
    * Get the current Stencila temporary directory
    */
   tempDir () {
-    switch(process.platform) {
-      case 'linux':
-        return path.join(os.tmpdir(), 'stencila')
-      default:
-        return path.join(os.tmpdir(), 'Stencila')
-    }
+    return path.join(os.tmpdir(), 'stencila')
   }
 
   /**
