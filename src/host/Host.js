@@ -100,7 +100,7 @@ class Host {
    *   
    * @return {Promise} Resolves to a manifest object
    */
-  manifest (complete=true) {
+  manifest () {
     let new_ = {}
     for (let name of Object.keys(NEW)) {
       new_[name] = NEW[name].spec
@@ -115,7 +115,7 @@ class Host {
         new: new_
       }
     }
-    if (complete) {
+    if (this._started) {
       manifest = Object.assign(manifest, {
         id: this.id,
         process: process.pid,
@@ -252,8 +252,9 @@ class Host {
           console.log('Host has started at: ' + this.urls.join(', ')) // eslint-disable-line no-console
           resolve()
         })
+      } else {
+        resolve()
       }
-      resolve()
     })
   }
 
