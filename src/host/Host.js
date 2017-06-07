@@ -7,12 +7,13 @@ const os = require('os')
 
 const version = require('../../package').version
 const HostHttpServer = require('./HostHttpServer')
+const { GET, POST, PUT } = require('../util/requests')
 
 const NodeContext = require('../node-context/NodeContext')
 
 // Look up for classes available under the 
 // `new` sheme
-const NEW = {
+const TYPES = {
   'NodeContext': NodeContext
 }
 
@@ -102,8 +103,8 @@ class Host {
    */
   manifest () {
     let new_ = {}
-    for (let name of Object.keys(NEW)) {
-      new_[name] = NEW[name].spec
+    for (let name of Object.keys(TYPES)) {
+      new_[name] = TYPES[name].spec
     }
     let manifest = {
       stencila: {
@@ -120,7 +121,8 @@ class Host {
         id: this.id,
         process: process.pid,
         urls: this.urls,
-        instances: Object.keys(this._instances)
+        instances: Object.keys(this._instances),
+        peers: this._peers
       })
     }
     return manifest
@@ -151,14 +153,42 @@ class Host {
    * @return {Promise} - Resolves to the ID string of newly created instance
    */
   post (type, name, options) {
-    return new Promise((resolve, reject) => {
-      let Class = NEW[type]
+    return Promise.resolve().then(() => {
+      let Class = TYPES[type]
       if (Class) {
+        // Type present locally
         let address = `name://${name || Math.floor((1 + Math.random()) * 1e6).toString(16)}`
         this._instances[address] = new Class(options)
-        resolve(address)
+        return address
       } else {
-        reject(new Error(`Unknown type: ${type}`))
+        // Type not present locally, see if a peer has it
+        return Promise.resolve().then(() => {
+          for (let peer of this._peers) {
+            let types = peer.schemes['new']
+            for (let key of Object.keys(types)) {
+              let type_ = types[key]
+              if (type_.name === type) {
+                if (peer.process) {
+                  // Peer is active, so use it
+                  return peer
+                } else {
+                  // Peer is inactive, so `spawn` it
+                  return this.spawn(peer)
+                }
+              }
+            }
+          }
+          throw new Error(`Unknown type: ${type}`)
+        }).then(peer => {
+          // Request the peer to create a new instance of type
+          let url = peer.urls[0]
+          return POST(url + '/' + type, Object.assign({name: name}, options)).then(address => {
+            // Store the instance as a URL to be proxied to. In other methods (e.g. `put`),
+            // string instances are recognised as remote instances and requests are proxied to them
+            this._instances[address] = `${url}/${address}`
+            return address
+          })
+        })
       }
     })
   }
@@ -170,12 +200,19 @@ class Host {
    * @return {Promise} - Resolves to the instance
    */
   get (id) {
-    return new Promise((resolve, reject) => {
+    return Promise.resolve().then(() => {
       let instance = this._instances[id]
       if (instance) {
-        resolve(instance)
+        if (typeof instance !== 'string') {
+          // Return local instance
+          return instance
+        }
+        else {
+          // Proxy request to peer
+          return GET(instance)
+        }
       } else {
-        reject(new Error(`Unknown instance: ${id}`))
+        throw new Error(`Unknown instance: ${id}`)
       }
     })
   }
@@ -189,18 +226,32 @@ class Host {
    * @return {Promise} Resolves to result of method call
    */
   put (id, method, args) {
-    args = args || []
-    return new Promise((resolve, reject) => {
+    return Promise.resolve().then(() => {
       let instance = id ? this._instances[id] : this
       if (instance) {
-        let func = instance[method]
-        if (func) {
-          resolve(Promise.resolve(instance[method](...args)))
-        } else {
-          reject(new Error(`Unknown method: ${method}`))
+        if (typeof instance !== 'string') {
+          let func = instance[method]
+          if (func) {
+            // Ensure arguments are an array
+            if (args && !(args instanceof Array)) {
+              if (args instanceof Object) {
+                args = Object.keys(args).map(key => args[key])
+              } else {
+                args = [args]
+              }
+            }
+            // Return method call result
+            return instance[method](...args)
+          } else {
+            throw new Error(`Unknown method: ${method}`)
+          }
+        }
+        else {
+          // Proxy request to peer
+          return PUT(`${instance}!${method}`, args)
         }
       } else {
-        reject(new Error(`Unknown instance: ${id}`))
+        throw new Error(`Unknown instance: ${id}`)
       }
     })
   }
@@ -238,9 +289,11 @@ class Host {
         var server = new HostHttpServer(this, address, port)
         this._servers.http = server
         server.start().then(() => {
+          
           // Record start times
           this._started = new Date()
           this._heartbeat = new Date()
+          
           // Register as a running host by creating a run file
           let file = path.join(this.tempDir(), 'hosts', this.id + '.json')
           mkdirp(path.dirname(file), error => {
@@ -250,6 +303,10 @@ class Host {
             })
           })
           console.log('Host has started at: ' + this.urls.join(', ')) // eslint-disable-line no-console
+
+          // Discover other hosts
+          this.discover()
+
           resolve()
         })
       } else {
@@ -371,7 +428,7 @@ class Host {
   /**
    * Discover peers
    *
-   * Looks for peer hosts in the following locations:
+   * Looks for peer hosts in the following locations (on Linux, equivalents on other OSs):
    *
    * - `/tmp/stencila/hosts` - hosts that are currently active (i.e. running)
    * - `~/.local/share/stencila/hosts` - hosts that are installed but inactive
@@ -382,21 +439,33 @@ class Host {
    */
   discover (interval=0) {
     let discoverDir = dir => {
-      fs.readdir(dir, (error, files) => {
-        if (error) throw error
-        for (let file of files) {
-          let manifest = JSON.parse(fs.readFileSync(path.join(dir, file), { encoding: 'utf8' }))
-          // If the manifest defines a `process` then check that process is actually running
-          if (manifest.process) {
-            try {
-              process.kill(manifest.process, 0)
-            } catch (exception) {
-              continue
+      fs.access(dir, fs.constants.R_OK, error => {
+        if (error) return
+        fs.readdir(dir, (error, files) => {
+          if (error) throw error
+          for (let file of files) {
+            let manifest = JSON.parse(fs.readFileSync(path.join(dir, file), { encoding: 'utf8' }))
+            // If the manifest defines a `process` then check that process is actually running
+            if (manifest.process) {
+              try {
+                process.kill(manifest.process, 0)
+              } catch (exception) {
+                continue
+              }
             }
+            // Insert if the peer is not already in this._peers
+            let insert = true
+            if (manifest.id) {
+              for (let peer of this._peers) {
+                if (peer.id === manifest.id) {
+                  insert = false
+                  break
+                }
+              }
+            }
+            if (insert) this._peers.push(manifest)
           }
-          // TODO Check that peer is not already in this._peers
-          this._peers.push(manifest)
-        }
+        })
       })
     }
 

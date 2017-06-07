@@ -202,65 +202,45 @@ class HostHttpServer {
    * Handle a request to `post`
    */
   post (request, response, type) {
-    return bodify(request)
-      .then(body => {
-        let options = body ? JSON.parse(body) : {}
-        return this._host.post(type, options.name, options)
-          .then(id => {
-            response.setHeader('Content-Type', 'application/json')
-            response.end(JSON.stringify(id))
-          })
+    return bodify(request).then(body => {
+      let options = body ? JSON.parse(body) : {}
+      return this._host.post(type, options.name, options).then(id => {
+        response.setHeader('Content-Type', 'application/json')
+        response.end(JSON.stringify(id))
       })
+    })
   }
 
   /**
    * Handle a request to `get`
    */
   get (request, response, id) {
-    return this._host.get(id)
-      .then(instance => {
-        response.setHeader('Content-Type', 'application/json')
-        response.end(JSON.stringify(instance))
-      })
+    return this._host.get(id).then(instance => {
+      response.setHeader('Content-Type', 'application/json')
+      response.end(JSON.stringify(instance))
+    })
   }
 
   /**
    * Handle a request to `put`
    */
   put (request, response, id, method) {
-    return bodify(request)
-      .then(body => {
-        // Ensure arguments are an array
-        let args = []
-        if (body) {
-          let value = JSON.parse(body)
-          if (value instanceof Array) {
-            args = value
-          } else if (value instanceof Object) {
-            args = Object.keys(value).map(key => value[key])
-          } else {
-            args = [value]
-          }
-        }
-        return args
+    return bodify(request).then(body => {
+      let args = body ? JSON.parse(body) : {}
+      return this._host.put(id, method, args).then(result => {
+        response.setHeader('Content-Type', 'application/json')
+        response.end(JSON.stringify(result))
       })
-      .then(args => {
-        return this._host.put(id, method, args)
-          .then(result => {
-            response.setHeader('Content-Type', 'application/json')
-            response.end(JSON.stringify(result))
-          })
-      })
+    })
   }
 
   /**
    * Handle a request to `delete`
    */
   delete (request, response, id) {
-    return this._host.delete(id)
-      .then(() => {
-        response.end()
-      })
+    return this._host.delete(id).then(() => {
+      response.end()
+    })
   }
 
   /**
