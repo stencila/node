@@ -55,6 +55,7 @@
     "http-shutdown": "^1.1.0",
     "mkdirp": "^0.5.1",
     "path-is-inside": "^1.0.2",
+    "request": "^2.81.0",
     "request-promise": "^4.2.1",
     "rimraf": "2.6.1",
     "stencila": "^0.26.2"
