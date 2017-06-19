@@ -13,4 +13,8 @@ DocumentBundle.converters = [
 
 DocumentBundle.page = 'document.html'
 
+DocumentBundle.spec = {
+  name: 'DocumentBundle'
+}
+
 module.exports = DocumentBundle

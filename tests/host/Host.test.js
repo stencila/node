@@ -76,7 +76,7 @@ test('Host.get', t => {
       return h.get('foobar')
     })
     .catch(error => {
-      t.equal(error.message, 'Unknown instance: foobar')
+      t.ok(error.message.match('Unknown instance'))
       t.end()
     })
 })
@@ -115,7 +115,7 @@ test('Host.put', t => {
       t.fail('should not return a result')
     })
     .catch(error => {
-      t.equal(error.message, 'Unknown instance: fooId')
+      t.ok(error.message.match('Unknown instance'))
     })
 })
 
