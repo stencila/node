@@ -156,6 +156,7 @@ class Host {
    * @return {Promise} - Resolves to the ID string of newly created instance
    */
   post (type, name, options) {
+    this.heartbeat()
     return Promise.resolve().then(() => {
       let Class = TYPES[type]
       if (Class) {
@@ -203,6 +204,7 @@ class Host {
    * @return {Promise} - Resolves to the instance
    */
   get (address, proxy=true) {
+    this.heartbeat()
     return Promise.resolve().then(() => {
       let instance
       if (address) {
@@ -249,6 +251,7 @@ class Host {
    * @return {Promise} Resolves to result of method call
    */
   put (address, method, args) {
+    this.heartbeat()
     return this.get(address, false).then(instance => {
       if (typeof instance !== 'string') {
         let func = instance[method]
@@ -281,6 +284,7 @@ class Host {
    * @return {Promise}
    */
   delete (id) {
+    this.heartbeat()
     return new Promise((resolve, reject) => {
       let instance = this._instances[id]
       if (instance) {
@@ -333,6 +337,15 @@ class Host {
     })
   }
 
+  /**
+   * Update this host's heartbeat
+   *
+   * Can be called explictly by a peer (i.e. `PUT /!heartbeat`)
+   * but also called by the `post`, `get`, `put` and `delete` methods
+   * above.
+   * 
+   * @return {Date} Date/time of last heartbeat
+   */
   heartbeat () {
     this._heartbeat = new Date()
     return this._heartbeat
