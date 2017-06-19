@@ -15,7 +15,8 @@
     "cover": "istanbul cover tests",
     "docs": "documentation build --config docs/docs.yml --output docs --format html",
     "docs-serve": "documentation serve --config docs/docs.yml --watch",
-    "start": "node stencila-node.js"
+    "start": "node stencila-node.js",
+    "postinstall": "ln -sfT ../node_modules/stencila/build static/stencila"
   },
   "repository": {
     "type": "git",
