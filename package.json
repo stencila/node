@@ -58,6 +58,7 @@
     "request": "^2.81.0",
     "request-promise": "^4.2.1",
     "rimraf": "2.6.1",
-    "stencila": "^0.26.2"
+    "stencila": "0.27-preview",
+    "untildify": "^3.0.2"
   }
 }

@@ -4,16 +4,19 @@ const fs = require('fs')
 const mkdirp = require('mkdirp')
 const path = require('path')
 const os = require('os')
+const stencila = require('stencila')
 
 const version = require('../../package').version
 const HostHttpServer = require('./HostHttpServer')
 const { GET, POST, PUT } = require('../util/requests')
 
+const DocumentBundle = require('../bundles/DocumentBundle')
 const NodeContext = require('../node-context/NodeContext')
 
 // Look up for classes available under the 
 // `new` sheme
 const TYPES = {
+  'DocumentBundle': DocumentBundle,
   'NodeContext': NodeContext
 }
 
@@ -196,12 +199,18 @@ class Host {
   /**
    * Get an instance
    * 
-   * @param  {string} id - ID of instance
+   * @param  {string} address - Address of instance
    * @return {Promise} - Resolves to the instance
    */
-  get (id) {
+  get (address) {
     return Promise.resolve().then(() => {
-      let instance = this._instances[id]
+      let instance
+      if (address) {
+        address = stencila.address.long(address)
+        instance = this._instances[address]
+      } else {
+        instance = this
+      }
       if (instance) {
         if (typeof instance !== 'string') {
           // Return local instance
@@ -212,7 +221,21 @@ class Host {
           return GET(instance)
         }
       } else {
-        throw new Error(`Unknown instance: ${id}`)
+        // Check if the address matches a registered type
+        for (let name of Object.keys(TYPES)) {
+          let Class = TYPES[name]
+          if (typeof Class.match === 'function') {
+            let match = Class.match(address)
+            if (match) {
+              let instance = new Class(match)
+              this._instances[match] = instance
+              return instance.import().then(() => {
+                return instance
+              })
+            }
+          }
+        }
+        throw new Error(`Unknown instance: ${address}`)
       }
     })
   }
@@ -225,33 +248,28 @@ class Host {
    * @param {array} args - An array of method arguments
    * @return {Promise} Resolves to result of method call
    */
-  put (id, method, args) {
-    return Promise.resolve().then(() => {
-      let instance = id ? this._instances[id] : this
-      if (instance) {
-        if (typeof instance !== 'string') {
-          let func = instance[method]
-          if (func) {
-            // Ensure arguments are an array
-            if (args && !(args instanceof Array)) {
-              if (args instanceof Object) {
-                args = Object.keys(args).map(key => args[key])
-              } else {
-                args = [args]
-              }
+  put (address, method, args) {
+    return this.get(address).then(instance => {
+      if (typeof instance !== 'string') {
+        let func = instance[method]
+        if (func) {
+          // Ensure arguments are an array
+          if (args && !(args instanceof Array)) {
+            if (args instanceof Object) {
+              args = Object.keys(args).map(key => args[key])
+            } else {
+              args = [args]
             }
-            // Return method call result
-            return instance[method](...args)
-          } else {
-            throw new Error(`Unknown method: ${method}`)
           }
+          // Return method call result
+          return instance[method](...args)
+        } else {
+          throw new Error(`Unknown method: ${method}`)
         }
-        else {
-          // Proxy request to peer
-          return PUT(`${instance}!${method}`, args)
-        }
-      } else {
-        throw new Error(`Unknown instance: ${id}`)
+      }
+      else {
+        // Proxy request to peer
+        return PUT(`${instance}!${method}`, args)
       }
     })
   }

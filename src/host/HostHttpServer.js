@@ -112,10 +112,6 @@ class HostHttpServer {
   route (verb, path) {
     if (verb === 'OPTIONS') return [this.options]
 
-    // Remove any prefix from path
-    let pos = path.indexOf('*/')
-    if (pos) path = path.substring(pos+1)
-
     if (path === '/') return [this.home]
     if (path === '/favicon.ico') return [this.statico, 'favicon.ico']
     if (path.substring(0, 8) === '/static/') return [this.statico, path.substring(8)]
@@ -220,8 +216,12 @@ class HostHttpServer {
    */
   get (request, response, id) {
     return this._host.get(id).then(instance => {
-      response.setHeader('Content-Type', 'application/json')
-      response.end(JSON.stringify(instance))
+      if (!acceptsJson(request) && instance.constructor.page) {
+        return this.statico(request, response, instance.constructor.page)
+      } else {
+        response.setHeader('Content-Type', 'application/json')
+        response.end(JSON.stringify(instance))
+      }
     })
   }
 
