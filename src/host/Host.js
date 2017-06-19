@@ -202,7 +202,7 @@ class Host {
    * @param  {string} address - Address of instance
    * @return {Promise} - Resolves to the instance
    */
-  get (address) {
+  get (address, proxy=true) {
     return Promise.resolve().then(() => {
       let instance
       if (address) {
@@ -218,7 +218,7 @@ class Host {
         }
         else {
           // Proxy request to peer
-          return GET(instance)
+          return (proxy ? GET(instance) : instance)
         }
       } else {
         // Check if the address matches a registered type
@@ -249,7 +249,7 @@ class Host {
    * @return {Promise} Resolves to result of method call
    */
   put (address, method, args) {
-    return this.get(address).then(instance => {
+    return this.get(address, false).then(instance => {
       if (typeof instance !== 'string') {
         let func = instance[method]
         if (func) {
