@@ -38,9 +38,9 @@ class Bundle {
         const files = fs.readdirSync(path_)
         let main = false
         let file
-        for (file of files) {
-          let parts = path.parse(file)
-          for (let name of ['main', 'index', 'README']) {
+        for (let name of ['main', 'index', 'README']) {
+          for (file of files) {
+            let parts = path.parse(file)
             if (parts.name === name) {
               main = true
               break
