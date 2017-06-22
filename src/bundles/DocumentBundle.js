@@ -8,7 +8,9 @@ DocumentBundle.storers = Bundle.storers
 
 DocumentBundle.converters = [
   stencila.DocumentHTMLConverter,
-  stencila.DocumentMarkdownConverter
+  stencila.DocumentMarkdownConverter,
+  stencila.DocumentJupyterConverter,
+  stencila.DocumentRMarkdownConverter
 ]
 
 DocumentBundle.page = 'document.html'
