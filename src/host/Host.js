@@ -473,9 +473,22 @@ class Host {
       fs.access(dir, fs.constants.R_OK, error => {
         if (error) return
         fs.readdir(dir, (error, files) => {
-          if (error) throw error
+          if (error) console.warn(error)
           for (let file of files) {
-            let manifest = JSON.parse(fs.readFileSync(path.join(dir, file), { encoding: 'utf8' }))
+            let json
+            try {
+              json = fs.readFileSync(path.join(dir, file), { encoding: 'utf8' })
+            } catch (readError) {
+              console.warn(readError)
+              return 
+            }
+            let manifest 
+            try {
+              manifest = JSON.parse(json)
+            } catch (parseError) {
+              console.warn(`Could not parse ${dir}/${file}: ${parseError}`)
+              return  
+            }
             // If the manifest defines a `process` then check that process is actually running
             if (manifest.process) {
               try {
