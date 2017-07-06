@@ -9,8 +9,8 @@ run:
 lint:
 	npm run lint
 
-link:
-	ln -sfT $$(node -e \"console.log(require('path').dirname(require.resolve('stencila/package.json')))\")/build static/stencila
+link-static:
+	ln -sfT $$(node -e "console.log(require('path').dirname(require.resolve('stencila/package.json')))")/build static/stencila
 
 test:
 	npm test
