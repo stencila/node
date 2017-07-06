@@ -6,13 +6,17 @@ const FileSystemStorer = require('./FileSystemStorer')
 const { 
   uuid, 
   DocumentHTMLConverter, 
-  DocumentMarkdownConverter
+  DocumentMarkdownConverter,
+  DocumentJupyterConverter,
+  DocumentRMarkdownConverter
 } = require('stencila')
 
 // Available converters
 const CONVERTERS = [
   DocumentHTMLConverter,
-  DocumentMarkdownConverter
+  DocumentMarkdownConverter,
+  DocumentJupyterConverter,
+  DocumentRMarkdownConverter
 ]
 
 /**

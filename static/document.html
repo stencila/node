@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Stencila</title>
+  <link href="/static/stencila/stencila.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="/static/stencila/lib/substance.js"></script>
+  <script type="text/javascript" src="/static/stencila/lib/brace.min.js"></script>
+  <script type="text/javascript" src="/static/stencila/lib/d3.min.js"></script>
+  <script type="text/javascript" src="/static/stencila/lib/unified-bundle.min.js"></script>
+  <script type="text/javascript" src="/static/stencila/lib/vega.min.js"></script>
+  <script type="text/javascript" src="/static/stencila/lib/vega-lite.js"></script>
+  <script type="text/javascript" src="/static/stencila/katex/katex.min.js"></script>
+  <script type="text/javascript" src="/static/stencila/lib/stencila-mini.js"></script>
+  <script type="text/javascript" src="/static/stencila/stencila.js"></script>
+  <script>
+    window.brace = window.ace
+  </script>
+</head>
+<body>
+  <script>
+    window.addEventListener('load', () => {
+      let host = new stencila.Host()
+      window.documentPage = stencila.DocumentPage.mount({
+        host: host,
+        backend: host,
+        documentId: window.location.pathname.substring(1)
+      }, window.document.body)
+    })
+  </script>
+</body>
+</html>

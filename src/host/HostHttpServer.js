@@ -116,13 +116,13 @@ class HostHttpServer {
     if (path === '/favicon.ico') return [this.statico, 'favicon.ico']
     if (path.substring(0, 8) === '/static/') return [this.statico, path.substring(8)]
 
-    let matches = path.match(/^\/(.+?)(!(.+))?$/)
+    let matches = path.match(/^\/(.*?)(!(.+))?$/)
     if (matches) {
       let id = matches[1]
       let method = matches[3]
       if (verb === 'POST' && id) return [this.post, id]
       else if (verb === 'GET' && id) return [this.get, id]
-      else if (verb === 'PUT' && id && method) return [this.put, id, method]
+      else if (verb === 'PUT' && method) return [this.put, id, method]
       else if (verb === 'DELETE' && id) return [this.delete, id]
     }
 
@@ -145,11 +145,11 @@ class HostHttpServer {
     if (!acceptsJson(request)) {
       return this.statico(request, response, 'index.html')
     } else {
-      return this._host.options()
-        .then(options => {
-          response.setHeader('Content-Type', 'application/json')
-          response.end(JSON.stringify(options))
-        })
+      return Promise.resolve().then(() => {
+        let manifest = this._host.manifest()
+        response.setHeader('Content-Type', 'application/json')
+        response.end(JSON.stringify(manifest))
+      })
     }
   }
 
@@ -202,65 +202,49 @@ class HostHttpServer {
    * Handle a request to `post`
    */
   post (request, response, type) {
-    return bodify(request)
-      .then(body => {
-        let options = body ? JSON.parse(body) : {}
-        return this._host.post(type, options.name, options)
-          .then(id => {
-            response.setHeader('Content-Type', 'application/json')
-            response.end(JSON.stringify(id))
-          })
+    return bodify(request).then(body => {
+      let options = body ? JSON.parse(body) : {}
+      return this._host.post(type, options.name, options).then(id => {
+        response.setHeader('Content-Type', 'application/json')
+        response.end(JSON.stringify(id))
       })
+    })
   }
 
   /**
    * Handle a request to `get`
    */
   get (request, response, id) {
-    return this._host.get(id)
-      .then(instance => {
+    return this._host.get(id).then(instance => {
+      if (!acceptsJson(request) && instance.constructor.page) {
+        return this.statico(request, response, instance.constructor.page)
+      } else {
         response.setHeader('Content-Type', 'application/json')
         response.end(JSON.stringify(instance))
-      })
+      }
+    })
   }
 
   /**
    * Handle a request to `put`
    */
   put (request, response, id, method) {
-    return bodify(request)
-      .then(body => {
-        // Ensure arguments are an array
-        let args = []
-        if (body) {
-          let value = JSON.parse(body)
-          if (value instanceof Array) {
-            args = value
-          } else if (value instanceof Object) {
-            args = Object.keys(value).map(key => value[key])
-          } else {
-            args = [value]
-          }
-        }
-        return args
+    return bodify(request).then(body => {
+      let args = body ? JSON.parse(body) : {}
+      return this._host.put(id, method, args).then(result => {
+        response.setHeader('Content-Type', 'application/json')
+        response.end(JSON.stringify(result))
       })
-      .then(args => {
-        return this._host.put(id, method, args)
-          .then(result => {
-            response.setHeader('Content-Type', 'application/json')
-            response.end(JSON.stringify(result))
-          })
-      })
+    })
   }
 
   /**
    * Handle a request to `delete`
    */
   delete (request, response, id) {
-    return this._host.delete(id)
-      .then(() => {
-        response.end()
-      })
+    return this._host.delete(id).then(() => {
+      response.end()
+    })
   }
 
   /**

@@ -106,9 +106,7 @@ test('HostHttpServer.home', function (t) {
     .then(() => {
       t.equal(mock1.res.statusCode, 200)
       let manifest = JSON.parse(mock1.res._getData())
-      h.options().then(expected => {
-        t.deepEqual(manifest, expected)
-      })
+      t.deepEqual(manifest, h.manifest())
     })
     .catch(error => {
       t.notOk(error)

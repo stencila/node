@@ -8,7 +8,7 @@ class NodeContext extends JsContext {}
 NodeContext.spec = {
   name: 'NodeContext',
   base: 'Context',
-  aliases: ['node']
+  aliases: ['js', 'node']
 }
 
 module.exports = NodeContext

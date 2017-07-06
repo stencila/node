@@ -12,21 +12,23 @@ test('Host', t => {
   t.end()
 })
 
-test('Host.options', t => {
+test('Host.manifest', t => {
   let h = new Host()
 
-  h.options()
-    .then(manifest => {
-      t.equal(manifest.stencila.package, 'node')
-      t.equal(manifest.stencila.version, version)
-      t.equal(manifest.instances.length, 0)
-      t.deepEqual(manifest.schemes.new.NodeContext, NodeContext.spec)
-      t.end()
-    })
-    .catch(error => {
-      t.notOk(error)
-      t.end()
-    })
+  let manifest = h.manifest()
+  t.equal(manifest.stencila.package, 'node')
+  t.equal(manifest.stencila.version, version)
+  t.deepEqual(manifest.schemes.new.NodeContext, NodeContext.spec)
+  t.notOk(manifest.id)
+
+  h.start().then(() => {
+    let manifest = h.manifest()
+    t.ok(manifest.id)
+    t.equal(manifest.process, process.pid)
+    t.equal(manifest.instances.length, 0)
+    h.stop()
+    t.end()
+  })
 })
 
 test('Host.post', t => {
@@ -74,7 +76,7 @@ test('Host.get', t => {
       return h.get('foobar')
     })
     .catch(error => {
-      t.equal(error.message, 'Unknown instance: foobar')
+      t.ok(error.message.match('Unknown instance'))
       t.end()
     })
 })
@@ -113,7 +115,7 @@ test('Host.put', t => {
       t.fail('should not return a result')
     })
     .catch(error => {
-      t.equal(error.message, 'Unknown instance: fooId')
+      t.ok(error.message.match('Unknown instance'))
     })
 })
 
