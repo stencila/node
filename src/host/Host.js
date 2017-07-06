@@ -61,7 +61,7 @@ class Host {
   userDir () {
     switch(process.platform) {
       case 'darwin':
-        return path.join(process.env.HOME, 'Library', 'Preferences', 'Stencila')
+        return path.join(process.env.HOME, 'Library', 'Application Support', 'Stencila')
       case 'linux':
         return path.join(process.env.HOME, '.local', 'share', 'stencila')
       case 'windows':
