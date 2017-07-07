@@ -20,7 +20,12 @@
 <body>
   <script>
     window.addEventListener('load', () => {
-      let host = new stencila.Host()
+      let host = new stencila.Host({
+        // Initial peer is the Host that served this file
+        peers: [window.location.origin],
+        // Don't do local peer discovery
+        discover: false
+      })
       window.documentPage = stencila.DocumentPage.mount({
         host: host,
         backend: host,
