@@ -15,7 +15,8 @@
     "cover": "istanbul cover tests",
     "docs": "documentation build --config docs/docs.yml --output docs --format html",
     "docs-serve": "documentation serve --config docs/docs.yml --watch",
-    "start": "node stencila-node.js"
+    "start": "node stencila-node.js",
+    "postinstall": "node .copy-assets.js"
   },
   "repository": {
     "type": "git",
@@ -50,6 +51,7 @@
   },
   "dependencies": {
     "execa": "^0.7.0",
+    "fs-extra": "^3.0.1",
     "http-shutdown": "^1.1.0",
     "mkdirp": "^0.5.1",
     "path-is-inside": "^1.0.2",
