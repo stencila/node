@@ -59,12 +59,16 @@ class Host {
    * Get the current user's Stencila data directory
    */
   userDir () {
+    // TODO: isn't there a module helping us to find OS paths?
+    // maybe something which works like electron's app.getPath()
+    // https://github.com/electron/electron/blob/master/docs/api/app.md#appgetpathname
     switch(process.platform) {
+      // see https://nodejs.org/api/process.html#process_process_platform
       case 'darwin':
         return path.join(process.env.HOME, 'Library', 'Application Support', 'Stencila')
       case 'linux':
         return path.join(process.env.HOME, '.local', 'share', 'stencila')
-      case 'windows':
+      case 'win32':
         return path.join(process.env.APPDATA, 'Stencila')
       default:
         return path.join(process.env.HOME, 'stencila')
