@@ -51,6 +51,7 @@
     "tape": "^4.6.0"
   },
   "dependencies": {
+    "body": "^5.1.0",
     "execa": "^0.7.0",
     "fs-extra": "^3.0.1",
     "gunzip-maybe": "^1.4.1",

@@ -1,3 +1,4 @@
+const body = require('body')
 const fs = require('fs')
 const http = require('http')
 const path = require('path')
@@ -93,7 +94,12 @@ class HostHttpServer {
 
       let method = endpoint[0]
       let params = endpoint.slice(1)
-      return bodify(request).then(body => {
+      return new Promise((resolve, reject) => {
+        body(request, (err, body) => {
+          if (err) reject(err)
+          else resolve(body)
+        })
+      }).then(body => {
         let args
 
         let query = url.parse(request.url, true).query
@@ -291,26 +297,6 @@ class HostHttpServer {
 function acceptsJson (request) {
   let accept = request.headers['accept'] || ''
   return accept.match(/application\/json/)
-}
-
-function bodify (request) {
-  return new Promise((resolve) => {
-    // Check if in tests and using a mock request
-    if (request._setBody) resolve(request.body)
-    else {
-      // Ignore this for code coverage it's difficult to test
-      /* istanbul ignore next */
-      (function () {
-        var body = []
-        request.on('data', function (chunk) {
-          body.push(chunk)
-        }).on('end', function () {
-          body = Buffer.concat(body).toString() // eslint-disable-line no-undef
-          resolve(body)
-        })
-      }())
-    }
-  })
 }
 
 module.exports = HostHttpServer
