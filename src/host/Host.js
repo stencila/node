@@ -10,13 +10,15 @@ const version = require('../../package').version
 const HostHttpServer = require('./HostHttpServer')
 const { GET, POST, PUT } = require('../util/requests')
 
-const DocumentBundle = require('../bundles/DocumentBundle')
+const FileStorer = require('../storers/FileStorer')
+const GithubStorer = require('../storers/GithubStorer')
 const NodeContext = require('../node-context/NodeContext')
 
-// Look up for classes available under the 
-// `new` sheme
+// Resource classes available
 const TYPES = {
-  'DocumentBundle': DocumentBundle,
+  'FileStorer': FileStorer,
+  'GithubStorer': GithubStorer,
+
   'NodeContext': NodeContext
 }
 
@@ -45,6 +47,7 @@ class Host {
     this._started = null
     this._heartbeat = null
     this._instances = {}
+    this._counts = {}
     this._peers = []
   }
 
@@ -152,22 +155,46 @@ class Host {
     })
   }
 
+  resolve(address) {
+    return Promise.resolve().then(() => {
+      if (!address) return this
+
+      address = stencila.address.long(address)
+      let { scheme, path } = stencila.address.split(address)
+      if (scheme === 'new') {
+        return this.create(path)
+      } else {
+        let instance = this._instances[address]
+        if (!instance) throw new Error(`Unknown instance: ${address}`)
+        return instance
+      }
+    })
+  }
+
   /**
    * Create a new instance of a type
    * 
    * @param  {string} address - Type of instance
-   * @param  {object} options - Options to be passed to type constructor
+   * @param  {args} args - Arguments to be passed to type constructor
    * @return {Promise} - Resolves to the ID string of newly created instance
    */
-  post (type, name, options) {
+  create (type, args) {
     this.heartbeat()
+
+    const name = () => {
+      let number = (this._counts[type] || 0) + 1
+      this._counts[type] = number
+      return `${type[0].toLowerCase()}${type.substring(1)}${number}`
+    }
+
     return Promise.resolve().then(() => {
       let Class = TYPES[type]
       if (Class) {
         // Type present locally
-        let address = `name://${name || Math.floor((1 + Math.random()) * 1e6).toString(16)}`
-        this._instances[address] = new Class(options)
-        return address
+        let instance = new Class(args)
+        let address = `local://${name(type)}`
+        this._instances[address] = instance
+        return instance
       } else {
         // Type not present locally, see if a peer has it
         return Promise.resolve().then(() => {
@@ -187,14 +214,16 @@ class Host {
             }
           }
           throw new Error(`Unknown type: ${type}`)
-        }).then(peer => {
+        }).then((peer) => {
           // Request the peer to create a new instance of type
           let url = peer.urls[0]
-          return POST(url + '/' + type, Object.assign({name: name}, options)).then(address => {
+          return POST(url + '/' + type, args).then(remoteAddress => {
             // Store the instance as a URL to be proxied to. In other methods (e.g. `put`),
             // string instances are recognised as remote instances and requests are proxied to them
-            this._instances[address] = `${url}/${address}`
-            return address
+            let instance = new Proxy(`${url}/${remoteAddress}`)
+            let address = `proxy://${name(type)}`
+            this._instances[address] = instance
+            return instance
           })
         })
       }
@@ -207,42 +236,11 @@ class Host {
    * @param  {string} address - Address of instance
    * @return {Promise} - Resolves to the instance
    */
-  get (address, proxy=true) {
+  get (address) {
     this.heartbeat()
-    return Promise.resolve().then(() => {
-      let instance
-      if (address) {
-        address = stencila.address.long(address)
-        instance = this._instances[address]
-      } else {
-        instance = this
-      }
-      if (instance) {
-        if (typeof instance !== 'string') {
-          // Return local instance
-          return instance
-        }
-        else {
-          // Proxy request to peer
-          return (proxy ? GET(instance) : instance)
-        }
-      } else {
-        // Check if the address matches a registered type
-        for (let name of Object.keys(TYPES)) {
-          let Class = TYPES[name]
-          if (typeof Class.match === 'function') {
-            let match = Class.match(address)
-            if (match) {
-              let instance = new Class(match)
-              this._instances[match] = instance
-              return instance.import().then(() => {
-                return instance
-              })
-            }
-          }
-        }
-        throw new Error(`Unknown instance: ${address}`)
-      }
+    return this.resolve(address).then(instance => {
+      if (instance instanceof Proxy) return instance.get()
+      else return instance
     })
   }
 
@@ -254,10 +252,11 @@ class Host {
    * @param {array} args - An array of method arguments
    * @return {Promise} Resolves to result of method call
    */
-  put (address, method, args) {
+  call (address, method, args) {
     this.heartbeat()
-    return this.get(address, false).then(instance => {
-      if (typeof instance !== 'string') {
+    return this.resolve(address).then(instance => {
+      if (instance instanceof Proxy) return instance.call(method, args)
+      else {
         let func = instance[method]
         if (func) {
           // Ensure arguments are an array
@@ -273,10 +272,6 @@ class Host {
         } else {
           throw new Error(`Unknown method: ${method}`)
         }
-      }
-      else {
-        // Proxy request to peer
-        return PUT(`${instance}!${method}`, args)
       }
     })
   }
@@ -541,6 +536,22 @@ class Host {
         resolve(manifest)
       })
     })
+  }
+
+}
+
+class Proxy {
+
+  constructor (url) {
+    this.url = url
+  }
+
+  get () {
+    return GET(this.url)
+  }
+
+  call (method, args) {
+    return PUT(this.url + '!' + method, args)
   }
 
 }

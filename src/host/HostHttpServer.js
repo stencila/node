@@ -92,9 +92,18 @@ class HostHttpServer {
       response.setHeader('Access-Control-Max-Age', '1728000')
 
       let method = endpoint[0]
-      let args = endpoint.slice(1)
-      return method.call(this, request, response, ...args)
-                   .catch(error => this.error500(request, response, error))
+      let params = endpoint.slice(1)
+      return bodify(request).then(body => {
+        let args
+
+        let query = url.parse(request.url, true).query
+        let json = '{' + Object.keys(query).map(key => `"${key}":${query[key]}`).join(',') + '}'
+        args = JSON.parse(json)
+
+        if (body) args = Object.assign(args, JSON.parse(body))
+
+        return method.call(this, request, response, ...params, args)
+      }).catch(error => this.error500(request, response, error))
     } else {
       this.error400(request, response)
       return Promise.resolve()
@@ -116,14 +125,14 @@ class HostHttpServer {
     if (path === '/favicon.ico') return [this.statico, 'favicon.ico']
     if (path.substring(0, 8) === '/static/') return [this.statico, path.substring(8)]
 
-    let matches = path.match(/^\/(.*?)(!(.+))?$/)
+    let matches = path.match(/^\/([^!]+)(!([^?]+))?.*$/)
     if (matches) {
-      let id = matches[1]
+      let address = matches[1]
       let method = matches[3]
-      if (verb === 'POST' && id) return [this.post, id]
-      else if (verb === 'GET' && id) return [this.get, id]
-      else if (verb === 'PUT' && method) return [this.put, id, method]
-      else if (verb === 'DELETE' && id) return [this.delete, id]
+      if (verb === 'POST' && address) return [this.create, address]
+      else if (verb === 'GET' && address && !method) return [this.get, address]
+      else if ((verb === 'PUT' || verb === 'GET') && address && method) return [this.call, address, method]
+      else if (verb === 'DELETE' && address && !method) return [this.delete, address]
     }
 
     return null
@@ -199,24 +208,21 @@ class HostHttpServer {
   }
 
   /**
-   * Handle a request to `post`
+   * Handle a request to create an instance
    */
-  post (request, response, type) {
-    return bodify(request).then(body => {
-      let options = body ? JSON.parse(body) : {}
-      return this._host.post(type, options.name, options).then(id => {
-        response.setHeader('Content-Type', 'application/json')
-        response.end(JSON.stringify(id))
-      })
+  create (request, response, type, args) {
+    return this._host.create(type, args).then(id => {
+      response.setHeader('Content-Type', 'application/json')
+      response.end(JSON.stringify(id))
     })
   }
 
   /**
-   * Handle a request to `get`
+   * Handle a request to get an instance
    */
-  get (request, response, id) {
-    return this._host.get(id).then(instance => {
-      if (!acceptsJson(request) && instance.constructor.page) {
+  get (request, response, address) {
+    return this._host.get(address).then(instance => {
+      if (!acceptsJson(request) && instance.constructor && instance.constructor.page) {
         return this.statico(request, response, instance.constructor.page)
       } else {
         response.setHeader('Content-Type', 'application/json')
@@ -226,23 +232,20 @@ class HostHttpServer {
   }
 
   /**
-   * Handle a request to `put`
+   * Handle a request to call an instance method
    */
-  put (request, response, id, method) {
-    return bodify(request).then(body => {
-      let args = body ? JSON.parse(body) : {}
-      return this._host.put(id, method, args).then(result => {
-        response.setHeader('Content-Type', 'application/json')
-        response.end(JSON.stringify(result))
-      })
+  call (request, response, address, method, args) {
+    return this._host.call(address, method, args).then(result => {
+      response.setHeader('Content-Type', 'application/json')
+      response.end(JSON.stringify(result))
     })
   }
 
   /**
-   * Handle a request to `delete`
+   * Handle a request to delete an instance
    */
-  delete (request, response, id) {
-    return this._host.delete(id).then(() => {
+  delete (request, response, address) {
+    return this._host.delete(address).then(() => {
       response.end()
     })
   }
@@ -262,6 +265,10 @@ class HostHttpServer {
     response.end(content)
   }
 
+  /**
+   * Specific error handling functions
+   */
+
   error400 (request, response) {
     this.error(request, response, 400, {error: 'Bad request', details: request.method + ' ' + request.url})
   }
@@ -276,7 +283,7 @@ class HostHttpServer {
 
   error500 (request, response, error) {
     /* istanbul ignore next */
-    this.error(request, response, 500, {error: 'Not found', details: error ? error.stack : ''})
+    this.error(request, response, 500, {error: 'Internal error', details: error ? error.stack : ''})
   }
 
 }
