@@ -162,7 +162,9 @@ class Host {
       address = stencila.address.long(address)
       let { scheme, path } = stencila.address.split(address)
       if (scheme === 'new') {
-        return this.create(path)
+        return this.create(path).then(result => {
+          return result.instance
+        })
       } else {
         let instance = this._instances[address]
         if (!instance) throw new Error(`Unknown instance: ${address}`)
@@ -194,7 +196,7 @@ class Host {
         let instance = new Class(args)
         let address = `local://${name(type)}`
         this._instances[address] = instance
-        return instance
+        return {address, instance}
       } else {
         // Type not present locally, see if a peer has it
         return Promise.resolve().then(() => {
@@ -223,7 +225,7 @@ class Host {
             let instance = new Proxy(`${url}/${remoteAddress}`)
             let address = `proxy://${name(type)}`
             this._instances[address] = instance
-            return instance
+            return {address, instance}
           })
         })
       }

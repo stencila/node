@@ -100,7 +100,7 @@ class HostHttpServer {
           else resolve(body)
         })
       }).then(body => {
-        let args
+        let args = {}
 
         let query = url.parse(request.url, true).query
         let json = '{' + Object.keys(query).map(key => `"${key}":${query[key]}`).join(',') + '}'
@@ -217,9 +217,9 @@ class HostHttpServer {
    * Handle a request to create an instance
    */
   create (request, response, type, args) {
-    return this._host.create(type, args).then(id => {
+    return this._host.create(type, args).then(result => {
       response.setHeader('Content-Type', 'application/json')
-      response.end(JSON.stringify(id))
+      response.end(JSON.stringify(result.address))
     })
   }
 
