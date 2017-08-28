@@ -85,12 +85,38 @@ class HostHttpServer {
   handle (request, response) {
     let endpoint = this.route(request.method, request.url)
     if (endpoint) {
-      // CORS headers added to all requests to allow direct access by browsers
+
+      // CORS headers are used to control access by browsers. In particular, CORS
+      // can prevent access by XHR requests made by Javascript in third party sites.
       // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
-      response.setHeader('Access-Control-Allow-Origin', '*')
-      response.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
-      response.setHeader('Access-Control-Allow-Headers', 'Content-Type')
-      response.setHeader('Access-Control-Max-Age', '1728000')
+
+      // Get the Origin header (sent in CORS and POST requests) and fall back to Referer header
+      // if it is not present (either of these should be present in most browser requests)
+      let origin = request.headers.origin
+      if (!origin && request.headers.referer) {
+        let uri = url.parse(request.headers.referer || '')
+        origin = `${uri.protocol}//${uri.host}`
+      }
+
+      // If an origin has been found and is authorized set CORS headers
+      // Without these headers browser XHR request get an error like:
+      //     No 'Access-Control-Allow-Origin' header is present on the requested resource.
+      //     Origin 'http://evil.hackers:4000' is therefore not allowed access.
+      if (origin) {
+        // 'Simple' requests (GET and POST XHR requests)
+        response.setHeader('Access-Control-Allow-Origin', origin)
+          // Allow sending cookies and other credentials
+        response.setHeader('Access-Control-Allow-Credentials', 'true')
+        // Pre-flighted requests by OPTIONS method (made before PUT, DELETE etc XHR requests and in other circumstances)
+        // get additional CORS headers
+        if (request.method === 'OPTIONS') {
+          // Allowable methods and headers
+          response.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+          response.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+          // "how long the response to the preflight request can be cached for without sending another preflight request"
+          response.setHeader('Access-Control-Max-Age', '86400') // 24 hours
+        }
+      }
 
       let method = endpoint[0]
       let params = endpoint.slice(1)
