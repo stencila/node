@@ -67,6 +67,7 @@
     "stencila": "0.27.9",
     "strip-dirs": "^2.0.0",
     "tar-fs": "^1.15.3",
-    "untildify": "^3.0.2"
+    "untildify": "^3.0.2",
+    "unzip-stream": "^0.1.2"
   }
 }
