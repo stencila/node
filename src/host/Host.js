@@ -279,7 +279,7 @@ class Host {
   }
 
   /**
-   * Get the abolute path for a file from an instance (usually FileStorer)
+   * Get the abolute path for a file from an instance (usually a Storer)
    *
    * Used for sending files to clients
    * 

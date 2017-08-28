@@ -157,13 +157,15 @@ class HostHttpServer {
     if (path === '/favicon.ico') return [this.statico, 'favicon.ico']
     if (path.substring(0, 8) === '/static/') return [this.statico, path.substring(8)]
 
-    let matches = path.match(/^\/([^!]+)(!([^?]+))?.*$/)
+    let matches = path.match(/^\/([^!$]+)((!|\$)([^?]+))?.*$/)
     if (matches) {
       let address = matches[1]
-      let method = matches[3]
-      if (verb === 'POST' && address) return [this.create, address]
+      let operator = matches[3]
+      let method = matches[4]
+      if (verb === 'POST' && address && !method) return [this.create, address]
       else if (verb === 'GET' && address && !method) return [this.get, address]
-      else if ((verb === 'PUT' || verb === 'GET') && address && method) return [this.call, address, method]
+      else if (verb === 'GET' && address && operator === '$' && method) return [this.file, address, method]
+      else if (verb === 'PUT' && address && operator === '!' && method) return [this.call, address, method]
       else if (verb === 'DELETE' && address && !method) return [this.delete, address]
     }
 
@@ -198,11 +200,23 @@ class HostHttpServer {
    * Handle a request for a static file
    */
   statico (request, response, path_) {
-    let staticPath = path.join(__dirname, '../../static')
-    let requestedPath = path.join(staticPath, url.parse(path_).pathname)
-    if (!pathIsInside(requestedPath, staticPath)) this.error403(request, response, path_)
-    else send(request, requestedPath).pipe(response)
-    return Promise.resolve()
+    return new Promise((resolve) => {
+      let staticPath = path.join(__dirname, '../../static')
+      let requestedPath = path.join(staticPath, url.parse(path_).pathname)
+      if (!pathIsInside(requestedPath, staticPath)) {
+        this.error403(request, response, path_)
+        resolve()
+      } else { 
+        send(request, requestedPath)
+          .on('error', (err) => {
+            if (err.status === 404) this.error404(request, response, path_)
+            else this.error500(request, response, path_)
+            resolve()
+          })
+          .on('end', resolve)
+          .pipe(response)
+      }
+    })
   }
 
   /**
@@ -241,6 +255,10 @@ class HostHttpServer {
 
   /**
    * Handle a request for a file from a Storer instance
+   *
+   * An alternative method for getting a file is to call the `readFile` method
+   * e.g. `PUT fileStore1!readFile`. But that returns `application/json` content. 
+   * This uses the `send` package to set `Content-Type`, `Last-Modified` and other headers properly.
    */
   file (request, response, address, path) {
     return this._host.file(address, path).then(path => {

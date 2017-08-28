@@ -1,5 +1,4 @@
-/* eslint-disable no-console */
-
+const path = require('path')
 const test = require('tape')
 var httpMocks = require('node-mocks-http');
 
@@ -85,6 +84,8 @@ test('HostHttpServer.route', function (t) {
   t.deepEqual(s.route('POST', '/type'), [s.create, 'type'])
 
   t.deepEqual(s.route('GET', '/address'), [s.get, 'address'])
+
+  t.deepEqual(s.route('GET', '/address$path'), [s.file, 'address', 'path'])
 
   t.deepEqual(s.route('PUT', '/address!method'), [s.call, 'address', 'method'])
 
@@ -183,8 +184,30 @@ test('HostHttpServer.get', function (t) {
 
   let {req, res} = httpMocks.createMocks()
   h.create('NodeContext')
-    .then(address => {
+    .then(result => {
+      let {address} = result
       return s.get(req, res, address) // Testing this
+    })
+    .then(() => {
+      t.equal(res.statusCode, 200)
+      t.end()
+    })
+    .catch(error => {
+      t.notOk(error)
+      t.end()
+    })
+})
+
+test('HostHttpServer.file', function (t) {
+  let h = new Host()
+  let s = new HostHttpServer(h)
+
+  let {req, res} = httpMocks.createMocks()
+  h.create('FileStorer')
+    .then(result => {
+      let {address} = result
+      let filePath = path.join(__dirname, '../fixtures/test-dir-1/file-a.txt')
+      return s.file(req, res, address, filePath) // Testing this
     })
     .then(() => {
       t.equal(res.statusCode, 200)
@@ -203,7 +226,8 @@ test('HostHttpServer.call', function (t) {
   let {req, res} = httpMocks.createMocks()
 
   h.create('NodeContext')
-    .then(address => {
+    .then(result => {
+      let {address} = result
       t.ok(h._instances[address])
       return s.call(req, res, address, 'runCode', {code: '6*7'}) // Testing this
     })
@@ -225,7 +249,8 @@ test('HostHttpServer.delete', function (t) {
 
   let {req, res} = httpMocks.createMocks()
   h.create('NodeContext')
-    .then(address => {
+    .then(result => {
+      let {address} = result
       t.ok(h._instances[address])
       s.delete(req, res, address) // Testing this
         .then(() => {

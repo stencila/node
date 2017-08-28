@@ -19,7 +19,7 @@ test('FileStorer.getInfo', t => {
       t.deepEqual(info, {
         dir: dir,
         main: null,
-        files: []
+        files: ['file-a.txt']
       })
       t.end()
     })
