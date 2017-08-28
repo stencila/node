@@ -31,30 +31,30 @@ test('Host.manifest', t => {
   })
 })
 
-test('Host.post', t => {
+test.skip('Host.create', t => {
   t.plan(4)
 
   let h = new Host()
 
   let first
-  h.post('NodeContext')
-    .then(id => {
-      t.ok(id)
-      first = id
-      return h.get(id)
+  h.create('NodeContext')
+    .then(address => {
+      t.ok(address)
+      first = address
+      return h.get(address)
     })
     .then(instance => {
       t.ok(instance)
-      return h.post('NodeContext')
+      return h.create('NodeContext')
     })
-    .then(id => {
-      t.notEqual(id, first)
+    .then(address => {
+      t.notEqual(address, first)
     })
     .catch(error => {
       t.notOk(error)
     })
 
-  h.post('fooType')
+  h.create('fooType')
     .then(() => {
       t.fail('should not create anything')
     })
@@ -66,10 +66,11 @@ test('Host.post', t => {
 test('Host.get', t => {
   let h = new Host()
 
-  h.post('NodeContext')
-    .then(id => {
-      t.ok(id)
-      return h.get(id)
+  h.create('NodeContext')
+    .then(result => {
+      let {address} = result
+      t.ok(address)
+      return h.get(address)
     })
     .then(instance => {
       t.ok(instance)
@@ -81,16 +82,17 @@ test('Host.get', t => {
     })
 })
 
-test('Host.put', t => {
+test('Host.call', t => {
   t.plan(4)
 
   let h = new Host()
 
-  h.post('NodeContext')
-    .then(id => {
-      t.ok(id)
+  h.create('NodeContext')
+    .then(result => {
+      let {address} = result
+      t.ok(address)
 
-      h.put(id, 'runCode', ['6*7'])
+      h.call(address, 'runCode', ['6*7'])
         .then(result => {
           t.deepEqual(result,{ errors: null, output: { content: '42', format: 'text', type: 'integer' } })
         })
@@ -98,7 +100,7 @@ test('Host.put', t => {
           t.notOk(error)
         })
 
-      h.put(id, 'fooMethod')
+      h.call(address, 'fooMethod')
         .then(() => {
           t.fail('should not return a result')
         })
@@ -110,7 +112,7 @@ test('Host.put', t => {
       t.notOk(error)
     })
 
-  h.put('fooId')
+  h.call('fooId')
     .then(() => {
       t.fail('should not return a result')
     })
@@ -122,23 +124,24 @@ test('Host.put', t => {
 test('Host.delete', t => {
   let h = new Host()
 
-  let iid
-  h.post('NodeContext')
-    .then(id => {
-      iid = id
-      t.ok(id)
-      return h.delete(id)
+  let address_
+  h.create('NodeContext')
+    .then(result => {
+      let {address} = result
+      address_ = result
+      t.ok(result)
+      return h.delete(result)
     })
     .then(() => {
       t.pass('sucessfully deleted')
-      return h.delete(iid)
+      return h.delete(address_)
     })
     .then(() => {
       t.fail('should not be able to delete again')
       t.end()
     })
     .catch(error => {
-      t.equal(error.message, `Unknown instance: ${iid}`)
+      t.equal(error.message, `Unknown instance: ${address_}`)
       t.end()
     })
 })

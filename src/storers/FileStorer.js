@@ -1,96 +1,74 @@
-const fs = require('fs')
-const mkdirp = require('mkdirp')
+const promisify = require('promisify-node')
+
+const fs = promisify('fs')
 const path = require('path')
 const untildify = require('untildify')
 
 class FileStorer {
 
   constructor (options = {}) {
-    this._path = options.path ? untildify(options.path) : '/'
-    if (this._path && !fs.existsSync(this._path)) mkdirp.sync(this._path)
-    this._buffers = {}
+    let path_ = options.path || '/'
+
+    path_ = untildify(path_)
+    let isdir
+    if (fs.existsSync(path_)) {
+      isdir = fs.lstatSync(path_).isDirectory()
+    } else {
+      isdir = path.extname(path_) === ''
+    }
+    this._dir = isdir ? path_ : path.dirname(path_)
+    this._main = isdir ? null : path.basename(path_)
   }
 
   initialize () {
     return Promise.resolve()
   }
 
-  readBuffer(path) {
+  getDirectory() {
+    return Promise.resolve(this._dir)
+  }
+
+  getMain() {
+    return Promise.resolve(this._main)
+  }
+
+  getFiles() {
     return this.initialize().then(() => {
-      let buffer = this._buffers[path]
-      if (buffer) return buffer
-      else throw new Error('Buffer not found')
+      return fs.readdir(this._dir)
     })
   }
 
-  writeBuffer(path, data) {
-    return this.initialize().then(() => {
-      this._buffers[path] = data
-    })
+  getInfo() {
+    return this.getFiles().then((files) => {
+      return {
+        dir: this._dir,
+        main: this._main,
+        files: files
+      }
+    })    
   }
 
-  discardBuffer(path) {
+  filePath (path_) {
     return this.initialize().then(() => {
-      delete this._buffers[path]
-    })
-  }
-
-  discardBuffers() {
-    return this.initialize().then(() => {
-      this._buffers = {}
+      return path.join(this._dir, path_)
     })
   }
 
   readFile (path_) {
     return this.initialize().then(() => {
-      return new Promise((resolve, reject) => {
-        if (path_ !== this._path) path_ = path.join(this._path, path_)
-        fs.readFile(path_, 'utf8', (err, content) => {
-          if (err) reject(err)
-          else resolve(content)
-        })
-      })
+      return fs.readFile(path.join(this._dir, path_), 'utf8')
     })
   }
 
   writeFile(path_, content) {
     return this.initialize().then(() => {
-      if (path_ !== this._path) path_ = path.join(this._path, path_)
-      fs.writeFile(path_, content, 'utf8', (err) => {
-        if (err) throw err
-      })
+      return fs.writeFile(path.join(this._dir, path_), content, 'utf8')
     })
   }
 
-  resolveMain() {
+  deleteFile(path_) {
     return this.initialize().then(() => {
-      const stats = fs.statSync(this._path)
-      if (stats.isDirectory(this._path)) {
-        const files = fs.readdirSync(this._path)
-        let main = false
-        let file
-        for (let name of ['main', 'index', 'README']) {
-          for (file of files) {
-            let parts = path.parse(file)
-            if (parts.name === name) {
-              main = true
-              break
-            }
-          }
-          if (main) break
-        }
-        // Fallback to the first file
-        if (!main) file = this.listFiles()[0]
-        return file
-      } else {
-        return this._path
-      }
-    })
-  }
-
-  listFiles() {
-    return this.initialize().then(() => {
-      return []
+      return fs.unlink(path.join(this._dir, path_))
     })
   }
 

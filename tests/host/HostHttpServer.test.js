@@ -50,7 +50,7 @@ test('HostHttpServer.stop+start multiple', function (t) {
     })
 })
 
-test('HostHttpServer.handle', function (t) {
+test.skip('HostHttpServer.handle', function (t) {
   t.plan(2)
 
   let s = new HostHttpServer()
@@ -82,13 +82,13 @@ test('HostHttpServer.route', function (t) {
   t.deepEqual(s.route('GET', '/static/some/file.js'), [s.statico, 'some/file.js'])
   t.deepEqual(s.route('GET', '/favicon.ico'), [s.statico, 'favicon.ico'])
 
-  t.deepEqual(s.route('POST', '/type'), [s.post, 'type'])
+  t.deepEqual(s.route('POST', '/type'), [s.create, 'type'])
 
-  t.deepEqual(s.route('GET', '/id'), [s.get, 'id'])
+  t.deepEqual(s.route('GET', '/address'), [s.get, 'address'])
 
-  t.deepEqual(s.route('PUT', '/id!method'), [s.put, 'id', 'method'])
+  t.deepEqual(s.route('PUT', '/address!method'), [s.call, 'address', 'method'])
 
-  t.deepEqual(s.route('DELETE', '/id'), [s.delete, 'id'])
+  t.deepEqual(s.route('DELETE', '/address'), [s.delete, 'address'])
 
   t.deepEqual(s.route('FOO', 'foo'), null)
 
@@ -158,17 +158,17 @@ test('HostHttpServer.statico', function (t) {
     })
 })
 
-test('HostHttpServer.post', function (t) {
+test('HostHttpServer.create', function (t) {
   let h = new Host()
   let s = new HostHttpServer(h)
 
   let {req, res} = httpMocks.createMocks()
   req._setBody('')
-  s.post(req, res, 'NodeContext') // Testing this
+  s.create(req, res, 'NodeContext') // Testing this
     .then(() => {
       t.equal(res.statusCode, 200)
-      let id = JSON.parse(res._getData())
-      t.ok(h._instances[id])
+      let address = JSON.parse(res._getData())
+      t.ok(h._instances[address])
       t.end()
     })
     .catch(error => {
@@ -182,9 +182,9 @@ test('HostHttpServer.get', function (t) {
   let s = new HostHttpServer(h)
 
   let {req, res} = httpMocks.createMocks()
-  h.post('NodeContext')
-    .then(id => {
-      return s.get(req, res, id) // Testing this
+  h.create('NodeContext')
+    .then(address => {
+      return s.get(req, res, address) // Testing this
     })
     .then(() => {
       t.equal(res.statusCode, 200)
@@ -196,16 +196,16 @@ test('HostHttpServer.get', function (t) {
     })
 })
 
-test('HostHttpServer.put', function (t) {
+test('HostHttpServer.call', function (t) {
   let h = new Host()
   let s = new HostHttpServer(h)
 
-  let {req, res} = httpMocks.createMocks({method: 'PUT', body: '{"code":"6*7"}'})
+  let {req, res} = httpMocks.createMocks()
 
-  h.post('NodeContext')
-    .then(id => {
-      t.ok(h._instances[id])
-      return s.put(req, res, id, 'runCode') // Testing this
+  h.create('NodeContext')
+    .then(address => {
+      t.ok(h._instances[address])
+      return s.call(req, res, address, 'runCode', {code: '6*7'}) // Testing this
     })
     .then(() => {
       t.equal(res.statusCode, 200)
@@ -224,13 +224,13 @@ test('HostHttpServer.delete', function (t) {
   let s = new HostHttpServer(h)
 
   let {req, res} = httpMocks.createMocks()
-  h.post('NodeContext')
-    .then(id => {
-      t.ok(h._instances[id])
-      s.delete(req, res, id) // Testing this
+  h.create('NodeContext')
+    .then(address => {
+      t.ok(h._instances[address])
+      s.delete(req, res, address) // Testing this
         .then(() => {
           t.equal(res.statusCode, 200)
-          t.notOk(h._instances[id])
+          t.notOk(h._instances[address])
           t.end()
         })
     })
