@@ -1,7 +1,7 @@
 const body = require('body')
-const fs = require('fs')
 const http = require('http')
 const path = require('path')
+const send = require('send')
 const url = require('url')
 
 const pathIsInside = require('path-is-inside')
@@ -172,45 +172,11 @@ class HostHttpServer {
    * Handle a request for a static file
    */
   statico (request, response, path_) {
-    return new Promise((resolve) => {
-      let staticPath = path.join(__dirname, '../../static')
-      let requestedPath = path.join(staticPath, url.parse(path_).pathname)
-      if (!pathIsInside(requestedPath, staticPath)) {
-        this.error403(request, response, path_)
-        resolve()
-      } else {
-        fs.readFile(requestedPath, (error, content) => {
-          if (error) {
-            if (error.code === 'ENOENT') {
-              this.error404(request, response, path_)
-            } else {
-              this.error500(request, response, error)
-            }
-            response.end()
-          } else {
-            let contentType = {
-              '.html': 'text/html',
-              '.js': 'text/javascript',
-              '.css': 'text/css',
-              '.json': 'application/json',
-
-              '.png': 'image/png',
-              '.jpg': 'image/jpg',
-              '.gif': 'image/gif',
-              '.svg': 'image/svg+xml',
-
-              '.woff': 'application/font-woff',
-              '.ttf': 'application/font-ttf',
-              '.eot': 'application/vnd.ms-fontobject',
-              '.otf': 'application/font-otf'
-            }[String(path.extname(path_)).toLowerCase()] || 'application/octect-stream'
-            response.setHeader('Content-Type', contentType)
-            response.end(content, 'utf-8')
-          }
-          resolve()
-        })
-      }
-    })
+    let staticPath = path.join(__dirname, '../../static')
+    let requestedPath = path.join(staticPath, url.parse(path_).pathname)
+    if (!pathIsInside(requestedPath, staticPath)) this.error403(request, response, path_)
+    else send(request, requestedPath).pipe(response)
+    return Promise.resolve()
   }
 
   /**
@@ -244,6 +210,15 @@ class HostHttpServer {
     return this._host.call(address, method, args).then(result => {
       response.setHeader('Content-Type', 'application/json')
       response.end(JSON.stringify(result))
+    })
+  }
+
+  /**
+   * Handle a request for a file from a Storer instance
+   */
+  file (request, response, address, path) {
+    return this._host.file(address, path).then(path => {
+      send(request, path).pipe(response)
     })
   }
 

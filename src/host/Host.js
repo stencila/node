@@ -279,6 +279,21 @@ class Host {
   }
 
   /**
+   * Get the abolute path for a file from an instance (usually FileStorer)
+   *
+   * Used for sending files to clients
+   * 
+   * @param  {string} address Address of instance
+   * @param  {string} path    Path to file within instance
+   * @return {string}         Absolute file path
+   */
+  file (address, path) {
+    return this.resolve(address).then(instance => {
+      return instance.filePath(path)
+    })
+  }
+
+  /**
    * Delete an instance
    * 
    * @param  {string} id - ID of the instance
