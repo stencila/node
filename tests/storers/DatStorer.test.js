@@ -5,7 +5,7 @@ const rimraf = require('rimraf')
 const tmp = require('tmp')
 const test = require('tape')
 
-const DatStorer = require('../../src/backend/DatStorer')
+const DatStorer = require('../../src/storers/DatStorer')
 
 test('DatStorer.readFile', t => {
 
