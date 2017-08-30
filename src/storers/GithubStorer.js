@@ -17,9 +17,10 @@ class GithubStorer extends FileStorer {
     let ref = options.version || 'master'
 
     const host = require('../host/singletonHost')
-    super({
-      path: path.join(host.userDir(), 'stores', 'github', repo, ref, path_ || '')
-    })
+    const repoDir = path.join(host.userDir(), 'stores', 'github', repo, ref)
+
+    super({ path: path.join(repoDir, path_ || '')})
+    this._repoDir = repoDir
     this._url = `https://github.com/${repo}/tarball/${ref}`
     this._initialized = false
   }
@@ -29,7 +30,7 @@ class GithubStorer extends FileStorer {
       if (this._initialized) return resolve()
       else {
         var source = request.get(this._url)
-        var sink = tar.extract(this._dir, {
+        var sink = tar.extract(this._repoDir, {
           map: function (header) {
             header.name = stripDirs(header.name, 1)
             return header
