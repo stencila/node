@@ -4,7 +4,6 @@ const fs = require('fs')
 const mkdirp = require('mkdirp')
 const path = require('path')
 const os = require('os')
-const stencila = require('stencila')
 
 const version = require('../../package').version
 const HostHttpServer = require('./HostHttpServer')
@@ -155,35 +154,32 @@ class Host {
     })
   }
 
-  resolve(address) {
+  /**
+   * Resolve an ID to an instance
+   * 
+   * @param  {string} id ID of instance
+   * @return {[type]}    [description]
+   */
+  resolve (id) {
     return Promise.resolve().then(() => {
-      if (!address) return this
-
-      address = stencila.address.long(address)
-      let { scheme, path } = stencila.address.split(address)
-      if (scheme === 'new') {
-        return this.create(path).then(result => {
-          return result.instance
-        })
-      } else {
-        let instance = this._instances[address]
-        if (!instance) throw new Error(`Unknown instance: ${address}`)
-        return instance
-      }
+      if (!id) return this
+      let instance = this._instances[id]
+      if (!instance) throw new Error(`Unknown instance: ${id}`)
+      return instance
     })
   }
 
   /**
    * Create a new instance of a type
    * 
-   * @param  {string} address - Type of instance
+   * @param  {string} type - Type of instance
    * @param  {args} args - Arguments to be passed to type constructor
    * @return {Promise} - Resolves to the ID string of newly created instance
    */
   create (type, args) {
     this.heartbeat()
 
-    const name = () => {
+    const id_ = () => {
       let number = (this._counts[type] || 0) + 1
       this._counts[type] = number
       return `${type[0].toLowerCase()}${type.substring(1)}${number}`
@@ -194,9 +190,9 @@ class Host {
       if (Class) {
         // Type present locally
         let instance = new Class(args)
-        let address = `local://${name(type)}`
-        this._instances[address] = instance
-        return {address, instance}
+        let id = id_(type)
+        this._instances[id] = instance
+        return {id, instance}
       } else {
         // Type not present locally, see if a peer has it
         return Promise.resolve().then(() => {
@@ -223,9 +219,9 @@ class Host {
             // Store the instance as a URL to be proxied to. In other methods (e.g. `put`),
             // string instances are recognised as remote instances and requests are proxied to them
             let instance = new Proxy(`${url}/${remoteAddress}`)
-            let address = `proxy://${name(type)}`
-            this._instances[address] = instance
-            return {address, instance}
+            let id = id_(type)
+            this._instances[id] = instance
+            return {id, instance}
           })
         })
       }
@@ -235,12 +231,12 @@ class Host {
   /**
    * Get an instance
    * 
-   * @param  {string} address - Address of instance
+   * @param  {string} id - ID of instance
    * @return {Promise} - Resolves to the instance
    */
-  get (address) {
+  get (id) {
     this.heartbeat()
-    return this.resolve(address).then(instance => {
+    return this.resolve(id).then(instance => {
       if (instance instanceof Proxy) return instance.get()
       else return instance
     })
@@ -254,9 +250,9 @@ class Host {
    * @param {array} args - An array of method arguments
    * @return {Promise} Resolves to result of method call
    */
-  call (address, method, args) {
+  call (id, method, args) {
     this.heartbeat()
-    return this.resolve(address).then(instance => {
+    return this.resolve(id).then(instance => {
       if (instance instanceof Proxy) return instance.call(method, args)
       else {
         let func = instance[method]
@@ -283,12 +279,12 @@ class Host {
    *
    * Used for sending files to clients
    * 
-   * @param  {string} address Address of instance
+   * @param  {string} id      ID of instance
    * @param  {string} path    Path to file within instance
    * @return {string}         Absolute file path
    */
-  file (address, path) {
-    return this.resolve(address).then(instance => {
+  file (id, path) {
+    return this.resolve(id).then(instance => {
       return instance.filePath(path)
     })
   }
@@ -296,7 +292,7 @@ class Host {
   /**
    * Delete an instance
    * 
-   * @param  {string} id - ID of the instance
+   * @param  {string} id - ID of instance
    * @return {Promise}
    */
   delete (id) {

@@ -159,14 +159,14 @@ class HostHttpServer {
 
     let matches = path.match(/^\/([^!$]+)((!|\$)([^?]+))?.*$/)
     if (matches) {
-      let address = matches[1]
+      let id = matches[1]
       let operator = matches[3]
       let method = matches[4]
-      if (verb === 'POST' && address && !method) return [this.create, address]
-      else if (verb === 'GET' && address && !method) return [this.get, address]
-      else if (verb === 'GET' && address && operator === '$' && method) return [this.file, address, method]
-      else if (verb === 'PUT' && address && operator === '!' && method) return [this.call, address, method]
-      else if (verb === 'DELETE' && address && !method) return [this.delete, address]
+      if (verb === 'POST' && id && !method) return [this.create, id]
+      else if (verb === 'GET' && id && !method) return [this.get, id]
+      else if (verb === 'GET' && id && operator === '$' && method) return [this.file, id, method]
+      else if (verb === 'PUT' && id && operator === '!' && method) return [this.call, id, method]
+      else if (verb === 'DELETE' && id && !method) return [this.delete, id]
     }
 
     return null
@@ -225,15 +225,15 @@ class HostHttpServer {
   create (request, response, type, args) {
     return this._host.create(type, args).then(result => {
       response.setHeader('Content-Type', 'application/json')
-      response.end(JSON.stringify(result.address))
+      response.end(JSON.stringify(result.id))
     })
   }
 
   /**
    * Handle a request to get an instance
    */
-  get (request, response, address) {
-    return this._host.get(address).then(instance => {
+  get (request, response, id) {
+    return this._host.get(id).then(instance => {
       if (!acceptsJson(request) && instance.constructor && instance.constructor.page) {
         return this.statico(request, response, instance.constructor.page)
       } else {
@@ -246,8 +246,8 @@ class HostHttpServer {
   /**
    * Handle a request to call an instance method
    */
-  call (request, response, address, method, args) {
-    return this._host.call(address, method, args).then(result => {
+  call (request, response, id, method, args) {
+    return this._host.call(id, method, args).then(result => {
       response.setHeader('Content-Type', 'application/json')
       response.end(JSON.stringify(result))
     })
@@ -260,8 +260,8 @@ class HostHttpServer {
    * e.g. `PUT fileStore1!readFile`. But that returns `application/json` content. 
    * This uses the `send` package to set `Content-Type`, `Last-Modified` and other headers properly.
    */
-  file (request, response, address, path) {
-    return this._host.file(address, path).then(path => {
+  file (request, response, id, path) {
+    return this._host.file(id, path).then(path => {
       send(request, path).pipe(response)
     })
   }
@@ -269,8 +269,8 @@ class HostHttpServer {
   /**
    * Handle a request to delete an instance
    */
-  delete (request, response, address) {
-    return this._host.delete(address).then(() => {
+  delete (request, response, id) {
+    return this._host.delete(id).then(() => {
       response.end()
     })
   }
