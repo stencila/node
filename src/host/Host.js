@@ -11,7 +11,8 @@ const { GET, POST, PUT } = require('../util/requests')
 
 const FileStorer = require('../storers/FileStorer')
 const GithubStorer = require('../storers/GithubStorer')
-const NodeContext = require('../node-context/NodeContext')
+
+const NodeContext = require('../contexts/NodeContext')
 
 // Resource classes available
 const TYPES = {
