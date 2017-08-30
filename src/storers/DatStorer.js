@@ -29,14 +29,6 @@ class DatStorer {
   }
 
   /**
-   * Does this storer handle an address?
-   * @param  {string} address Long address
-   */
-  static match(address) {
-    return address.indexOf('dat://') > -1
-  }
-
-  /**
     Read a file from the Dat
   */
   readFile (filePath) {
