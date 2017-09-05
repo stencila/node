@@ -130,9 +130,11 @@ class Host {
       manifest = Object.assign(manifest, {
         id: this.id,
         process: process.pid,
-        urls: this.urls,
+        servers: this.servers,
         instances: Object.keys(this._instances),
-        peers: this._peers
+        peers: this._peers,
+        // For compatability with 0.27 API
+        urls: this.urls
       })
     }
     return manifest
@@ -215,7 +217,7 @@ class Host {
           throw new Error(`Unknown type: ${type}`)
         }).then((peer) => {
           // Request the peer to create a new instance of type
-          let url = peer.urls[0]
+          let url = peer.servers['http'].url
           return POST(url + '/' + type, args).then(remoteAddress => {
             // Store the instance as a URL to be proxied to. In other methods (e.g. `put`),
             // string instances are recognised as remote instances and requests are proxied to them
@@ -337,7 +339,8 @@ class Host {
               if (error) throw error
             })
           })
-          console.log('Host has started at: ' + this.urls.join(', ')) // eslint-disable-line no-console
+          let urls = Object.values(this.servers).map(server => server.url).join(', ')
+          console.log('Host has started at: ' + urls) // eslint-disable-line no-console
 
           // Discover other hosts
           this.discover()
@@ -429,7 +432,15 @@ class Host {
    * @return {array} Array of strings
    */
   get servers () {
-    return Object.keys(this._servers)
+    let servers = {}
+    for (let name of Object.keys(this._servers)) {
+      let server = this._servers[name]
+      servers[name] = {
+        url: server.url,
+        ticket: null
+      }
+    }
+    return servers
   }
 
   /**
@@ -536,18 +547,28 @@ class Host {
   /**
    * Spawn a peer from an inactive host manifest
    * 
-   * @param  {[type]} peer [description]
+   * @param  {[type]} manifest The manifest for the inactive host
    * @return {[type]}      [description]
    */
-  spawn (host) {
+  spawn (manifest) {
     return new Promise((resolve) => {
-      let run = host.run
+      let run = manifest.run
       let child = execa(run[0], run.slice(1))
       child.stdout.on('data', data => {
-        let manifest = JSON.parse(data.toString())
-        // Place at start of peers list
-        this._peers.unshift(manifest)
-        resolve(manifest)
+        // Get the peer's manifest which is output from executing the `run` command
+        let peer = JSON.parse(data.toString())
+        // To obtain an authorization token cookie, connect to the peer using the HTTP url
+        // and ticket in the manifest
+        let server = peer.servers['http']
+        if (!server) throw new Error(`HTP server not provided in manifest for peer: ${peer.id}`)
+        let url = server.url
+        let ticket = server.ticket
+        if (!(url && ticket)) throw new Error(`URL and ticket not provided in manifest for peer: ${peer.id}`)
+        GET(`${url}/?ticket=${ticket}`).then((manifest) => {
+          // Place the new manifest at the start of the peers list
+          this._peers.unshift(manifest)
+          resolve(manifest)
+        })
       })
     })
   }
