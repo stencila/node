@@ -126,14 +126,7 @@ class HostHttpServer {
           else resolve(body)
         })
       }).then(body => {
-        let args = {}
-
-        let query = url.parse(request.url, true).query
-        let json = '{' + Object.keys(query).map(key => `"${key}":${query[key]}`).join(',') + '}'
-        args = JSON.parse(json)
-
-        if (body) args = Object.assign(args, JSON.parse(body))
-
+        let args = body ? JSON.parse(body) : {}
         return method.call(this, request, response, ...params, args)
       }).catch(error => this.error500(request, response, error))
     } else {
