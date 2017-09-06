@@ -14,13 +14,19 @@ const GithubStorer = require('../storers/GithubStorer')
 
 const NodeContext = require('../contexts/NodeContext')
 
-// Resource classes available
+// Resource types available
 const TYPES = {
   'FileStorer': FileStorer,
   'GithubStorer': GithubStorer,
 
   'NodeContext': NodeContext
 }
+// Resource types specifications
+let TYPES_SPECS = {}
+for (let name of Object.keys(TYPES)) {
+  TYPES_SPECS[name] = TYPES[name].spec
+}
+
 
 /**
  * A `Host` allows you to create, get, run methods of, and delete instances of various types.
@@ -112,18 +118,16 @@ class Host {
    * @return {Promise} Resolves to a manifest object
    */
   manifest () {
-    let new_ = {}
-    for (let name of Object.keys(TYPES)) {
-      new_[name] = TYPES[name].spec
-    }
     let manifest = {
       stencila: {
         package: 'node',
         version: version
       },
       run: [process.execPath, '-e', "require('stencila-node').run()"],
+      types: TYPES_SPECS,
+      // For compatability with 0.27 API
       schemes: {
-        new: new_
+        new: TYPES_SPECS
       }
     }
     if (this._started) {
@@ -339,7 +343,7 @@ class Host {
               if (error) throw error
             })
           })
-          let urls = Object.values(this.servers).map(server => server.url).join(', ')
+          let urls = Object.values(this._servers).map(server => server.ticketedUrl()).join(', ')
           console.log('Host has started at: ' + urls) // eslint-disable-line no-console
 
           // Discover other hosts
@@ -437,7 +441,7 @@ class Host {
       let server = this._servers[name]
       servers[name] = {
         url: server.url,
-        ticket: null
+        ticket: server.ticketCreate()
       }
     }
     return servers

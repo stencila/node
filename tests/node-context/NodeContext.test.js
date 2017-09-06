@@ -1,7 +1,7 @@
 const test = require('tape')
 const {pack} = require('stencila').value
 
-const NodeContext = require('../../src/node-context/NodeContext')
+const NodeContext = require('../../src/contexts/NodeContext')
 
 test('NodeContext', function (t) {
   let c = new NodeContext()

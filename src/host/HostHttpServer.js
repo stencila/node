@@ -1,4 +1,6 @@
 const body = require('body')
+const cookie = require('cookie')
+const crypto = require('crypto')
 const http = require('http')
 const path = require('path')
 const send = require('send')
@@ -14,11 +16,15 @@ const isSuperUser = require('../util/isSuperUser')
  */
 class HostHttpServer {
 
-  constructor (host, address = '127.0.0.1', port = 2000) {
+  constructor (host, address = '127.0.0.1', port = 2000, authorization = true) {
     this._host = host
     this._address = address
     this._port = port
+    this._authorization = authorization
+
     this._server = null
+    this._tickets = []
+    this._tokens = []
   }
 
   /**
@@ -83,55 +89,77 @@ class HostHttpServer {
    * Handle a HTTP request
    */
   handle (request, response) {
-    let endpoint = this.route(request.method, request.url)
-    if (endpoint) {
+    let uri = url.parse(request.url, true)
 
-      // CORS headers are used to control access by browsers. In particular, CORS
-      // can prevent access by XHR requests made by Javascript in third party sites.
-      // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
-
-      // Get the Origin header (sent in CORS and POST requests) and fall back to Referer header
-      // if it is not present (either of these should be present in most browser requests)
-      let origin = request.headers.origin
-      if (!origin && request.headers.referer) {
-        let uri = url.parse(request.headers.referer || '')
-        origin = `${uri.protocol}//${uri.host}`
-      }
-
-      // If an origin has been found and is authorized set CORS headers
-      // Without these headers browser XHR request get an error like:
-      //     No 'Access-Control-Allow-Origin' header is present on the requested resource.
-      //     Origin 'http://evil.hackers:4000' is therefore not allowed access.
-      if (origin) {
-        // 'Simple' requests (GET and POST XHR requests)
-        response.setHeader('Access-Control-Allow-Origin', origin)
-          // Allow sending cookies and other credentials
-        response.setHeader('Access-Control-Allow-Credentials', 'true')
-        // Pre-flighted requests by OPTIONS method (made before PUT, DELETE etc XHR requests and in other circumstances)
-        // get additional CORS headers
-        if (request.method === 'OPTIONS') {
-          // Allowable methods and headers
-          response.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-          response.setHeader('Access-Control-Allow-Headers', 'Content-Type')
-          // "how long the response to the preflight request can be cached for without sending another preflight request"
-          response.setHeader('Access-Control-Max-Age', '86400') // 24 hours
+    // Check authorization. Note that browsers do not send credentials (e.g. cookies)
+    // in OPTIONS requests
+    if (this._authorization && request.method !== 'OPTIONS') {
+      // Check for ticket
+      let ticket = uri.query['ticket']
+      if(ticket) {
+        // Check ticket is valid
+        if (!this.ticketCheck(ticket)) return this.error403(request, response, ': invalid ticket : ' + ticket)
+        else {
+          // Set token cookie
+          let token = this.tokenCreate()
+          response.setHeader('Set-Cookie', `token=${token}`)
         }
+      } else {
+        // Check for token
+        let token = cookie.parse(request.headers.cookie || '').token
+        if (!token | !this.tokenCheck(token)) return this.error403(request, response, ': invalid token : ' + token)
       }
+    }
 
-      let method = endpoint[0]
-      let params = endpoint.slice(1)
+    // Add CORS headers used to control access by browsers. In particular, CORS
+    // can prevent access by XHR requests made by Javascript in third party sites.
+    // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
+
+    // Get the Origin header (sent in CORS and POST requests) and fall back to Referer header
+    // if it is not present (either of these should be present in most browser requests)
+    let origin = request.headers.origin
+    if (!origin && request.headers.referer) {
+      let uri = url.parse(request.headers.referer || '')
+      origin = `${uri.protocol}//${uri.host}`
+    }
+
+    // If an origin has been found and is authorized set CORS headers
+    // Without these headers browser XHR request get an error like:
+    //     No 'Access-Control-Allow-Origin' header is present on the requested resource.
+    //     Origin 'http://evil.hackers:4000' is therefore not allowed access.
+    if (origin) {
+      // 'Simple' requests (GET and POST XHR requests)
+      response.setHeader('Access-Control-Allow-Origin', origin)
+        // Allow sending cookies and other credentials
+      response.setHeader('Access-Control-Allow-Credentials', 'true')
+      // Pre-flighted requests by OPTIONS method (made before PUT, DELETE etc XHR requests and in other circumstances)
+      // get additional CORS headers
+      if (request.method === 'OPTIONS') {
+        // Allowable methods and headers
+        response.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        response.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+        // "how long the response to the preflight request can be cached for without sending another preflight request"
+        response.setHeader('Access-Control-Max-Age', '86400') // 24 hours
+      }
+    }
+
+    let endpoint = this.route(request.method, uri.pathname)
+    if (endpoint) {
       return new Promise((resolve, reject) => {
         body(request, (err, body) => {
           if (err) reject(err)
           else resolve(body)
         })
       }).then(body => {
+        let method = endpoint[0]
+        let params = endpoint.slice(1)
         let args = body ? JSON.parse(body) : {}
         return method.call(this, request, response, ...params, args)
-      }).catch(error => this.error500(request, response, error))
+      }).catch(error => {
+        this.error500(request, response, error)
+      })
     } else {
       this.error400(request, response)
-      return Promise.resolve()
     }
   }
 
@@ -268,19 +296,84 @@ class HostHttpServer {
     })
   }
 
+
+  /**
+   * Create a ticket (a single-use access token)
+   * 
+   * @return {string} A ticket
+   */
+  ticketCreate () {
+    const ticket = crypto.randomBytes(12).toString('hex')
+    this._tickets.push(ticket)
+    return ticket
+  }
+
+  /**
+   * Check that a ticket is valid. 
+   * 
+   * If it is, then it is removed from the list of tickets 
+   * and `true` is returned. Otherwise, returns `false`
+   *  
+   * @param  {string} ticket The ticket to check
+   * @return {boolean}       Is the ticket valid?
+   */
+  ticketCheck (ticket) {
+    const index = this._tickets.indexOf(ticket)
+    if (index > -1) {
+      this._tickets.splice(index, 1)
+      return true
+    } else {
+      return false
+    }
+  }
+
+  /**
+   * Create a URL with a ticket query parameter so users
+   * can connect to this server
+   * 
+   * @return {string} A ticket
+   */
+  ticketedUrl () {
+    return this.url + '/?ticket=' + this.ticketCreate()
+  }
+
+  /**
+   * Create a token (a multiple-use access token)
+   * 
+   * @return {string} A token
+   */
+  tokenCreate () {
+    const token = crypto.randomBytes(126).toString('hex')
+    this._tokens.push(token)
+    return token
+  }
+
+  /**
+   * Check that a token is valid.
+   * 
+   * @param  {string} token The token to check
+   * @return {boolean}       Is the token valid?
+   */
+  tokenCheck (token) {
+    return this._tokens.indexOf(token) > -1
+  }
+
   /**
    * General error handling
    */
   error (request, response, status, error) {
-    response.statusCode = status
-    let content
-    if (acceptsJson(request)) {
-      response.setHeader('Content-Type', 'application/json')
-      content = JSON.stringify(error)
-    } else {
-      content = error.error + '\n\n' + error.details
-    }
-    response.end(content)
+    return new Promise((resolve) => {
+      response.statusCode = status
+      let content
+      if (acceptsJson(request)) {
+        response.setHeader('Content-Type', 'application/json')
+        content = JSON.stringify(error)
+      } else {
+        content = error.error + '\n\n' + error.details
+      }
+      response.end(content)
+      resolve()
+    })
   }
 
   /**
@@ -288,20 +381,20 @@ class HostHttpServer {
    */
 
   error400 (request, response) {
-    this.error(request, response, 400, {error: 'Bad request', details: request.method + ' ' + request.url})
+    return this.error(request, response, 400, {error: 'Bad request', details: request.method + ' ' + request.url})
   }
 
   error403 (request, response, details) {
-    this.error(request, response, 403, {error: 'Access denied', details: details})
+    return this.error(request, response, 403, {error: 'Access denied', details: details})
   }
 
   error404 (request, response, details) {
-    this.error(request, response, 404, {error: 'Not found', details: details})
+    return this.error(request, response, 404, {error: 'Not found', details: details})
   }
 
   error500 (request, response, error) {
     /* istanbul ignore next */
-    this.error(request, response, 500, {error: 'Internal error', details: error ? error.stack : ''})
+    return this.error(request, response, 500, {error: 'Internal error', details: error ? error.stack : ''})
   }
 
 }

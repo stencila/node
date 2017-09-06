@@ -168,8 +168,8 @@ test('HostHttpServer.create', function (t) {
   s.create(req, res, 'NodeContext') // Testing this
     .then(() => {
       t.equal(res.statusCode, 200)
-      let address = JSON.parse(res._getData())
-      t.ok(h._instances[address])
+      let id = JSON.parse(res._getData())
+      t.ok(h._instances[id])
       t.end()
     })
     .catch(error => {
@@ -185,8 +185,8 @@ test('HostHttpServer.get', function (t) {
   let {req, res} = httpMocks.createMocks()
   h.create('NodeContext')
     .then(result => {
-      let {address} = result
-      return s.get(req, res, address) // Testing this
+      let {id} = result
+      return s.get(req, res, id) // Testing this
     })
     .then(() => {
       t.equal(res.statusCode, 200)
@@ -205,9 +205,9 @@ test('HostHttpServer.file', function (t) {
   let {req, res} = httpMocks.createMocks()
   h.create('FileStorer')
     .then(result => {
-      let {address} = result
+      let {id} = result
       let filePath = path.join(__dirname, '../fixtures/test-dir-1/file-a.txt')
-      return s.file(req, res, address, filePath) // Testing this
+      return s.file(req, res, id, filePath) // Testing this
     })
     .then(() => {
       t.equal(res.statusCode, 200)
@@ -227,9 +227,9 @@ test('HostHttpServer.call', function (t) {
 
   h.create('NodeContext')
     .then(result => {
-      let {address} = result
-      t.ok(h._instances[address])
-      return s.call(req, res, address, 'runCode', {code: '6*7'}) // Testing this
+      let {id} = result
+      t.ok(h._instances[id])
+      return s.call(req, res, id, 'runCode', {code: '6*7'}) // Testing this
     })
     .then(() => {
       t.equal(res.statusCode, 200)
@@ -250,12 +250,12 @@ test('HostHttpServer.delete', function (t) {
   let {req, res} = httpMocks.createMocks()
   h.create('NodeContext')
     .then(result => {
-      let {address} = result
-      t.ok(h._instances[address])
-      s.delete(req, res, address) // Testing this
+      let {id} = result
+      t.ok(h._instances[id])
+      s.delete(req, res, id) // Testing this
         .then(() => {
           t.equal(res.statusCode, 200)
-          t.notOk(h._instances[address])
+          t.notOk(h._instances[id])
           t.end()
         })
     })
