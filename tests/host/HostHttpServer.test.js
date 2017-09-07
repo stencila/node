@@ -49,28 +49,85 @@ test('HostHttpServer.stop+start multiple', function (t) {
     })
 })
 
-test.skip('HostHttpServer.handle', function (t) {
-  t.plan(2)
+test('HostHttpServer.handle unauthorized', function (t) {
+  let s = new HostHttpServer()
+  let mock = httpMocks.createMocks({method: 'GET', url: '/'})
+  s.handle(mock.req, mock.res)
+    .then(() => {
+      t.equal(mock.res.statusCode, 403)
+      t.end()
+    })
+    .catch(error => {
+      t.notOk(error)
+      t.end()
+    })
+})
 
+test('HostHttpServer.handle authorized', function (t) {
   let s = new HostHttpServer()
 
-  let mock1 = httpMocks.createMocks({method: 'GET', url: '/'})
-  s.handle(mock1.req, mock1.res)
-    .then(() => {
-      t.equal(mock1.res.statusCode, 200)
-    })
-    .catch(error => {
-      t.notOk(error)
-    })
+  // Authorization using a ticket
+  let mock = httpMocks.createMocks({method: 'GET', url: '/?ticket=' + s.ticketCreate()})
+  let cookie = null
+  s.handle(mock.req, mock.res).then(() => {
+    t.equal(mock.res.statusCode, 200)
 
-  let mock2 = httpMocks.createMocks({method: 'FOO', url: '/foo/bar', headers: {'Accept': 'application/json'}})
-  s.handle(mock2.req, mock2.res)
-    .then(() => {
-      t.equal(mock2.res.statusCode, 400)
+    cookie = mock.res._headers["Set-Cookie"]
+    t.ok(cookie.match(/^token=/))
+  }).then(() => {
+    // Authorization using the token passed in Set-Cookie
+    let mock = httpMocks.createMocks({method: 'GET', url: '/', headers: {'Cookie': cookie}})
+    return s.handle(mock.req, mock.res)
+      .then(() => {
+        t.equal(mock.res.statusCode, 200)
+      })
+  }).then(() => {
+    // Authorization using the token but bad request
+    let mock = httpMocks.createMocks({method: 'FOO', url: '/foo/bar', headers: {'Cookie': cookie}})
+    return s.handle(mock.req, mock.res)
+      .then(() => {
+        t.equal(mock.res.statusCode, 400)
+      })
+  }).then(() => {
+    t.end()
+  }).catch(error => {
+    t.notOk(error)
+    t.end()
+  })
+})
+
+test('HostHttpServer.handle CORS', function (t) {
+  let s = new HostHttpServer()
+
+  Promise.resolve().then(() => {
+    let mock = httpMocks.createMocks({
+      method: 'GET', 
+      url: '/?ticket=' + s.ticketCreate(), 
+      headers: {'referer': 'http://localhost/some/page'}
     })
-    .catch(error => {
-      t.notOk(error)
+    return s.handle(mock.req, mock.res)
+      .then(() => {
+        t.equal(mock.res.statusCode, 200)
+        t.equal(mock.res._headers["Access-Control-Allow-Origin"], 'http://localhost')
+      })
+  }).then(() => {
+    let mock = httpMocks.createMocks({
+      method: 'GET', 
+      url: '/?ticket=' + s.ticketCreate(), 
+      headers: {'referer': 'http://evilhackers.com/some/page'}
     })
+    return s.handle(mock.req, mock.res)
+      .then(() => {
+        t.equal(mock.res.statusCode, 200)
+        t.equal(mock.res._headers["Access-Control-Allow-Origin"], undefined)
+      })
+  }).then(() => {
+    t.end()
+  })
+  .catch(error => {
+    t.notOk(error)
+    t.end()
+  })
 })
 
 test('HostHttpServer.route', function (t) {

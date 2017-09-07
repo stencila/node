@@ -102,7 +102,7 @@ class HostHttpServer {
         else {
           // Set token cookie
           let token = this.tokenCreate()
-          response.setHeader('Set-Cookie', `token=${token}`)
+          response.setHeader('Set-Cookie', `token=${token}; Path=/`)
         }
       } else {
         // Check for token
@@ -121,6 +121,14 @@ class HostHttpServer {
     if (!origin && request.headers.referer) {
       let uri = url.parse(request.headers.referer || '')
       origin = `${uri.protocol}//${uri.host}`
+    }
+
+    // Check that host is in whitelist
+    if (origin) {
+      let uri = url.parse(origin)
+      if (['127.0.0.1', 'localhost', 'open.stenci.la'].indexOf(uri.host) === -1) {
+        origin = null
+      }
     }
 
     // If an origin has been found and is authorized set CORS headers
@@ -146,20 +154,24 @@ class HostHttpServer {
     let endpoint = this.route(request.method, uri.pathname)
     if (endpoint) {
       return new Promise((resolve, reject) => {
-        body(request, (err, body) => {
-          if (err) reject(err)
-          else resolve(body)
-        })
+        // Check if in tests and using a mock request
+        if (request._setBody) resolve(request.body)
+        else {
+          body(request, (err, body) => {
+            if (err) reject(err)
+            else resolve(body)
+          })
+        }
       }).then(body => {
         let method = endpoint[0]
         let params = endpoint.slice(1)
-        let args = body ? JSON.parse(body) : {}
+        let args = body && body instanceof String ? JSON.parse(body) : {}
         return method.call(this, request, response, ...params, args)
       }).catch(error => {
         this.error500(request, response, error)
       })
     } else {
-      this.error400(request, response)
+      return this.error400(request, response)
     }
   }
 
