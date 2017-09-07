@@ -4,21 +4,33 @@ const fs = require('fs')
 const mkdirp = require('mkdirp')
 const path = require('path')
 const os = require('os')
-const stencila = require('stencila')
 
 const version = require('../../package').version
 const HostHttpServer = require('./HostHttpServer')
 const { GET, POST, PUT } = require('../util/requests')
 
-const DocumentBundle = require('../bundles/DocumentBundle')
-const NodeContext = require('../node-context/NodeContext')
+const DatStorer = require('../storers/DatStorer')
+const DropboxStorer = require('../storers/DropboxStorer')
+const FileStorer = require('../storers/FileStorer')
+const GithubStorer = require('../storers/GithubStorer')
 
-// Look up for classes available under the 
-// `new` sheme
+const NodeContext = require('../contexts/NodeContext')
+
+// Resource types available
 const TYPES = {
-  'DocumentBundle': DocumentBundle,
+  'DatStorer': DatStorer,
+  'DropboxStorer': DropboxStorer,
+  'FileStorer': FileStorer,
+  'GithubStorer': GithubStorer,
+
   'NodeContext': NodeContext
 }
+// Resource types specifications
+let TYPES_SPECS = {}
+for (let name of Object.keys(TYPES)) {
+  TYPES_SPECS[name] = TYPES[name].spec
+}
+
 
 /**
  * A `Host` allows you to create, get, run methods of, and delete instances of various types.
@@ -45,6 +57,7 @@ class Host {
     this._started = null
     this._heartbeat = null
     this._instances = {}
+    this._counts = {}
     this._peers = []
   }
 
@@ -109,27 +122,27 @@ class Host {
    * @return {Promise} Resolves to a manifest object
    */
   manifest () {
-    let new_ = {}
-    for (let name of Object.keys(TYPES)) {
-      new_[name] = TYPES[name].spec
-    }
     let manifest = {
       stencila: {
         package: 'node',
         version: version
       },
       run: [process.execPath, '-e', "require('stencila-node').run()"],
+      types: TYPES_SPECS,
+      // For compatability with 0.27 API
       schemes: {
-        new: new_
+        new: TYPES_SPECS
       }
     }
     if (this._started) {
       manifest = Object.assign(manifest, {
         id: this.id,
         process: process.pid,
-        urls: this.urls,
+        servers: this.servers,
         instances: Object.keys(this._instances),
-        peers: this._peers
+        peers: this._peers,
+        // For compatability with 0.27 API
+        urls: this.urls
       })
     }
     return manifest
@@ -153,21 +166,44 @@ class Host {
   }
 
   /**
+   * Resolve an ID to an instance
+   * 
+   * @param  {string} id ID of instance
+   * @return {[type]}    [description]
+   */
+  resolve (id) {
+    return Promise.resolve().then(() => {
+      if (!id) return this
+      let instance = this._instances[id]
+      if (!instance) throw new Error(`Unknown instance: ${id}`)
+      return instance
+    })
+  }
+
+  /**
    * Create a new instance of a type
    * 
-   * @param  {string} address - Type of instance
-   * @param  {object} options - Options to be passed to type constructor
+   * @param  {string} type - Type of instance
+   * @param  {args} args - Arguments to be passed to type constructor
    * @return {Promise} - Resolves to the ID string of newly created instance
    */
-  post (type, name, options) {
+  create (type, args) {
     this.heartbeat()
+
+    const id_ = () => {
+      let number = (this._counts[type] || 0) + 1
+      this._counts[type] = number
+      return `${type[0].toLowerCase()}${type.substring(1)}${number}`
+    }
+
     return Promise.resolve().then(() => {
       let Class = TYPES[type]
       if (Class) {
         // Type present locally
-        let address = `name://${name || Math.floor((1 + Math.random()) * 1e6).toString(16)}`
-        this._instances[address] = new Class(options)
-        return address
+        let instance = new Class(args)
+        let id = id_(type)
+        this._instances[id] = instance
+        return {id, instance}
       } else {
         // Type not present locally, see if a peer has it
         return Promise.resolve().then(() => {
@@ -187,14 +223,16 @@ class Host {
             }
           }
           throw new Error(`Unknown type: ${type}`)
-        }).then(peer => {
+        }).then((peer) => {
           // Request the peer to create a new instance of type
-          let url = peer.urls[0]
-          return POST(url + '/' + type, Object.assign({name: name}, options)).then(address => {
+          let url = peer.servers['http'].url
+          return POST(url + '/' + type, args).then(remoteAddress => {
             // Store the instance as a URL to be proxied to. In other methods (e.g. `put`),
             // string instances are recognised as remote instances and requests are proxied to them
-            this._instances[address] = `${url}/${address}`
-            return address
+            let instance = new Proxy(`${url}/${remoteAddress}`)
+            let id = id_(type)
+            this._instances[id] = instance
+            return {id, instance}
           })
         })
       }
@@ -204,45 +242,14 @@ class Host {
   /**
    * Get an instance
    * 
-   * @param  {string} address - Address of instance
+   * @param  {string} id - ID of instance
    * @return {Promise} - Resolves to the instance
    */
-  get (address, proxy=true) {
+  get (id) {
     this.heartbeat()
-    return Promise.resolve().then(() => {
-      let instance
-      if (address) {
-        address = stencila.address.long(address)
-        instance = this._instances[address]
-      } else {
-        instance = this
-      }
-      if (instance) {
-        if (typeof instance !== 'string') {
-          // Return local instance
-          return instance
-        }
-        else {
-          // Proxy request to peer
-          return (proxy ? GET(instance) : instance)
-        }
-      } else {
-        // Check if the address matches a registered type
-        for (let name of Object.keys(TYPES)) {
-          let Class = TYPES[name]
-          if (typeof Class.match === 'function') {
-            let match = Class.match(address)
-            if (match) {
-              let instance = new Class(match)
-              this._instances[match] = instance
-              return instance.import().then(() => {
-                return instance
-              })
-            }
-          }
-        }
-        throw new Error(`Unknown instance: ${address}`)
-      }
+    return this.resolve(id).then(instance => {
+      if (instance instanceof Proxy) return instance.get()
+      else return instance
     })
   }
 
@@ -254,10 +261,11 @@ class Host {
    * @param {array} args - An array of method arguments
    * @return {Promise} Resolves to result of method call
    */
-  put (address, method, args) {
+  call (id, method, args) {
     this.heartbeat()
-    return this.get(address, false).then(instance => {
-      if (typeof instance !== 'string') {
+    return this.resolve(id).then(instance => {
+      if (instance instanceof Proxy) return instance.call(method, args)
+      else {
         let func = instance[method]
         if (func) {
           // Ensure arguments are an array
@@ -274,17 +282,28 @@ class Host {
           throw new Error(`Unknown method: ${method}`)
         }
       }
-      else {
-        // Proxy request to peer
-        return PUT(`${instance}!${method}`, args)
-      }
+    })
+  }
+
+  /**
+   * Get the abolute path for a file from an instance (usually a Storer)
+   *
+   * Used for sending files to clients
+   * 
+   * @param  {string} id      ID of instance
+   * @param  {string} path    Path to file within instance
+   * @return {string}         Absolute file path
+   */
+  file (id, path) {
+    return this.resolve(id).then(instance => {
+      return instance.filePath(path)
     })
   }
 
   /**
    * Delete an instance
    * 
-   * @param  {string} id - ID of the instance
+   * @param  {string} id - ID of instance
    * @return {Promise}
    */
   delete (id) {
@@ -308,11 +327,11 @@ class Host {
    * 
    * @return {Promise}
    */
-  start (address='127.0.0.1', port=2000) {
+  start (address='127.0.0.1', port=2000, authorization=true) {
     return new Promise((resolve) => {
       if (!this._servers.http) {
         // Start HTTP server
-        var server = new HostHttpServer(this, address, port)
+        var server = new HostHttpServer(this, address, port, authorization)
         this._servers.http = server
         server.start().then(() => {
           
@@ -328,7 +347,8 @@ class Host {
               if (error) throw error
             })
           })
-          console.log('Host has started at: ' + this.urls.join(', ')) // eslint-disable-line no-console
+          let urls = Object.values(this._servers).map(server => server.ticketedUrl()).join(', ')
+          console.log('Host has started at: ' + urls) // eslint-disable-line no-console
 
           // Discover other hosts
           this.discover()
@@ -383,7 +403,7 @@ class Host {
    * 
    * @return {Promise}
    */
-  run (address='127.0.0.1', port=2000, timeout=Infinity, duration=Infinity) {
+  run (address='127.0.0.1', port=2000, authorization=true, timeout=Infinity, duration=Infinity) {
     const stop = () => {
       this.stop().then(() => {
         process.exit()
@@ -408,7 +428,7 @@ class Host {
     }
     process.on("SIGINT", stop)
 
-    return this.start(address, port)
+    return this.start(address, port, authorization)
   }
 
   /**
@@ -420,7 +440,15 @@ class Host {
    * @return {array} Array of strings
    */
   get servers () {
-    return Object.keys(this._servers)
+    let servers = {}
+    for (let name of Object.keys(this._servers)) {
+      let server = this._servers[name]
+      servers[name] = {
+        url: server.url,
+        ticket: server.ticketCreate()
+      }
+    }
+    return servers
   }
 
   /**
@@ -527,20 +555,46 @@ class Host {
   /**
    * Spawn a peer from an inactive host manifest
    * 
-   * @param  {[type]} peer [description]
+   * @param  {[type]} manifest The manifest for the inactive host
    * @return {[type]}      [description]
    */
-  spawn (host) {
+  spawn (manifest) {
     return new Promise((resolve) => {
-      let run = host.run
+      let run = manifest.run
       let child = execa(run[0], run.slice(1))
       child.stdout.on('data', data => {
-        let manifest = JSON.parse(data.toString())
-        // Place at start of peers list
-        this._peers.unshift(manifest)
-        resolve(manifest)
+        // Get the peer's manifest which is output from executing the `run` command
+        let peer = JSON.parse(data.toString())
+        // To obtain an authorization token cookie, connect to the peer using the HTTP url
+        // and ticket in the manifest
+        let server = peer.servers['http']
+        if (!server) throw new Error(`HTP server not provided in manifest for peer: ${peer.id}`)
+        let url = server.url
+        let ticket = server.ticket
+        if (!(url && ticket)) throw new Error(`URL and ticket not provided in manifest for peer: ${peer.id}`)
+        GET(`${url}/?ticket=${ticket}`).then((manifest) => {
+          // Place the new manifest at the start of the peers list
+          this._peers.unshift(manifest)
+          resolve(manifest)
+        })
       })
     })
+  }
+
+}
+
+class Proxy {
+
+  constructor (url) {
+    this.url = url
+  }
+
+  get () {
+    return GET(this.url)
+  }
+
+  call (method, args) {
+    return PUT(this.url + '!' + method, args)
   }
 
 }
