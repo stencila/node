@@ -1,96 +1,89 @@
 const fs = require('fs')
 const path = require('path')
 const mkdirp = require('mkdirp')
-
 const Dat = require('dat-node')
+
+const FileStorer = require('./FileStorer')
 
 /**
  * A storer for [Dat](http://datproject.org)
  */
-class DatStorer {
+class DatStorer extends FileStorer {
 
-  constructor (home, key) {
-    // Make the folder for dats to live in i it doesn't
+  constructor (options = {}) {
+    // Make the folder for dats to live in if it doesn't
     // exist yet
-    const datsFolder = path.join(home, 'dat')
+    const datsFolder = path.join(require('../host/singletonHost').userDir(), 'stores', 'dat')
     if (!fs.existsSync(datsFolder)) mkdirp.sync(datsFolder)
 
-    /**
-     * Local filesystem path where the dat will be written
-     * @type string
-     */
-    this.path = path.join(datsFolder, key)
+    const key = options.path
+    super({path: path.join(datsFolder, key)})
 
     /**
      * The dat's key as a hex string
      * @type {string}
      */
-    this.key = key
+    this._key = key
+  }
+
+  initialize () {
+    return new Promise((resolve, reject) => {
+      if (this._dat) return resolve(this._dat)
+
+      Dat(this._dir, { key: this._key, latest: true }, (err, _dat) => {
+        if (err) return reject(err)
+        _dat.joinNetwork(err => {
+          if (err) reject(err)
+          if (!_dat.network.connected) {
+            reject(new Error('No users currently online for that key.'))
+          } else {
+            this._dat = _dat
+            resolve(_dat)
+          }
+        })
+      })
+    })
   }
 
   /**
     Read a file from the Dat
   */
-  readFile (filePath) {
-    return new Promise((resolve, reject) => {
-      var dat = this.dat
-
-      function readFile() {
-        dat.archive.readFile(filePath, 'utf8', (err, data) => {
-          if (err) return reject(err)
-          dat.close(error => {
-            if (error) reject(error)
+  readFile (path_) {
+    return this.initialize().then(dat => {
+      return new Promise((resolve, reject) => {
+        dat.archive.readFile(path_, 'utf8', (err, data) => {
+          if (err) reject(err)
+          dat.close(err => {
+            if (err) reject(err)
             else resolve(data)
           })
         })
-      }
-
-      if (dat) readFile()
-      else {
-        Dat(this.path, { key: this.key, sparse: true, latest: true }, (err, _dat) => {
-          if (err) return reject(err)
-          
-          dat = _dat
-          dat.joinNetwork(error => {
-            if (error) reject(error)
-            
-            if (!dat.network.connected) {
-              reject(new Error('No users currently online for that key.'))
-            } else {
-              readFile()
-            }
-          })
-        })
-      }
+      })      
     })
   }
 
   /*
     Write a file to a dat
   */
-  writeFile(filePath, mimeType, data) {
-    return new Promise((resolve, reject) => {
-      var dat = this.dat
-      if (dat) return writeFile()
-
-      Dat(this.datPath, {key: this.datKey, latest: true}, (err, _dat) => {
-        if (err) return reject(err)
-        dat = _dat
+  writeFile(path_, content) {
+    return this.initialize().then(dat => {
+      return new Promise((resolve, reject) => {
         if (!dat.writable) {
-          console.error('cannot write to this dat')
+          reject(new Error('cannot write to this dat'))
         }
-        // dat.joinNetwork()
-        writeFile()
-      })
-
-      function writeFile () {
-        dat.archive.writeFile(filePath, data, 'utf8', (err, data) => {
-          if (err) return reject(err)
-          resolve(data)
+        dat.archive.writeFile(path_, content, 'utf8', (err) => {
+          if (err) reject(err)
+          resolve()
         })
-      }
+      })      
     })
   }
+}
+
+DatStorer.spec = {
+  name: 'DatStorer',
+  base: 'Storer',
+  aliases: ['dat']
 }
 
 module.exports = DatStorer

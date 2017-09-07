@@ -16,7 +16,6 @@ test('DatStorer.readFile', t => {
   fs.writeFileSync(path.join(folderShared,'test.csv'), content)
 
   // Make it a Dat
-  const home = tmp.dirSync().name
   Dat(folderShared, (err, datShared) => {
     t.error(err)
     
@@ -27,12 +26,12 @@ test('DatStorer.readFile', t => {
     datShared.importFiles(err => {
       t.error(err)
       
-      const hex = datShared.key.toString('hex')
-      t.pass(`Folder ${folderShared} shared as dat://${hex}`)
+      const key = datShared.key.toString('hex')
+      t.pass(`Folder ${folderShared} shared as dat://${key}`)
 
       // Read data using DataStorer
-      const dataStorer = new DatStorer(home, hex)
-      dataStorer.readFile('/test.csv').then(data => {
+      const dataStorer = new DatStorer({ path: key })
+      dataStorer.readFile('test.csv').then(data => {
         t.equal(data, content)
         // Close the shared data and end the test
         datShared.close(error => {
