@@ -7,7 +7,7 @@ const test = require('tape')
 
 const DatStorer = require('../../src/storers/DatStorer')
 
-test('DatStorer.readFile', t => {
+test.skip('DatStorer.readFile', t => {
 
   const content = 'a,b\n1,2\n3,4'
 
