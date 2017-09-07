@@ -33,7 +33,7 @@ class DropboxStorer extends FileStorer {
     })
   }
 
-  writeFile(path_) {
+  writeFile() {
     return Promise.reject(
       new Error('Writing not supported by DropboxStorer')
     )
