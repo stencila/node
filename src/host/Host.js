@@ -327,11 +327,11 @@ class Host {
    * 
    * @return {Promise}
    */
-  start (address='127.0.0.1', port=2000) {
+  start (address='127.0.0.1', port=2000, authorization=true) {
     return new Promise((resolve) => {
       if (!this._servers.http) {
         // Start HTTP server
-        var server = new HostHttpServer(this, address, port)
+        var server = new HostHttpServer(this, address, port, authorization)
         this._servers.http = server
         server.start().then(() => {
           
@@ -403,7 +403,7 @@ class Host {
    * 
    * @return {Promise}
    */
-  run (address='127.0.0.1', port=2000, timeout=Infinity, duration=Infinity) {
+  run (address='127.0.0.1', port=2000, authorization=true, timeout=Infinity, duration=Infinity) {
     const stop = () => {
       this.stop().then(() => {
         process.exit()
@@ -428,7 +428,7 @@ class Host {
     }
     process.on("SIGINT", stop)
 
-    return this.start(address, port)
+    return this.start(address, port, authorization)
   }
 
   /**
