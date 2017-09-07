@@ -1,5 +1,4 @@
-/* eslint-disable no-console */
-
+const path = require('path')
 const test = require('tape')
 var httpMocks = require('node-mocks-http');
 
@@ -50,28 +49,85 @@ test('HostHttpServer.stop+start multiple', function (t) {
     })
 })
 
-test('HostHttpServer.handle', function (t) {
-  t.plan(2)
+test('HostHttpServer.handle unauthorized', function (t) {
+  let s = new HostHttpServer()
+  let mock = httpMocks.createMocks({method: 'GET', url: '/'})
+  s.handle(mock.req, mock.res)
+    .then(() => {
+      t.equal(mock.res.statusCode, 403)
+      t.end()
+    })
+    .catch(error => {
+      t.notOk(error)
+      t.end()
+    })
+})
 
+test('HostHttpServer.handle authorized', function (t) {
   let s = new HostHttpServer()
 
-  let mock1 = httpMocks.createMocks({method: 'GET', url: '/'})
-  s.handle(mock1.req, mock1.res)
-    .then(() => {
-      t.equal(mock1.res.statusCode, 200)
-    })
-    .catch(error => {
-      t.notOk(error)
-    })
+  // Authorization using a ticket
+  let mock = httpMocks.createMocks({method: 'GET', url: '/?ticket=' + s.ticketCreate()})
+  let cookie = null
+  s.handle(mock.req, mock.res).then(() => {
+    t.equal(mock.res.statusCode, 200)
 
-  let mock2 = httpMocks.createMocks({method: 'FOO', url: '/foo/bar', headers: {'Accept': 'application/json'}})
-  s.handle(mock2.req, mock2.res)
-    .then(() => {
-      t.equal(mock2.res.statusCode, 400)
+    cookie = mock.res._headers["Set-Cookie"]
+    t.ok(cookie.match(/^token=/))
+  }).then(() => {
+    // Authorization using the token passed in Set-Cookie
+    let mock = httpMocks.createMocks({method: 'GET', url: '/', headers: {'Cookie': cookie}})
+    return s.handle(mock.req, mock.res)
+      .then(() => {
+        t.equal(mock.res.statusCode, 200)
+      })
+  }).then(() => {
+    // Authorization using the token but bad request
+    let mock = httpMocks.createMocks({method: 'FOO', url: '/foo/bar', headers: {'Cookie': cookie}})
+    return s.handle(mock.req, mock.res)
+      .then(() => {
+        t.equal(mock.res.statusCode, 400)
+      })
+  }).then(() => {
+    t.end()
+  }).catch(error => {
+    t.notOk(error)
+    t.end()
+  })
+})
+
+test('HostHttpServer.handle CORS', function (t) {
+  let s = new HostHttpServer()
+
+  Promise.resolve().then(() => {
+    let mock = httpMocks.createMocks({
+      method: 'GET', 
+      url: '/?ticket=' + s.ticketCreate(), 
+      headers: {'referer': 'http://localhost/some/page'}
     })
-    .catch(error => {
-      t.notOk(error)
+    return s.handle(mock.req, mock.res)
+      .then(() => {
+        t.equal(mock.res.statusCode, 200)
+        t.equal(mock.res._headers["Access-Control-Allow-Origin"], 'http://localhost')
+      })
+  }).then(() => {
+    let mock = httpMocks.createMocks({
+      method: 'GET', 
+      url: '/?ticket=' + s.ticketCreate(), 
+      headers: {'referer': 'http://evilhackers.com/some/page'}
     })
+    return s.handle(mock.req, mock.res)
+      .then(() => {
+        t.equal(mock.res.statusCode, 200)
+        t.equal(mock.res._headers["Access-Control-Allow-Origin"], undefined)
+      })
+  }).then(() => {
+    t.end()
+  })
+  .catch(error => {
+    t.notOk(error)
+    t.end()
+  })
 })
 
 test('HostHttpServer.route', function (t) {
@@ -82,13 +138,15 @@ test('HostHttpServer.route', function (t) {
   t.deepEqual(s.route('GET', '/static/some/file.js'), [s.statico, 'some/file.js'])
   t.deepEqual(s.route('GET', '/favicon.ico'), [s.statico, 'favicon.ico'])
 
-  t.deepEqual(s.route('POST', '/type'), [s.post, 'type'])
+  t.deepEqual(s.route('POST', '/type'), [s.create, 'type'])
 
-  t.deepEqual(s.route('GET', '/id'), [s.get, 'id'])
+  t.deepEqual(s.route('GET', '/address'), [s.get, 'address'])
 
-  t.deepEqual(s.route('PUT', '/id!method'), [s.put, 'id', 'method'])
+  t.deepEqual(s.route('GET', '/address$path'), [s.file, 'address', 'path'])
 
-  t.deepEqual(s.route('DELETE', '/id'), [s.delete, 'id'])
+  t.deepEqual(s.route('PUT', '/address!method'), [s.call, 'address', 'method'])
+
+  t.deepEqual(s.route('DELETE', '/address'), [s.delete, 'address'])
 
   t.deepEqual(s.route('FOO', 'foo'), null)
 
@@ -158,13 +216,13 @@ test('HostHttpServer.statico', function (t) {
     })
 })
 
-test('HostHttpServer.post', function (t) {
+test('HostHttpServer.create', function (t) {
   let h = new Host()
   let s = new HostHttpServer(h)
 
   let {req, res} = httpMocks.createMocks()
   req._setBody('')
-  s.post(req, res, 'NodeContext') // Testing this
+  s.create(req, res, 'NodeContext') // Testing this
     .then(() => {
       t.equal(res.statusCode, 200)
       let id = JSON.parse(res._getData())
@@ -182,8 +240,9 @@ test('HostHttpServer.get', function (t) {
   let s = new HostHttpServer(h)
 
   let {req, res} = httpMocks.createMocks()
-  h.post('NodeContext')
-    .then(id => {
+  h.create('NodeContext')
+    .then(result => {
+      let {id} = result
       return s.get(req, res, id) // Testing this
     })
     .then(() => {
@@ -196,16 +255,38 @@ test('HostHttpServer.get', function (t) {
     })
 })
 
-test('HostHttpServer.put', function (t) {
+test('HostHttpServer.file', function (t) {
   let h = new Host()
   let s = new HostHttpServer(h)
 
-  let {req, res} = httpMocks.createMocks({method: 'PUT', body: '{"code":"6*7"}'})
+  let {req, res} = httpMocks.createMocks()
+  h.create('FileStorer')
+    .then(result => {
+      let {id} = result
+      let filePath = path.join(__dirname, '../fixtures/test-dir-1/file-a.txt')
+      return s.file(req, res, id, filePath) // Testing this
+    })
+    .then(() => {
+      t.equal(res.statusCode, 200)
+      t.end()
+    })
+    .catch(error => {
+      t.notOk(error)
+      t.end()
+    })
+})
 
-  h.post('NodeContext')
-    .then(id => {
+test('HostHttpServer.call', function (t) {
+  let h = new Host()
+  let s = new HostHttpServer(h)
+
+  let {req, res} = httpMocks.createMocks()
+
+  h.create('NodeContext')
+    .then(result => {
+      let {id} = result
       t.ok(h._instances[id])
-      return s.put(req, res, id, 'runCode') // Testing this
+      return s.call(req, res, id, 'runCode', {code: '6*7'}) // Testing this
     })
     .then(() => {
       t.equal(res.statusCode, 200)
@@ -224,8 +305,9 @@ test('HostHttpServer.delete', function (t) {
   let s = new HostHttpServer(h)
 
   let {req, res} = httpMocks.createMocks()
-  h.post('NodeContext')
-    .then(id => {
+  h.create('NodeContext')
+    .then(result => {
+      let {id} = result
       t.ok(h._instances[id])
       s.delete(req, res, id) // Testing this
         .then(() => {

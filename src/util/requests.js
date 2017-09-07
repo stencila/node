@@ -7,6 +7,7 @@ function request_ (method, url, data) {
     headers: {
       Accept: 'application/json'
     },
+    jar: true,
     body: data,
     json: true
   })
