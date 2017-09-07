@@ -9,6 +9,8 @@ const version = require('../../package').version
 const HostHttpServer = require('./HostHttpServer')
 const { GET, POST, PUT } = require('../util/requests')
 
+const DatStorer = require('../storers/DatStorer')
+const DropboxStorer = require('../storers/DropboxStorer')
 const FileStorer = require('../storers/FileStorer')
 const GithubStorer = require('../storers/GithubStorer')
 
@@ -16,6 +18,8 @@ const NodeContext = require('../contexts/NodeContext')
 
 // Resource types available
 const TYPES = {
+  'DatStorer': DatStorer,
+  'DropboxStorer': DropboxStorer,
   'FileStorer': FileStorer,
   'GithubStorer': GithubStorer,
 
