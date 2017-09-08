@@ -126,7 +126,7 @@ class HostHttpServer {
     // Check that host is in whitelist
     if (origin) {
       let uri = url.parse(origin)
-      if (['127.0.0.1', 'localhost', 'open.stenci.la'].indexOf(uri.host) === -1) {
+      if (['127.0.0.1', 'localhost', 'open.stenci.la'].indexOf(uri.hostname) === -1) {
         origin = null
       }
     }
@@ -154,8 +154,8 @@ class HostHttpServer {
     let endpoint = this.route(request.method, uri.pathname)
     if (endpoint) {
       return new Promise((resolve, reject) => {
-        // Check if in tests and using a mock request
-        if (request._setBody) resolve(request.body)
+        // Handle mock requests used during testing
+        if (request._setBody) resolve(JSON.stringify(request.body))
         else {
           body(request, (err, body) => {
             if (err) reject(err)
@@ -165,7 +165,7 @@ class HostHttpServer {
       }).then(body => {
         let method = endpoint[0]
         let params = endpoint.slice(1)
-        let args = body && body instanceof String ? JSON.parse(body) : {}
+        let args = body ? JSON.parse(body) : {}
         return method.call(this, request, response, ...params, args)
       }).catch(error => {
         this.error500(request, response, error)
