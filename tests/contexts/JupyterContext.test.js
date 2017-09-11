@@ -2,8 +2,8 @@ const test = require('tape')
 
 const JupyterContext = require('../../src/contexts/JupyterContext')
 
-test('JupyterContext.initialize', t => {
-  JupyterContext.initialize().then(() => {
+test('JupyterContext.setup', t => {
+  JupyterContext.setup().then(() => {
     // At this stage, not a formal test cause that would need one or more Kernels to be installed
     // on this machine
     t.pass('JupyterContext.spec.kernels: ' + JSON.stringify(Object.keys(JupyterContext.spec.kernels)))
@@ -13,11 +13,11 @@ test('JupyterContext.initialize', t => {
         let c = new JupyterContext()
         
         t.pass('JupyterContext.kernel: ' + c.kernel)
-        c.start().then(() => {
+        c.initialize().then(() => {
           t.pass('JupyterContext.config: ' + JSON.stringify(c.config))
           t.ok(c._connectionFile)
           t.ok(c._process)
-          return c.stop()
+          return c.finalize()
         }).then(() => {
           t.end()
         })

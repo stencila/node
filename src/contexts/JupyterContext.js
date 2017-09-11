@@ -1,5 +1,4 @@
 const fs = require('fs')
-
 const kernelspecs = require('kernelspecs')
 const spawnteract = require('spawnteract')
 
@@ -8,27 +7,28 @@ const spawnteract = require('spawnteract')
  *
  * Note that this class only starts a new Jupyter kernel by 
  * reading what it needs to from the filesystem and running
- * a system command. Communication with the kernel is
- * done by the `JupyterContextClient` in the stencila/stencila repo
+ * a system command.
  */
 class JupyterContext {
 
   /**
-   * Initialize this context class
+   * Setup this context class
    *
    * Looks for Jupyter kernels that have been installed on the system
-   * and puts an alias in each for in `JupyterContext.spec.aliases`
+   * and puts that list in `JupyterContext.spec.kernels` so that
+   * peers know the capabilities of this "meta-context"
    * 
    * @return {object} Context specification object
    */
-  static initialize () {
-    // Create a list of kernel names and aliases 
+  static setup () {
+    // Create a list of kernel names and aliases
     return kernelspecs.findAll().then(kernelspecs => {
       JupyterContext.spec.kernels = kernelspecs
     })
   }
 
-  constructor (kernel) {
+  constructor (options = {}) {
+    let kernel = options.kernel
     const kernels = JupyterContext.spec.kernels
     const kernelNames = Object.keys(kernels)
 
@@ -46,10 +46,11 @@ class JupyterContext {
   }
 
   /**
-   * Start the context
+   * Initialize the context
+   * 
    * @return {Promise} A promise
    */
-  start () {
+  initialize () {
     if (this._process) return Promise.resolve()
     else {
       // Options to [child_process.spawn]{@link https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options}
@@ -65,16 +66,17 @@ class JupyterContext {
   }
 
   /**
-   * Stop the context
+   * Finalize the context
+   * 
    * @return {Promise} A promise
    */
-  stop () {
+  finalize () {
     if (this._process) {
       this._process.kill()
       this._process = null
     }
     if (this._connectionFile) {
-      fs.unlink(this._connectionFile)
+      fs.unlinkSync(this._connectionFile)
       this._connectionFile = null
     }
     this.config = null
@@ -82,12 +84,23 @@ class JupyterContext {
     return Promise.resolve()
   }
 
+  /**
+   * Run code within the context's global scope
+   *
+   * @param {string} code - Code to run
+   * @return {object} - A Promise resolving to object with any `errors` and `output`
+   */
+  runCode (code) {
+    return Promise.reject(new Error('Not implemented'))
+  }
+
 }
 
 JupyterContext.spec = {
   name: 'JupyterContext',
-  client: 'JupyterContextClient',
-  aliases: ['jupyter']
+  base: 'JupyterContextClient',
+  aliases: ['jupyter'],
+  kernels: {}
 }
 
 module.exports = JupyterContext
