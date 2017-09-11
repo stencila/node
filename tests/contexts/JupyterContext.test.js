@@ -1,6 +1,6 @@
 const test = require('tape')
 
-const JupyterContext = require('../../src/jupyter-context/JupyterContext')
+const JupyterContext = require('../../src/contexts/JupyterContext')
 
 test('JupyterContext.initialize', t => {
   JupyterContext.initialize().then(() => {
