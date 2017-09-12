@@ -20,6 +20,10 @@ class HostHttpServer {
     this._host = host
     this._address = address
     this._port = port
+
+    let auth = process.env.STENCILA_AUTHORIZATION
+    if (auth === 'true') authorization = true
+    else if (auth === 'false') authorization = false
     this._authorization = authorization
 
     this._server = null
@@ -346,7 +350,9 @@ class HostHttpServer {
    * @return {string} A ticket
    */
   ticketedUrl () {
-    return this.url + '/?ticket=' + this.ticketCreate()
+    let url = this.url 
+    if (this._authorization) url += '/?ticket=' + this.ticketCreate()
+    return url
   }
 
   /**
