@@ -347,7 +347,7 @@ class Host {
               if (error) throw error
             })
           })
-          let urls = Object.values(this._servers).map(server => server.ticketedUrl()).join(', ')
+          let urls = Object.keys(this._servers).map(name => this._servers[name].ticketedUrl()).join(', ')
           console.log('Host has started at: ' + urls) // eslint-disable-line no-console
 
           // Discover other hosts
@@ -457,7 +457,7 @@ class Host {
    * @return {array} Array of strings
    */
   get urls () {
-    return Object.values(this._servers).map(server => server.url)
+    return Object.keys(this._servers).map(name => this._servers[name].url)
   }
 
   /**
