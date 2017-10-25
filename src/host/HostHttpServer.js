@@ -127,12 +127,11 @@ class HostHttpServer {
       origin = `${uri.protocol}//${uri.host}`
     }
 
-    // Check that host is in whitelist
+    // Check that origin URL is in whitelist
     if (origin) {
-      let uri = url.parse(origin)
-      if (['127.0.0.1', 'localhost', 'open.stenci.la'].indexOf(uri.hostname) === -1) {
-        origin = null
-      }
+      let host = url.parse(origin).hostname
+      let match = host.match(/^((127\.0\.0\.1)|(localhost)|(([^.]+\.)?stenci\.la))$/)
+      if (!match) origin = null
     }
 
     // If an origin has been found and is authorized set CORS headers
