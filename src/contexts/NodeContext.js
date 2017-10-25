@@ -7,7 +7,7 @@ class NodeContext extends JsContext {}
 
 NodeContext.spec = {
   name: 'NodeContext',
-  base: 'Context',
+  client: 'ContextHttpClient',
   aliases: ['js', 'node']
 }
 
