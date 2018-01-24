@@ -96,10 +96,21 @@ test('HostHttpServer.handle authorized', function (t) {
   })
 })
 
-test('HostHttpServer.handle CORS', function (t) {
+test('HostHttpServer.handle CORS passes', function (t) {
   let s = new HostHttpServer()
 
   Promise.resolve().then(() => {
+    let mock = httpMocks.createMocks({
+      method: 'GET', 
+      url: '/?ticket=' + s.ticketCreate(), 
+      headers: {'origin': 'http://127.0.0.1'}
+    })
+    return s.handle(mock.req, mock.res)
+      .then(() => {
+        t.equal(mock.res.statusCode, 200)
+        t.equal(mock.res._headers["Access-Control-Allow-Origin"], 'http://127.0.0.1')
+      })
+  }).then(() => {
     let mock = httpMocks.createMocks({
       method: 'GET', 
       url: '/?ticket=' + s.ticketCreate(), 
@@ -114,7 +125,41 @@ test('HostHttpServer.handle CORS', function (t) {
     let mock = httpMocks.createMocks({
       method: 'GET', 
       url: '/?ticket=' + s.ticketCreate(), 
+      headers: {'referer': 'http://builds.stenci.la'}
+    })
+    return s.handle(mock.req, mock.res)
+      .then(() => {
+        t.equal(mock.res.statusCode, 200)
+        t.equal(mock.res._headers["Access-Control-Allow-Origin"], 'http://builds.stenci.la')
+      })
+  }).then(() => {
+    t.end()
+  })
+  .catch(error => {
+    t.notOk(error)
+    t.end()
+  })
+})
+
+test('HostHttpServer.handle CORS fails', function (t) {
+  let s = new HostHttpServer()
+
+  Promise.resolve().then(() => {
+    let mock = httpMocks.createMocks({
+      method: 'GET', 
+      url: '/?ticket=' + s.ticketCreate(), 
       headers: {'referer': 'http://evilhackers.com/some/page'}
+    })
+    return s.handle(mock.req, mock.res)
+      .then(() => {
+        t.equal(mock.res.statusCode, 200)
+        t.equal(mock.res._headers["Access-Control-Allow-Origin"], undefined)
+      })
+  }).then(() => {
+    let mock = httpMocks.createMocks({
+      method: 'GET', 
+      url: '/?ticket=' + s.ticketCreate(), 
+      headers: {'origin': 'http://spoof-stenci.la/'}
     })
     return s.handle(mock.req, mock.res)
       .then(() => {
