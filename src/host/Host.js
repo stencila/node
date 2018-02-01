@@ -71,7 +71,7 @@ class Host {
   /**
    * Get the current user's Stencila data directory
    */
-  userDir () {
+  static userDir () {
     // TODO: isn't there a module helping us to find OS paths?
     // maybe something which works like electron's app.getPath()
     // https://github.com/electron/electron/blob/master/docs/api/app.md#appgetpathname
@@ -80,7 +80,7 @@ class Host {
       case 'darwin':
         return path.join(process.env.HOME, 'Library', 'Application Support', 'Stencila')
       case 'linux':
-        return path.join(process.env.HOME, '.local', 'share', 'stencila')
+        return path.join(process.env.HOME, '.stencila')
       case 'win32':
         return path.join(process.env.APPDATA, 'Stencila')
       default:
@@ -91,7 +91,7 @@ class Host {
   /**
    * Get the current Stencila temporary directory
    */
-  tempDir () {
+  static tempDir () {
     return path.join(os.tmpdir(), 'stencila')
   }
 
@@ -149,14 +149,14 @@ class Host {
   }
 
   /**
-   * Install this Stencila Host on this machine.
+   * Register this Stencila Host on this machine.
    *
-   * Installation of a host involves creating a file `node.json` inside of
+   * Registering a host involves creating a file `node.json` inside of
    * the user's Stencila data (see `userDir()`) directory which describes
    * the capabilities of this host.
    */
-  install () {
-    let dir = path.join(this.userDir(), 'hosts')
+  register () {
+    let dir = path.join(Host.userDir(), 'hosts')
     mkdirp(dir, error => {
       if (error) throw error
       fs.writeFile(path.join(dir, 'node.json'), JSON.stringify(this.manifest(false), null, '  '), error => {
@@ -340,7 +340,7 @@ class Host {
           this._heartbeat = new Date()
           
           // Register as a running host by creating a run file
-          let file = path.join(this.tempDir(), 'hosts', this.id + '.json')
+          let file = path.join(Host.tempDir(), 'hosts', this.id + '.json')
           mkdirp(path.dirname(file), error => {
             if (error) throw error
             fs.writeFile(file, JSON.stringify(this.manifest(), null, '  '), { mode: '600' }, error => {
@@ -388,7 +388,7 @@ class Host {
         delete this._servers[type]
         server.stop().then(() => {
           // Deregister as a running host by removing run file
-          let file = path.join(this.tempDir(), 'hosts', this.id + '.json')
+          let file = path.join(Host.tempDir(), 'hosts', this.id + '.json')
           fs.unlink(file, () => {})
           console.log('Host has stopped.') // eslint-disable-line no-console
           resolve()
@@ -545,9 +545,10 @@ class Host {
       })
     }
 
-    // Discover active hosts first
-    discoverDir(path.join(this.tempDir(), 'hosts'))
-    discoverDir(path.join(this.userDir(), 'hosts'))
+    // Discover active hosts first,...
+    discoverDir(path.join(Host.tempDir(), 'hosts'))
+    // ...then inactive hosts
+    discoverDir(path.join(Host.userDir(), 'hosts'))
 
     if (interval) setTimeout(() => this.discover(interval), interval*1000)
   }
