@@ -4,10 +4,10 @@ const fs = require('fs')
 const mkdirp = require('mkdirp')
 const path = require('path')
 const os = require('os')
+const request = require('request-promise')
 
 const version = require('../../package').version
 const HostHttpServer = require('./HostHttpServer')
-const { GET, POST, PUT } = require('../util/requests')
 
 const DatStorer = require('../storers/DatStorer')
 const DropboxStorer = require('../storers/DropboxStorer')
@@ -86,6 +86,13 @@ class Host {
       default:
         return path.join(process.env.HOME, 'stencila')
     }
+  }
+
+  /**
+   * Is the user running this process a super user?
+   */
+  static isSuperUser () {
+    return (process.getuid && process.getuid() === 0) || process.env.SUDO_UID
   }
 
   /**
@@ -599,5 +606,31 @@ class Proxy {
   }
 
 }
+
+function request_ (method, url, data) {
+  return request({
+    method: method,
+    uri: url,
+    headers: {
+      Accept: 'application/json'
+    },
+    jar: true,
+    body: data,
+    json: true
+  })
+}
+
+function GET (url) {
+  return request_('GET', url)
+}
+
+function POST (url, data) {
+  return request_('POST', url, data)
+}
+
+function PUT (url, data) {
+  return request_('PUT', url, data)
+}
+
 
 module.exports = Host

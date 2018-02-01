@@ -9,8 +9,6 @@ const url = require('url')
 const pathIsInside = require('path-is-inside')
 const httpShutdown = require('http-shutdown')
 
-const isSuperUser = require('../util/isSuperUser')
-
 /**
  * A HTTP server for a `Host`
  */
@@ -48,7 +46,7 @@ class HostHttpServer {
   start () {
     return new Promise((resolve, reject) => {
       if (!this._server) {
-        if (isSuperUser()) {
+        if (require('../host/Host').isSuperUser()) {
           return reject(new Error('Serving host as a super user is dangerous and is not allowed'))
         }
 

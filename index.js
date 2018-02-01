@@ -11,8 +11,8 @@ module.exports = {
   version: version,
   
   host: host,
-  install: host.install,
-  start: host.start,
-  stop: host.stop,
-  run: host.run
+  register: host.register.bind(host),
+  start: host.start.bind(host),
+  stop: host.stop.bind(host),
+  run: host.run.bind(host)
 }
