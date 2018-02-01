@@ -11,7 +11,11 @@ module.exports = {
   version: version,
   
   host: host,
+
   register: host.register.bind(host),
+  
+  convert: host.convert.bind(host),
+
   start: host.start.bind(host),
   stop: host.stop.bind(host),
   run: host.run.bind(host)

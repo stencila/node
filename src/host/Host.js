@@ -9,11 +9,16 @@ const request = require('request-promise')
 const version = require('../../package').version
 const HostHttpServer = require('./HostHttpServer')
 
+// Storers
 const DatStorer = require('../storers/DatStorer')
 const DropboxStorer = require('../storers/DropboxStorer')
 const FileStorer = require('../storers/FileStorer')
 const GithubStorer = require('../storers/GithubStorer')
 
+// Converters
+const converters = require('stencila-convert')
+
+// Contexts
 const NodeContext = require('../contexts/NodeContext')
 
 // Resource types available
@@ -324,6 +329,16 @@ class Host {
         reject(new Error(`Unknown instance: ${id}`))
       }
     })
+  }
+
+  /**
+   * Convert a file/folder between formats
+   *
+   * Currently this is a simple wrapper around teh convert function
+   * from the `stencila-convert` package.
+   */
+  convert (pathFrom, pathTo) {
+    return converters.convert(pathFrom, pathTo)
   }
 
   /**
