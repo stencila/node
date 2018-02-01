@@ -54,7 +54,7 @@ class GithubStorer extends FileStorer {
 GithubStorer.spec = {
   name: 'GithubStorer',
   base: 'Storer',
-  aliases: ['github']
+  protocol: ['github']
 }
 
 module.exports = GithubStorer

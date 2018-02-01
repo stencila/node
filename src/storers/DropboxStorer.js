@@ -43,7 +43,7 @@ class DropboxStorer extends FileStorer {
 DropboxStorer.spec = {
   name: 'DropboxStorer',
   base: 'Storer',
-  aliases: ['github']
+  protocol: ['dropbox']
 }
 
 module.exports = DropboxStorer

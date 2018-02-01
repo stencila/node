@@ -83,7 +83,7 @@ class DatStorer extends FileStorer {
 DatStorer.spec = {
   name: 'DatStorer',
   base: 'Storer',
-  aliases: ['dat']
+  protocol: ['dat']
 }
 
 module.exports = DatStorer

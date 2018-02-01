@@ -77,7 +77,7 @@ class FileStorer {
 FileStorer.spec = {
   name: 'FileStorer',
   base: 'Storer',
-  aliases: ['file']
+  protocol: ['file']
 }
 
 module.exports = FileStorer
