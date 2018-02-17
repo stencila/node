@@ -13,7 +13,7 @@ class DatStorer extends FileStorer {
   constructor (options = {}) {
     // Make the folder for dats to live in if it doesn't
     // exist yet
-    const datsFolder = path.join(require('../host/singletonHost').userDir(), 'stores', 'dat')
+    const datsFolder = path.join(require('../host/Host').userDir(), 'stores', 'dat')
     if (!fs.existsSync(datsFolder)) mkdirp.sync(datsFolder)
 
     const key = options.path
@@ -83,7 +83,7 @@ class DatStorer extends FileStorer {
 DatStorer.spec = {
   name: 'DatStorer',
   base: 'Storer',
-  aliases: ['dat']
+  protocol: ['dat']
 }
 
 module.exports = DatStorer
