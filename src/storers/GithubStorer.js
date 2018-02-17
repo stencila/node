@@ -18,7 +18,7 @@ class GithubStorer extends FileStorer {
 
     const repoDir = path.join(require('../host/Host').userDir(), 'stores', 'github', repo, ref)
 
-    super({ path: path.join(repoDir, path_ || '')})
+    super(path.join(repoDir, path_ || ''))
     this._repoDir = repoDir
     this._url = `https://github.com/${repo}/tarball/${ref}`
     this._initialized = false
@@ -51,10 +51,6 @@ class GithubStorer extends FileStorer {
 
 }
 
-GithubStorer.spec = {
-  name: 'GithubStorer',
-  base: 'Storer',
-  protocol: ['github']
-}
+GithubStorer.protocol = 'github'
 
 module.exports = GithubStorer

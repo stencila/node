@@ -6,51 +6,25 @@ const untildify = require('untildify')
 
 class FileStorer {
 
-  constructor (options = {}) {
-    let path_ = options.path || '/'
-
-    path_ = untildify(path_)
-    let isdir
-    if (fs.existsSync(path_)) {
-      isdir = fs.lstatSync(path_).isDirectory()
-    } else {
-      isdir = path.extname(path_) === ''
-    }
-    this._dir = isdir ? path_ : path.dirname(path_)
-    this._main = isdir ? null : path.basename(path_)
+  constructor (path) {
+    this._dir = untildify(path)
   }
 
   initialize () {
-    return Promise.resolve()
+    return new Pormise ((resolve, reject) => {
+      if (!fs.existsSync(this._dir) || !fs.lstatSync(this._path_).isDirectory())
+        return reject(new Error("Directory does not exist"))
+      resolve()
+    })
   }
 
   getDirectory() {
     return Promise.resolve(this._dir)
   }
 
-  getMain() {
-    return Promise.resolve(this._main)
-  }
-
-  getFiles() {
+  readdir() {
     return this.initialize().then(() => {
       return fs.readdir(this._dir)
-    })
-  }
-
-  getInfo() {
-    return this.getFiles().then((files) => {
-      return {
-        dir: this._dir,
-        main: this._main,
-        files: files
-      }
-    })    
-  }
-
-  filePath (path_) {
-    return this.initialize().then(() => {
-      return path.join(this._dir, path_)
     })
   }
 
@@ -66,7 +40,7 @@ class FileStorer {
     })
   }
 
-  deleteFile(path_) {
+  unlink(path_) {
     return this.initialize().then(() => {
       return fs.unlink(path.join(this._dir, path_))
     })
@@ -74,10 +48,6 @@ class FileStorer {
 
 }
 
-FileStorer.spec = {
-  name: 'FileStorer',
-  base: 'Storer',
-  protocol: ['file']
-}
+FileStorer.protocol = 'file'
 
 module.exports = FileStorer

@@ -23,11 +23,6 @@ const NodeContext = require('../contexts/NodeContext')
 
 // Resource types available
 const TYPES = {
-  'DatStorer': DatStorer,
-  'DropboxStorer': DropboxStorer,
-  'FileStorer': FileStorer,
-  'GithubStorer': GithubStorer,
-
   'NodeContext': NodeContext
 }
 // Resource types specifications

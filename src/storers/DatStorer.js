@@ -17,7 +17,7 @@ class DatStorer extends FileStorer {
     if (!fs.existsSync(datsFolder)) mkdirp.sync(datsFolder)
 
     const key = options.path
-    super({path: path.join(datsFolder, key)})
+    super(path.join(datsFolder, key))
 
     /**
      * The dat's key as a hex string
@@ -80,10 +80,6 @@ class DatStorer extends FileStorer {
   }
 }
 
-DatStorer.spec = {
-  name: 'DatStorer',
-  base: 'Storer',
-  protocol: ['dat']
-}
+DatStorer.protocol = 'dat'
 
 module.exports = DatStorer
