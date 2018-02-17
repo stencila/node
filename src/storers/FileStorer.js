@@ -12,20 +12,22 @@ class FileStorer {
 
   initialize () {
     return new Promise ((resolve, reject) => {
-      if (!fs.existsSync(this._dir) || !fs.lstatSync(this._path_).isDirectory()) {
+      if (!fs.existsSync(this._dir) || !fs.lstatSync(this._dir).isDirectory()) {
         return reject(new Error("Directory does not exist"))
       }
       resolve()
     })
   }
 
-  getDirectory() {
-    return Promise.resolve(this._dir)
+  getDirectory () {
+    return this.initialize().then(() => {
+      return Promise.resolve(this._dir)
+    })
   }
 
-  readdir() {
+  readdir (path_) {
     return this.initialize().then(() => {
-      return fs.readdir(this._dir)
+      return fs.readdir(path.join(this._dir, path_))
     })
   }
 
