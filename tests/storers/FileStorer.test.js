@@ -1,7 +1,7 @@
 const path = require('path')
 const test = require('tape')
 const untildify = require('untildify')
-const testPromise = require('../helpers.js')
+const testPromise = require('../helpers.js').testPromise
 
 const FileStorer = require('../../src/storers/FileStorer')
 

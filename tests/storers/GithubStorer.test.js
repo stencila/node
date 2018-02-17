@@ -1,27 +1,24 @@
 const fs = require('fs')
 const path = require('path')
 const test = require('tape')
+const testPromise = require('../helpers.js').testPromise
 
 const Host = require('../../src/host/Host')
 
 const GithubStorer = require('../../src/storers/GithubStorer')
-let s = new GithubStorer({path: 'stencila/test/README.md'})
+let s = new GithubStorer({path: 'stencila/test'})
 
-test.skip('GithubStorer.getInfo', t => {  
-  s.getInfo().then(info => {
+testPromise('GithubStorer.readdir', t => {  
+  return s.readdir('.').then(entries => {
     let dir = path.join(Host.userDir(),'stores/github/stencila/test/master')
     t.ok(fs.existsSync(dir))
-    t.deepEqual(info, {
-      dir: dir,
-      main: 'README.md',
-      files: [ '.travis.yml', 'README.md', 'document.md', 'sub' ]
-    })
+    t.deepEqual(entries, [ '.travis.yml', 'README.md', 'document.md', 'sub' ])
     t.end()
   })
 })
 
-test.skip('GithubStorer.readFile', t => {  
-  s.readFile('document.md').then(content => {
+testPromise('GithubStorer.readFile', t => {  
+  return s.readFile('document.md').then(content => {
     t.equal(content, 'Hello world')
     t.end()
   })

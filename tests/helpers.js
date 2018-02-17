@@ -10,4 +10,6 @@ var testPromise = (name, f) => {
   })
 }
 
-module.exports = testPromise
+module.exports = {
+  testPromise
+}
