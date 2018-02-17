@@ -1,6 +1,5 @@
 const fs = require('fs')
 const path = require('path')
-const test = require('tape')
 const testPromise = require('../helpers.js').testPromise
 
 const Host = require('../../src/host/Host')

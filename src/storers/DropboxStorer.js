@@ -7,10 +7,7 @@ const FileStorer = require('./FileStorer')
 
 class DropboxStorer extends FileStorer {
 
-  constructor (options) {
-    let path_ = options.path
-    if (options.version) throw new Error('It is invalid to specify a version with the dropbox:// protocol')
-
+  constructor (path_) {
     super(path.join(require('../host/Host').userDir(), 'stores', 'dropbox', path_))
     this._url = `https://dropbox.com/sh/${path_}?dl=1`
     this._initialized = false

@@ -32,6 +32,10 @@ for (let name of Object.keys(TYPES)) {
 }
 
 let STORERS = [ DatStorer, DropboxStorer, FileStorer, GithubStorer ]
+let PROTOCOL_STORERS = {}
+for (let storer of STORERS) {
+  PROTOCOL_STORERS[storer.protocol] = storer
+}
 
 /**
  * A `Host` allows you to create, get, run methods of, and delete instances of various types.
@@ -583,6 +587,16 @@ class Host {
         })
       })
     })
+  }
+
+  open (address) {
+    var match = address.match(/^([^:]+):\/\/(.*)/)
+    if (!match) throw new Error('Location does not appear to be of the form protocol://...')
+    let protocol = match[1]
+    let path_ = match[2]
+    let storer = PROTOCOL_STORERS[protocol]
+    if (!storer) throw new Error("Unknown protocol")
+    return new storer(path_).readdir('.') // TODO output required data
   }
 
 }

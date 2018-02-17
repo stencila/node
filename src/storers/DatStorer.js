@@ -10,13 +10,12 @@ const FileStorer = require('./FileStorer')
  */
 class DatStorer extends FileStorer {
 
-  constructor (options = {}) {
+  constructor (key) {
     // Make the folder for dats to live in if it doesn't
     // exist yet
     const datsFolder = path.join(require('../host/Host').userDir(), 'stores', 'dat')
     if (!fs.existsSync(datsFolder)) mkdirp.sync(datsFolder)
 
-    const key = options.path
     super(path.join(datsFolder, key))
 
     /**

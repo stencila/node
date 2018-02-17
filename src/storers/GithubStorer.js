@@ -9,12 +9,12 @@ const FileStorer = require('./FileStorer')
 
 class GithubStorer extends FileStorer {
 
-  constructor (options) {
-    var match = options.path.match(/^([^/]+)\/([^/]+)(\/(.+))?/)
+  constructor (fullPath) {
+    var match = fullPath.match(/^([^/]+)\/([^/]+)\/([^/]+)(\/(.+))?/)
     if (!match) throw new Error('Location does not appear to be valid for the github:// protocol')
     let repo = `${match[1]}/${match[2]}`
-    let path_ = match[3]
-    let ref = options.version || 'master'
+    let ref = match[3]
+    let path_ = match[4]
 
     const repoDir = path.join(require('../host/Host').userDir(), 'stores', 'github', repo, ref)
 
