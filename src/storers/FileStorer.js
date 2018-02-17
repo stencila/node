@@ -11,9 +11,10 @@ class FileStorer {
   }
 
   initialize () {
-    return new Pormise ((resolve, reject) => {
-      if (!fs.existsSync(this._dir) || !fs.lstatSync(this._path_).isDirectory())
+    return new Promise ((resolve, reject) => {
+      if (!fs.existsSync(this._dir) || !fs.lstatSync(this._path_).isDirectory()) {
         return reject(new Error("Directory does not exist"))
+      }
       resolve()
     })
   }

@@ -1,4 +1,3 @@
-const path = require('path')
 const test = require('tape')
 var httpMocks = require('node-mocks-http');
 
@@ -299,27 +298,6 @@ test('HostHttpServer.get', function (t) {
       t.end()
     })
 })
-
-// test('HostHttpServer.file', function (t) {
-//   let h = new Host()
-//   let s = new HostHttpServer(h)
-
-//   let {req, res} = httpMocks.createMocks()
-//   h.create('FileStorer')
-//     .then(result => {
-//       let {id} = result
-//       let filePath = path.join(__dirname, '../fixtures/test-dir-1/file-a.txt')
-//       return s.file(req, res, id, filePath) // Testing this
-//     })
-//     .then(() => {
-//       t.equal(res.statusCode, 200)
-//       t.end()
-//     })
-//     .catch(error => {
-//       t.notOk(error)
-//       t.end()
-//     })
-// })
 
 test('HostHttpServer.call', function (t) {
   let h = new Host()

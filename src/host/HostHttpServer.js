@@ -288,19 +288,6 @@ class HostHttpServer {
   }
 
   /**
-   * Handle a request for a file from a Storer instance
-   *
-   * An alternative method for getting a file is to call the `readFile` method
-   * e.g. `PUT fileStore1!readFile`. But that returns `application/json` content. 
-   * This uses the `send` package to set `Content-Type`, `Last-Modified` and other headers properly.
-   */
-  file (request, response, id, path) {
-    return this._host.file(id, path).then(path => {
-      send(request, path).pipe(response)
-    })
-  }
-
-  /**
    * Handle a request to delete an instance
    */
   delete (request, response, id) {

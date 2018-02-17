@@ -31,6 +31,7 @@ for (let name of Object.keys(TYPES)) {
   TYPES_SPECS[name] = TYPES[name].spec
 }
 
+let STORERS = [ DatStorer, DropboxStorer, FileStorer, GithubStorer ]
 
 /**
  * A `Host` allows you to create, get, run methods of, and delete instances of various types.
@@ -289,21 +290,6 @@ class Host {
           throw new Error(`Unknown method: ${method}`)
         }
       }
-    })
-  }
-
-  /**
-   * Get the abolute path for a file from an instance (usually a Storer)
-   *
-   * Used for sending files to clients
-   * 
-   * @param  {string} id      ID of instance
-   * @param  {string} path    Path to file within instance
-   * @return {string}         Absolute file path
-   */
-  file (id, path) {
-    return this.resolve(id).then(instance => {
-      return instance.filePath(path)
     })
   }
 

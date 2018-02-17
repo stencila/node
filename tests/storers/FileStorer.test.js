@@ -1,4 +1,3 @@
-const path = require('path')
 const test = require('tape')
 const untildify = require('untildify')
 
