@@ -1,6 +1,6 @@
 {
   "name": "stencila-node",
-  "version": "0.28.3",
+  "version": "0.28.4",
   "description": "Stencila for Node.js",
   "main": "index.js",
   "directories": {
@@ -68,7 +68,7 @@
     "request-promise": "^4.2.1",
     "rimraf": "2.6.1",
     "send": "^0.15.4",
-    "stencila": "0.27.10",
+    "stencila": "0.28.0-preview.4",
     "stencila-convert": "^0.29.3",
     "strip-dirs": "^2.0.0",
     "tar-fs": "^1.15.3",
