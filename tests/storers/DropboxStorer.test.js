@@ -5,7 +5,7 @@ const test = require('tape')
 const Host = require('../../src/host/Host')
 
 const DropboxStorer = require('../../src/storers/DropboxStorer')
-let s = new DropboxStorer({path: 'el77xzcpr9uqxb1/AABJIkDNXo_-sKnrUtQvCxC4a'})
+let s = new DropboxStorer('el77xzcpr9uqxb1/AABJIkDNXo_-sKnrUtQvCxC4a')
 
 test.skip('DropboxStorer.getInfo', t => {  
   s.getInfo().then(info => {

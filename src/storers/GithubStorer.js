@@ -9,18 +9,20 @@ const FileStorer = require('./FileStorer')
 
 class GithubStorer extends FileStorer {
 
-  constructor (fullPath) {
-    var match = fullPath.match(/^([^/]+)\/([^/]+)\/([^/]+)(\/(.+))?/)
+  constructor (loction) {
+    var match = loction.match(/^([^/]+)\/([^/@]+)(\/([^@]+))?(@(.+))?/)
     if (!match) throw new Error('Location does not appear to be valid for the github:// protocol')
-    let repo = `${match[1]}/${match[2]}`
-    let ref = match[3]
-    let path_ = match[4]
+    const user = match[1]
+    const repo = match[2]
+    const dir = match[4] || ''
+    const ref = match[6] || 'master'
 
-    const repoDir = path.join(require('../host/Host').userDir(), 'stores', 'github', repo, ref)
+    const repoDir = path.join(require('../host/Host').userDir(), 'stores', 'github', user, repo, ref)
+    const locationDir = path.join(repoDir, dir)
 
-    super(path.join(repoDir, path_ || ''))
+    super(locationDir)
     this._repoDir = repoDir
-    this._url = `https://github.com/${repo}/tarball/${ref}`
+    this._url = `https://github.com/${user}/${repo}/tarball/${ref}`
     this._initialized = false
   }
 

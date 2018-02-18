@@ -5,7 +5,7 @@ const testPromise = require('../helpers.js').testPromise
 const Host = require('../../src/host/Host')
 
 const GithubStorer = require('../../src/storers/GithubStorer')
-let s = new GithubStorer({path: 'stencila/test'})
+let s = new GithubStorer('stencila/test@master')
 
 testPromise('GithubStorer.readdir', t => {  
   return s.readdir('.').then(entries => {
