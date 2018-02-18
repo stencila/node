@@ -4,6 +4,7 @@ const fs = require('fs')
 const mkdirp = require('mkdirp')
 const path = require('path')
 const os = require('os')
+const readArchive = require('dar-server/src/readArchive')
 const request = require('request-promise')
 
 const version = require('../../package').version
@@ -593,10 +594,15 @@ class Host {
     var match = address.match(/^([^:]+):\/\/(.*)/)
     if (!match) throw new Error('Location does not appear to be of the form protocol://...')
     let protocol = match[1]
-    let path_ = match[2]
-    let storer = PROTOCOL_STORERS[protocol]
-    if (!storer) throw new Error("Unknown protocol")
-    return new storer(path_).readdir('.') // TODO output required data
+    let path = match[2]
+    
+    let Storer = PROTOCOL_STORERS[protocol]
+    if (!Storer) throw new Error("Unknown protocol")
+    
+    const storer = new Storer(path)
+    return storer.initialize().then((path) => {
+      return readArchive(path) 
+    })
   }
 
 }

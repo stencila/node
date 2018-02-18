@@ -39,7 +39,7 @@ class GithubStorer extends FileStorer {
         })
         pump(source, gunzip(), sink, () => {
           this._initialized = true
-          resolve()
+          resolve(this._dir)
         })
       }
     })

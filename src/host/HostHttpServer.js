@@ -188,8 +188,8 @@ class HostHttpServer {
     if (verb === 'OPTIONS') return [this.options]
 
     if (path === '/') return [this.home]
-    if (path.substring(0, 6) === '/open/') return [this.open, path.substring(6)]
     if (path === '/favicon.ico') return [this.statico, 'favicon.ico']
+    if (path.substring(0, 6) === '/open/') return [this.open, path.substring(6)]
     if (path.substring(0, 8) === '/static/') return [this.statico, path.substring(8)]
 
     let matches = path.match(/^\/([^!$]+)((!|\$)([^?]+))?.*$/)
