@@ -109,20 +109,31 @@ class Host {
   }
 
   /**
-   * Get the environment of this host including the version of Node.js and versions
-   * of installed packages (local and globals)
+   * Get the environments supported by this host
    * 
-   * @return {Object} The environment as a object
+   * @return {Promise} Resolves to a list of environment specs
    */
-  environ () {
-    // TODO package names and versions
-    // See for example https://github.com/stencila/r/blob/8575f43096b6472fcc039e513a5f82a274864241/R/host.R#L91
-    return {
-      version: process.version,
-      platform: process.platform,
-      arch: process.arch,
-      packages: {}
+  environs () {
+    // The `STENCILA_ENVIRON` env var may be set if inside
+    // a well defined environment e.g. stencila/core@1.2
+    const id = process.env.STENCILA_ENVIRON || 'local'
+    let name = id
+    let version = null
+    const match = id.match(/([^@]+)+@(.+)/)
+    if (match) {
+      name = match[1]
+      version = match[2]
     }
+    return Promise.resolve([{
+      id: id,
+      name: name,
+      version: version,
+      servers: {
+        http: {
+          path: '/'
+        }
+      }
+    }])
   }
 
   /**
@@ -141,24 +152,24 @@ class Host {
         version: version
       },
       run: [process.execPath, '-e', "require('stencila-node').run()"],
-      types: TYPES_SPECS,
-      // For compatability with 0.27 API
-      schemes: {
-        new: TYPES_SPECS
-      }
+      types: TYPES_SPECS
     }
     if (this._started) {
       manifest = Object.assign(manifest, {
         id: this.id,
-        process: process.pid,
+        process: {
+          pid: process.pid,
+          name: process.title,
+          version: process.version,
+          platform: process.platform,
+          arch: process.arch
+        },
         servers: this.servers,
         instances: Object.keys(this._instances),
-        peers: this._peers,
-        // For compatability with 0.27 API
-        urls: this.urls
+        peers: this._peers
       })
     }
-    return manifest
+    return Promise.resolve(manifest)
   }
 
   /**
@@ -530,9 +541,9 @@ class Host {
               return  
             }
             // If the manifest defines a `process` then check that process is actually running
-            if (manifest.process) {
+            if (manifest.process && manifest.process.pid) {
               try {
-                process.kill(manifest.process, 0)
+                process.kill(manifest.process.pid, 0)
               } catch (exception) {
                 continue
               }

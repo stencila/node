@@ -14,7 +14,7 @@ const httpShutdown = require('http-shutdown')
  */
 class HostHttpServer {
 
-  constructor (host, address = '127.0.0.1', port = 2000, authorization = true) {
+  constructor (host, address = '127.0.0.1', port = 2000, authorization = true, ticketsReuse = true) {
     this._host = host
     this._address = address
     this._port = port
@@ -26,6 +26,7 @@ class HostHttpServer {
 
     this._server = null
     this._tickets = []
+    this._ticketsReuse = ticketsReuse
     this._tokens = []
   }
 
@@ -95,7 +96,10 @@ class HostHttpServer {
 
     // Check authorization. Note that browsers do not send credentials (e.g. cookies)
     // in OPTIONS requests
-    if (this._authorization && request.method !== 'OPTIONS') {
+    let requiresAuthorization = true
+    if (!this._authorization) requiresAuthorization = false
+    else if (request.method === 'OPTIONS' || request.url === '/environs') requiresAuthorization = false
+    if (requiresAuthorization) {
       // Check for ticket
       let ticket = uri.query['ticket']
       if(ticket) {
@@ -109,7 +113,8 @@ class HostHttpServer {
       } else {
         // Check for token
         let token = cookie.parse(request.headers.cookie || '').token
-        if (!token | !this.tokenCheck(token)) return this.error403(request, response, ': invalid token : ' + token)
+        if (!token) return this.error401(request, response, ': authorization ticket or token required')
+        if (!this.tokenCheck(token)) return this.error403(request, response, ': invalid token : ' + token)
       }
     }
 
@@ -189,8 +194,11 @@ class HostHttpServer {
 
     if (path === '/') return [this.home]
     if (path === '/favicon.ico') return [this.statico, 'favicon.ico']
-    if (path.substring(0, 6) === '/open/') return [this.open, path.substring(6)]
     if (path.substring(0, 8) === '/static/') return [this.statico, path.substring(8)]
+
+    if (path.substring(0, 9) === '/environs') return [this.environs, path.substring(9)]
+    if (path.substring(0, 9) === '/manifest') return [this.manifest, path.substring(9)]
+    if (path.substring(0, 6) === '/open/') return [this.open, path.substring(6)]
 
     let matches = path.match(/^\/([^!$]+)((!|\$)([^?]+))?.*$/)
     if (matches) {
@@ -220,25 +228,7 @@ class HostHttpServer {
    * Handle a request to `home`
    */
   home (request, response) {
-    if (!acceptsJson(request)) {
-      return this.statico(request, response, 'index.html')
-    } else {
-      return Promise.resolve().then(() => {
-        let manifest = this._host.manifest()
-        response.setHeader('Content-Type', 'application/json')
-        response.end(JSON.stringify(manifest))
-      })
-    }
-  }
-
-  /**
-   * Handle a request to `open`
-   */
-  open (request, response, address) {
-    return this._host.open(address).then(archive => {
-      response.setHeader('Content-Type', 'application/json')
-      response.end(JSON.stringify(archive))
-    })
+    return this.statico(request, response, 'index.html')
   }
 
   /**
@@ -261,6 +251,36 @@ class HostHttpServer {
           .on('end', resolve)
           .pipe(response)
       }
+    })
+  }
+
+  /**
+   * Handle a request to `environs`
+   */
+  environs (request, response) {
+    this._host.environs().then(environs => {
+      response.setHeader('Content-Type', 'application/json')
+      response.end(JSON.stringify(environs))
+    })
+  }
+
+  /**
+   * Handle a request to `manifest`
+   */
+  manifest (request, response) {
+    this._host.manifest().then(manifest => {
+      response.setHeader('Content-Type', 'application/json')
+      response.end(JSON.stringify(manifest))
+    })
+  }
+
+  /**
+   * Handle a request to `open`
+   */
+  open (request, response, address) {
+    return this._host.open(address).then(archive => {
+      response.setHeader('Content-Type', 'application/json')
+      response.end(JSON.stringify(archive))
     })
   }
 
@@ -331,7 +351,7 @@ class HostHttpServer {
   ticketCheck (ticket) {
     const index = this._tickets.indexOf(ticket)
     if (index > -1) {
-      this._tickets.splice(index, 1)
+      if (!this._ticketsReuse) this._tickets.splice(index, 1)
       return true
     } else {
       return false
@@ -382,7 +402,7 @@ class HostHttpServer {
         response.setHeader('Content-Type', 'application/json')
         content = JSON.stringify(error)
       } else {
-        content = error.error + '\n\n' + error.details
+        content = error.error + ':' + error.details
       }
       response.end(content)
       resolve()
@@ -395,6 +415,11 @@ class HostHttpServer {
 
   error400 (request, response) {
     return this.error(request, response, 400, {error: 'Bad request', details: request.method + ' ' + request.url})
+  }
+
+  error401 (request, response) {
+    response.setHeader('WWW-Authenticate', 'Bearer')
+    return this.error(request, response, 401, {error: 'Unauthorized', details: request.method + ' ' + request.url})
   }
 
   error403 (request, response, details) {
