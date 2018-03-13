@@ -7,8 +7,7 @@ class NodeContext extends JsContext {}
 
 NodeContext.spec = {
   name: 'NodeContext',
-  client: 'ContextHttpClient',
-  aliases: ['js', 'node']
+  client: 'ContextHttpClient'
 }
 
 module.exports = NodeContext
