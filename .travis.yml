@@ -9,6 +9,7 @@ cache:
 
 script:
   - make lint
+  - make check
   - make cover
   - make docs
 

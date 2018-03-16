@@ -9,6 +9,9 @@ run:
 lint:
 	npm run lint
 
+check:
+	npm run check
+
 test:
 	npm test
 .PHONY: test

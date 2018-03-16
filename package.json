@@ -11,6 +11,7 @@
   },
   "scripts": {
     "lint": "standard \"lib/**/*.js\" test/**/*.js",
+    "check": "dependency-check ./package.json && dependency-check ./package.json --unused --no-dev",
     "test": "tape test | tap-spec",
     "cover": "istanbul cover test",
     "docs": "documentation build --config docs/docs.yml --output docs --format html",
@@ -37,6 +38,7 @@
   },
   "homepage": "https://github.com/stencila/node#readme",
   "devDependencies": {
+    "dependency-check": "^3.1.0",
     "documentation": "^4.0.0-beta10",
     "glob": "^7.0.6",
     "istanbul": "^0.4.5",
@@ -44,30 +46,17 @@
     "nodemon": "^1.11.0",
     "standard": "^11.0.1",
     "tap-spec": "^4.1.1",
-    "tape": "^4.6.0",
-    "tmp": "0.0.31"
+    "tape": "^4.6.0"
   },
   "dependencies": {
     "body": "^5.1.0",
     "cookie": "^0.3.1",
-    "dar-server": "^0.3.0",
-    "dat-node": "^3.2.3",
     "execa": "^0.7.0",
-    "fs-extra": "^3.0.1",
-    "gunzip-maybe": "^1.4.1",
     "http-shutdown": "^1.1.0",
     "mkdirp": "^0.5.1",
     "path-is-inside": "^1.0.2",
-    "promisify-node": "^0.4.0",
-    "pump": "^1.0.2",
-    "request": "^2.81.0",
     "request-promise": "^4.2.1",
-    "rimraf": "2.6.1",
     "send": "^0.15.4",
-    "stencila": "0.28.0-preview.4",
-    "strip-dirs": "^2.0.0",
-    "tar-fs": "^1.15.3",
-    "untildify": "^3.0.2",
-    "unzip-stream": "^0.1.2"
+    "stencila": "0.28.0-preview.4"
   }
 }
