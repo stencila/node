@@ -1,5 +1,5 @@
 const test = require('tape')
-var httpMocks = require('node-mocks-http');
+var httpMocks = require('node-mocks-http')
 
 const Host = require('../../lib/host/Host')
 const HostHttpServer = require('../../lib/host/HostHttpServer')
@@ -71,7 +71,7 @@ test('HostHttpServer.handle authorized', function (t) {
   s.handle(mock.req, mock.res).then(() => {
     t.equal(mock.res.statusCode, 200)
 
-    cookie = mock.res._headers["Set-Cookie"]
+    cookie = mock.res._headers['Set-Cookie']
     t.ok(cookie.match(/^token=/))
   }).then(() => {
     // Authorization using the token passed in Set-Cookie
@@ -100,44 +100,44 @@ test('HostHttpServer.handle CORS passes', function (t) {
 
   Promise.resolve().then(() => {
     let mock = httpMocks.createMocks({
-      method: 'GET', 
-      url: '/?ticket=' + s.ticketCreate(), 
+      method: 'GET',
+      url: '/?ticket=' + s.ticketCreate(),
       headers: {'origin': 'http://127.0.0.1'}
     })
     return s.handle(mock.req, mock.res)
       .then(() => {
         t.equal(mock.res.statusCode, 200)
-        t.equal(mock.res._headers["Access-Control-Allow-Origin"], 'http://127.0.0.1')
+        t.equal(mock.res._headers['Access-Control-Allow-Origin'], 'http://127.0.0.1')
       })
   }).then(() => {
     let mock = httpMocks.createMocks({
-      method: 'GET', 
-      url: '/?ticket=' + s.ticketCreate(), 
+      method: 'GET',
+      url: '/?ticket=' + s.ticketCreate(),
       headers: {'referer': 'http://localhost/some/page'}
     })
     return s.handle(mock.req, mock.res)
       .then(() => {
         t.equal(mock.res.statusCode, 200)
-        t.equal(mock.res._headers["Access-Control-Allow-Origin"], 'http://localhost')
+        t.equal(mock.res._headers['Access-Control-Allow-Origin'], 'http://localhost')
       })
   }).then(() => {
     let mock = httpMocks.createMocks({
-      method: 'GET', 
-      url: '/?ticket=' + s.ticketCreate(), 
+      method: 'GET',
+      url: '/?ticket=' + s.ticketCreate(),
       headers: {'referer': 'http://builds.stenci.la'}
     })
     return s.handle(mock.req, mock.res)
       .then(() => {
         t.equal(mock.res.statusCode, 200)
-        t.equal(mock.res._headers["Access-Control-Allow-Origin"], 'http://builds.stenci.la')
+        t.equal(mock.res._headers['Access-Control-Allow-Origin'], 'http://builds.stenci.la')
       })
   }).then(() => {
     t.end()
   })
-  .catch(error => {
-    t.notOk(error)
-    t.end()
-  })
+    .catch(error => {
+      t.notOk(error)
+      t.end()
+    })
 })
 
 test('HostHttpServer.handle CORS fails', function (t) {
@@ -145,33 +145,33 @@ test('HostHttpServer.handle CORS fails', function (t) {
 
   Promise.resolve().then(() => {
     let mock = httpMocks.createMocks({
-      method: 'GET', 
-      url: '/?ticket=' + s.ticketCreate(), 
+      method: 'GET',
+      url: '/?ticket=' + s.ticketCreate(),
       headers: {'referer': 'http://evilhackers.com/some/page'}
     })
     return s.handle(mock.req, mock.res)
       .then(() => {
         t.equal(mock.res.statusCode, 200)
-        t.equal(mock.res._headers["Access-Control-Allow-Origin"], undefined)
+        t.equal(mock.res._headers['Access-Control-Allow-Origin'], undefined)
       })
   }).then(() => {
     let mock = httpMocks.createMocks({
-      method: 'GET', 
-      url: '/?ticket=' + s.ticketCreate(), 
+      method: 'GET',
+      url: '/?ticket=' + s.ticketCreate(),
       headers: {'origin': 'http://spoof-stenci.la/'}
     })
     return s.handle(mock.req, mock.res)
       .then(() => {
         t.equal(mock.res.statusCode, 200)
-        t.equal(mock.res._headers["Access-Control-Allow-Origin"], undefined)
+        t.equal(mock.res._headers['Access-Control-Allow-Origin'], undefined)
       })
   }).then(() => {
     t.end()
   })
-  .catch(error => {
-    t.notOk(error)
-    t.end()
-  })
+    .catch(error => {
+      t.notOk(error)
+      t.end()
+    })
 })
 
 test('HostHttpServer.route', function (t) {
@@ -303,7 +303,7 @@ test('HostHttpServer.call', function (t) {
     .then(() => {
       t.equal(res.statusCode, 200)
       let content = res._getData()
-      t.equal(content,'{"errors":null,"output":{"type":"integer","format":"text","content":"42"}}')
+      t.equal(content, '{"errors":null,"output":{"type":"integer","format":"text","content":"42"}}')
       t.end()
     })
     .catch(error => {

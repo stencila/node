@@ -10,7 +10,7 @@
     "stencila-node": "bin/stencila-node.js"
   },
   "scripts": {
-    "lint": "eslint *.js lib test",
+    "lint": "standard \"lib/**/*.js\" test/**/*.js",
     "test": "tape test | tap-spec",
     "cover": "istanbul cover test",
     "docs": "documentation build --config docs/docs.yml --output docs --format html",
@@ -38,14 +38,11 @@
   "homepage": "https://github.com/stencila/node#readme",
   "devDependencies": {
     "documentation": "^4.0.0-beta10",
-    "eslint": "^3.5.0",
-    "eslint-config-standard": "^6.2.0",
-    "eslint-plugin-promise": "^2.0.1",
-    "eslint-plugin-standard": "^2.0.1",
     "glob": "^7.0.6",
     "istanbul": "^0.4.5",
     "node-mocks-http": "^1.6.1",
     "nodemon": "^1.11.0",
+    "standard": "^11.0.1",
     "tap-spec": "^4.1.1",
     "tape": "^4.6.0",
     "tmp": "0.0.31"

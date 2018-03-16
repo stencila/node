@@ -95,7 +95,7 @@ test('Host.call', t => {
 
       h.call(id, 'runCode', ['6*7'])
         .then(result => {
-          t.deepEqual(result,{ errors: null, output: { content: '42', format: 'text', type: 'integer' } })
+          t.deepEqual(result, { errors: null, output: { content: '42', format: 'text', type: 'integer' } })
         })
         .catch(error => {
           t.notOk(error)
