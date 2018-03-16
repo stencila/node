@@ -16,7 +16,8 @@
     "cover": "istanbul cover test",
     "docs": "documentation build --config docs/docs.yml --output docs --format html",
     "docs-serve": "documentation serve --config docs/docs.yml --watch",
-    "start": "nodemon bin/stencila-node.js"
+    "start": "nodemon bin/stencila-node.js",
+    "prepublishOnly": "npm run lint && npm run test && npm run check && npm run docs"
   },
   "repository": {
     "type": "git",
