@@ -4,17 +4,10 @@ const fs = require('fs')
 const mkdirp = require('mkdirp')
 const path = require('path')
 const os = require('os')
-const readArchive = require('dar-server/src/readArchive')
 const request = require('request-promise')
 
 const version = require('../../package').version
 const HostHttpServer = require('./HostHttpServer')
-
-// Storers
-const DatStorer = require('../storers/DatStorer')
-const DropboxStorer = require('../storers/DropboxStorer')
-const FileStorer = require('../storers/FileStorer')
-const GithubStorer = require('../storers/GithubStorer')
 
 // Converters
 const converters = require('stencila-convert')
@@ -32,15 +25,9 @@ for (let name of Object.keys(TYPES)) {
   TYPES_SPECS[name] = TYPES[name].spec
 }
 
-let STORERS = [ DatStorer, DropboxStorer, FileStorer, GithubStorer ]
-let PROTOCOL_STORERS = {}
-for (let storer of STORERS) {
-  PROTOCOL_STORERS[storer.protocol] = storer
-}
-
 /**
  * A `Host` allows you to create, get, run methods of, and delete instances of various types.
- * The types can be thought of a "services" provided by the host e.g. `NoteContext`, `FilesystemStorer`
+ * The types can be thought of a "services" provided by the host e.g. `NoteContext`
  *
  * The API of a host is similar to that of a HTTP server. It's methods names
  * (e.g. `post`, `get`) are similar to HTTP methods (e.g. `POST`, `GET`) but
@@ -598,21 +585,6 @@ class Host {
           resolve(manifest)
         })
       })
-    })
-  }
-
-  open (address) {
-    var match = address.match(/^([^:]+):\/\/(.*)/)
-    if (!match) throw new Error('Location does not appear to be of the form protocol://...')
-    let protocol = match[1]
-    let path = match[2]
-    
-    let Storer = PROTOCOL_STORERS[protocol]
-    if (!Storer) throw new Error("Unknown protocol")
-    
-    const storer = new Storer(path)
-    return storer.initialize().then((path) => {
-      return readArchive(path) 
     })
   }
 
