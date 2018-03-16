@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "bin": {
-    "stencila-node": "stencila-node.js"
+    "stencila-node": "bin/stencila-node.js"
   },
   "scripts": {
     "lint": "eslint *.js src tests",
