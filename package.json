@@ -40,23 +40,23 @@
   "homepage": "https://github.com/stencila/node#readme",
   "devDependencies": {
     "dependency-check": "^3.1.0",
-    "documentation": "^4.0.0-beta10",
-    "glob": "^7.0.6",
+    "documentation": "^6.1.0",
+    "glob": "^7.1.2",
     "istanbul": "^0.4.5",
-    "node-mocks-http": "^1.6.1",
-    "nodemon": "^1.11.0",
+    "node-mocks-http": "^1.6.7",
+    "nodemon": "^1.17.2",
     "standard": "^11.0.1",
     "tap-spec": "^4.1.1",
-    "tape": "^4.6.0"
+    "tape": "^4.9.0"
   },
   "dependencies": {
     "body": "^5.1.0",
     "cookie": "^0.3.1",
-    "execa": "^0.7.0",
-    "http-shutdown": "^1.1.0",
+    "execa": "^0.10.0",
+    "http-shutdown": "^1.2.0",
     "mkdirp": "^0.5.1",
     "path-is-inside": "^1.0.2",
-    "request-promise": "^4.2.1",
+    "request-promise": "^4.2.2",
     "send": "^0.15.4",
     "stencila": "0.28.0-preview.4"
   }
