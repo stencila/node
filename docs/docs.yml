@@ -2,7 +2,3 @@ toc:
   - NodeContext
   - Host
   - HostHttpServer
-  - FileSystemBackend
-  - FileSystemBuffer
-  - FileSystemStorer
-  - util

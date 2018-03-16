@@ -2,19 +2,19 @@
 <html>
 <head>
   <meta charset='utf-8' />
-  <title>stencila-node 0.26.0 | Documentation</title>
+  <title>stencila-node 0.28.4 | Documentation</title>
   <meta name='viewport' content='width=device-width,initial-scale=1'>
   <link href='assets/bass.css' type='text/css' rel='stylesheet' />
   <link href='assets/style.css' type='text/css' rel='stylesheet' />
   <link href='assets/github.css' type='text/css' rel='stylesheet' />
+  <link href='assets/split.css' type='text/css' rel='stylesheet' />
 </head>
-<body class='documentation'>
-  <div class='max-width-4 mx-auto'>
-    <div class='clearfix md-mxn2'>
-      <div class='fixed xs-hide fix-3 overflow-auto max-height-100'>
+<body class='documentation m0'>
+    <div class='flex'>
+      <div id='split-left' class='overflow-auto fs0 height-viewport-100'>
         <div class='py1 px2'>
           <h3 class='mb0 no-anchor'>stencila-node</h3>
-          <div class='mb1'><code>0.26.0</code></div>
+          <div class='mb1'><code>0.28.4</code></div>
           <input
             placeholder='Filter'
             id='filter-input'
@@ -43,71 +43,149 @@
                 
                 <div class='toggle-target display-none'>
                   
+                  <ul class='list-reset py1-ul pl1'>
+                    <li class='h5'><span>Static members</span></li>
+                    
+                      <li><a
+                        href='#hostuserdir'
+                        class='regular pre-open'>
+                        .userDir
+                      </a></li>
+                    
+                      <li><a
+                        href='#hostissuperuser'
+                        class='regular pre-open'>
+                        .isSuperUser
+                      </a></li>
+                    
+                      <li><a
+                        href='#hosttempdir'
+                        class='regular pre-open'>
+                        .tempDir
+                      </a></li>
+                    
+                    </ul>
+                  
                   
                     <ul class='list-reset py1-ul pl1'>
                       <li class='h5'><span>Instance members</span></li>
                       
                       <li><a
-                        href='#Host#options'
+                        href='#hostid'
                         class='regular pre-open'>
-                        #options
+                        #id
                       </a></li>
                       
                       <li><a
-                        href='#Host#post'
+                        href='#hostenvirons'
                         class='regular pre-open'>
-                        #post
+                        #environs
                       </a></li>
                       
                       <li><a
-                        href='#Host#get'
+                        href='#hostmanifest'
+                        class='regular pre-open'>
+                        #manifest
+                      </a></li>
+                      
+                      <li><a
+                        href='#hostregister'
+                        class='regular pre-open'>
+                        #register
+                      </a></li>
+                      
+                      <li><a
+                        href='#hostresolve'
+                        class='regular pre-open'>
+                        #resolve
+                      </a></li>
+                      
+                      <li><a
+                        href='#hostcreate'
+                        class='regular pre-open'>
+                        #create
+                      </a></li>
+                      
+                      <li><a
+                        href='#hostget'
                         class='regular pre-open'>
                         #get
                       </a></li>
                       
                       <li><a
-                        href='#Host#put'
+                        href='#hostcall'
                         class='regular pre-open'>
-                        #put
+                        #call
                       </a></li>
                       
                       <li><a
-                        href='#Host#delete'
+                        href='#hostdelete'
                         class='regular pre-open'>
                         #delete
                       </a></li>
                       
                       <li><a
-                        href='#Host#start'
+                        href='#hoststart'
                         class='regular pre-open'>
                         #start
                       </a></li>
                       
                       <li><a
-                        href='#Host#stop'
+                        href='#hostheartbeat'
+                        class='regular pre-open'>
+                        #heartbeat
+                      </a></li>
+                      
+                      <li><a
+                        href='#hoststop'
                         class='regular pre-open'>
                         #stop
                       </a></li>
                       
                       <li><a
-                        href='#Host#servers'
+                        href='#hostrun'
+                        class='regular pre-open'>
+                        #run
+                      </a></li>
+                      
+                      <li><a
+                        href='#hostservers'
                         class='regular pre-open'>
                         #servers
                       </a></li>
                       
                       <li><a
-                        href='#Host#urls'
+                        href='#hosturls'
                         class='regular pre-open'>
                         #urls
                       </a></li>
                       
                       <li><a
-                        href='#Host#view'
+                        href='#hostview'
                         class='regular pre-open'>
                         #view
                       </a></li>
                       
+                      <li><a
+                        href='#hostpeers'
+                        class='regular pre-open'>
+                        #peers
+                      </a></li>
+                      
+                      <li><a
+                        href='#hostdiscover'
+                        class='regular pre-open'>
+                        #discover
+                      </a></li>
+                      
+                      <li><a
+                        href='#hostspawn'
+                        class='regular pre-open'>
+                        #spawn
+                      </a></li>
+                      
                     </ul>
+                  
                   
                   
                 </div>
@@ -129,142 +207,138 @@
                       <li class='h5'><span>Instance members</span></li>
                       
                       <li><a
-                        href='#HostHttpServer#url'
+                        href='#hosthttpserverurl'
                         class='regular pre-open'>
                         #url
                       </a></li>
                       
                       <li><a
-                        href='#HostHttpServer#start'
+                        href='#hosthttpserverstart'
                         class='regular pre-open'>
                         #start
                       </a></li>
                       
                       <li><a
-                        href='#HostHttpServer#stop'
+                        href='#hosthttpserverstop'
                         class='regular pre-open'>
                         #stop
                       </a></li>
                       
                       <li><a
-                        href='#HostHttpServer#handle'
+                        href='#hosthttpserverhandle'
                         class='regular pre-open'>
                         #handle
                       </a></li>
                       
                       <li><a
-                        href='#HostHttpServer#route'
+                        href='#hosthttpserverroute'
                         class='regular pre-open'>
                         #route
                       </a></li>
                       
                       <li><a
-                        href='#HostHttpServer#options'
+                        href='#hosthttpserveroptions'
                         class='regular pre-open'>
                         #options
                       </a></li>
                       
                       <li><a
-                        href='#HostHttpServer#home'
+                        href='#hosthttpserverhome'
                         class='regular pre-open'>
                         #home
                       </a></li>
                       
                       <li><a
-                        href='#HostHttpServer#statico'
+                        href='#hosthttpserverstatico'
                         class='regular pre-open'>
                         #statico
                       </a></li>
                       
                       <li><a
-                        href='#HostHttpServer#post'
+                        href='#hosthttpserverenvirons'
                         class='regular pre-open'>
-                        #post
+                        #environs
                       </a></li>
                       
                       <li><a
-                        href='#HostHttpServer#get'
+                        href='#hosthttpservermanifest'
+                        class='regular pre-open'>
+                        #manifest
+                      </a></li>
+                      
+                      <li><a
+                        href='#hosthttpserveropen'
+                        class='regular pre-open'>
+                        #open
+                      </a></li>
+                      
+                      <li><a
+                        href='#hosthttpservercreate'
+                        class='regular pre-open'>
+                        #create
+                      </a></li>
+                      
+                      <li><a
+                        href='#hosthttpserverget'
                         class='regular pre-open'>
                         #get
                       </a></li>
                       
                       <li><a
-                        href='#HostHttpServer#put'
+                        href='#hosthttpservercall'
                         class='regular pre-open'>
-                        #put
+                        #call
                       </a></li>
                       
                       <li><a
-                        href='#HostHttpServer#delete'
+                        href='#hosthttpserverdelete'
                         class='regular pre-open'>
                         #delete
                       </a></li>
                       
                       <li><a
-                        href='#HostHttpServer#error'
+                        href='#hosthttpserverticketcreate'
+                        class='regular pre-open'>
+                        #ticketCreate
+                      </a></li>
+                      
+                      <li><a
+                        href='#hosthttpserverticketcheck'
+                        class='regular pre-open'>
+                        #ticketCheck
+                      </a></li>
+                      
+                      <li><a
+                        href='#hosthttpserverticketedurl'
+                        class='regular pre-open'>
+                        #ticketedUrl
+                      </a></li>
+                      
+                      <li><a
+                        href='#hosthttpservertokencreate'
+                        class='regular pre-open'>
+                        #tokenCreate
+                      </a></li>
+                      
+                      <li><a
+                        href='#hosthttpservertokencheck'
+                        class='regular pre-open'>
+                        #tokenCheck
+                      </a></li>
+                      
+                      <li><a
+                        href='#hosthttpservererror'
                         class='regular pre-open'>
                         #error
                       </a></li>
                       
-                    </ul>
-                  
-                  
-                  
-                </div>
-                
-                </li>
-              
-                
-                <li><a
-                  href='#filesystembackend'
-                  class="">
-                  FileSystemBackend
-                  
-                </a>
-                
-                </li>
-              
-                
-                <li><a
-                  href='#filesystembuffer'
-                  class="">
-                  FileSystemBuffer
-                  
-                </a>
-                
-                </li>
-              
-                
-                <li><a
-                  href='#filesystemstorer'
-                  class="">
-                  FileSystemStorer
-                  
-                </a>
-                
-                </li>
-              
-                
-                <li><a
-                  href='#util'
-                  class=" toggle-sibling">
-                  util
-                  <span class='icon'>▸</span>
-                </a>
-                
-                <div class='toggle-target display-none'>
-                  
-                  <ul class='list-reset py1-ul pl1'>
-                    <li class='h5'><span>Static members</span></li>
-                    
                       <li><a
-                        href='#utilisSuperUser'
+                        href='#hosthttpservererror400'
                         class='regular pre-open'>
-                        .isSuperUser
+                        #error400
                       </a></li>
-                    
+                      
                     </ul>
-                  
                   
                   
                   
@@ -279,7 +353,7 @@
           </div>
         </div>
       </div>
-      <div class='fix-margin-3'>
+      <div id='split-right' class='relative overflow-auto height-viewport-100'>
         
           
             <section class='p2 mb2 clearfix bg-white minishadow'>
@@ -340,6 +414,7 @@
 
   
   <div class='clearfix'>
+    
     <h3 class='fl m0' id='host'>
       Host
     </h3>
@@ -349,12 +424,12 @@
   
 
   <p>A <code>Host</code> allows you to create, get, run methods of, and delete instances of various types.
-The types can be thought of a &quot;services&quot; provided by the host e.g. <code>NoteContext</code>, <code>FilesystemStorer</code></p>
-<p>The API of a host is similar to that of a HTTP server. It&#x27;s methods names
+The types can be thought of a "services" provided by the host e.g. <code>NoteContext</code></p>
+<p>The API of a host is similar to that of a HTTP server. It's methods names
 (e.g. <code>post</code>, <code>get</code>) are similar to HTTP methods (e.g. <code>POST</code>, <code>GET</code>) but
-the sematics sometimes differ (e.g. a host&#x27;s <code>put()</code> method is used to call an
+the sematics sometimes differ (e.g. a host's <code>put()</code> method is used to call an
 instance method)</p>
-<p>A <code>Host</code> is not limited to beng served by HTTP and it&#x27;s methods are exposed by both <code>HostHttpServer</code>
+<p>A <code>Host</code> is not limited to beng served by HTTP and it's methods are exposed by both <code>HostHttpServer</code>
 and <code>HostWebsocketServer</code>. Those other classes are responsible for tasks associated with
 their communication protocol (e.g. serialising and deserialising objects).</p>
 <p>This is a singleton class. There should only ever be one <code>Host</code>
@@ -362,7 +437,1422 @@ in memory in each process (although, for purposes of testing, this is not enforc
 
 
   <div class='pre p1 fill-light mt0'>new Host()</div>
+  
+  
 
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Static Members</div>
+    <div class="clearfix">
+  
+    <div class='border-bottom' id='hostuserdir'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>userDir()</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Get the current user's Stencila data directory</p>
+
+
+  <div class='pre p1 fill-light mt0'>userDir()</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hostissuperuser'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>isSuperUser()</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Is the user running this process a super user?</p>
+
+
+  <div class='pre p1 fill-light mt0'>isSuperUser()</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hosttempdir'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>tempDir()</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Get the current Stencila temporary directory</p>
+
+
+  <div class='pre p1 fill-light mt0'>tempDir()</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+</div>
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Instance Members</div>
+    <div class="clearfix">
+  
+    <div class='border-bottom' id='hostid'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>id</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Get unique ID of this host</p>
+
+
+  <div class='pre p1 fill-light mt0'>id</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hostenvirons'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>environs()</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Get the environments supported by this host</p>
+
+
+  <div class='pre p1 fill-light mt0'>environs(): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
+        Resolves to a list of environment specs
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hostmanifest'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>manifest()</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Get a manifest for this host</p>
+<p>The manifest describes the host and it's capabilities. It is used
+by peer hosts to determine which "types" this host provides and
+which "instances" have already been instantiated.</p>
+
+
+  <div class='pre p1 fill-light mt0'>manifest(): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
+        Resolves to a manifest object
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hostregister'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>register()</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Register this Stencila Host on this machine.</p>
+<p>Registering a host involves creating a file <code>node.json</code> inside of
+the user's Stencila data (see <code>userDir()</code>) directory which describes
+the capabilities of this host.</p>
+
+
+  <div class='pre p1 fill-light mt0'>register()</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hostresolve'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>resolve(id)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Resolve an ID to an instance</p>
+
+
+  <div class='pre p1 fill-light mt0'>resolve(id: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): [type]</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>id</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    ID of instance
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code>[type]</code>:
+        [
+description
+]
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hostcreate'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>create(type, args)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Create a new instance of a type</p>
+
+
+  <div class='pre p1 fill-light mt0'>create(type: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, args: args): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>type</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    Type of instance
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>args</span> <code class='quiet'>(args)</code>
+	    Arguments to be passed to type constructor
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
+        Resolves to the ID string of newly created instance
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hostget'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>get(id)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Get an instance</p>
+
+
+  <div class='pre p1 fill-light mt0'>get(id: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>id</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    ID of instance
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
+        Resolves to the instance
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hostcall'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>call(id, method, args)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Call a method of an instance</p>
+
+
+  <div class='pre p1 fill-light mt0'>call(id: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, method: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, args: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">array</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>id</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    ID of instance
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>method</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    Name of instance method
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>args</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">array</a>)</code>
+	    An array of method arguments
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
+        Resolves to result of method call
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hostdelete'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>delete(id)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Delete an instance</p>
+
+
+  <div class='pre p1 fill-light mt0'>delete(id: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>id</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    ID of instance
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hoststart'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>start(address, port, authorization)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Start serving this host</p>
+<p>Currently, HTTP is the only server available
+for hosts. We plan to implement a <code>HostWebsocketServer</code> soon.</p>
+
+
+  <div class='pre p1 fill-light mt0'>start(address: any, port: any, authorization: any): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>address</span> <code class='quiet'>(any
+            = <code>&#39;127.0.0.1&#39;</code>)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>port</span> <code class='quiet'>(any
+            = <code>2000</code>)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>authorization</span> <code class='quiet'>(any
+            = <code>true</code>)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hostheartbeat'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>heartbeat()</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Update this host's heartbeat</p>
+<p>Can be called explictly by a peer (i.e. <code>PUT /!heartbeat</code>)
+but also called by the <code>post</code>, <code>get</code>, <code>put</code> and <code>delete</code> methods
+above.</p>
+
+
+  <div class='pre p1 fill-light mt0'>heartbeat(): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Date">Date</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Date">Date</a></code>:
+        Date/time of last heartbeat
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hoststop'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>stop()</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Stop serving this host</p>
+
+
+  <div class='pre p1 fill-light mt0'>stop(): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hostrun'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>run(address, port, authorization, timeout, duration)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Start serving this host and wait for connections
+indefinitely</p>
+
+
+  <div class='pre p1 fill-light mt0'>run(address: any, port: any, authorization: any, timeout: any, duration: any): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>address</span> <code class='quiet'>(any
+            = <code>&#39;127.0.0.1&#39;</code>)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>port</span> <code class='quiet'>(any
+            = <code>2000</code>)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>authorization</span> <code class='quiet'>(any
+            = <code>true</code>)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>timeout</span> <code class='quiet'>(any
+            = <code>Infinity</code>)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>duration</span> <code class='quiet'>(any
+            = <code>Infinity</code>)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
+        
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hostservers'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>servers</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Get a list of server names for this host</p>
+<p>Servers are identified by the protocol shorthand
+e.g. <code>http</code> for <code>HostHttpServer</code></p>
+
+
+  <div class='pre p1 fill-light mt0'>servers</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">array</a></code>:
+        Array of strings
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hosturls'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>urls</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Get a list of URLs for this host</p>
+
+
+  <div class='pre p1 fill-light mt0'>urls</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">array</a></code>:
+        Array of strings
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hostview'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>view()</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>View this host in the browser</p>
+<p>Opens the default browser at the URL of this host</p>
+
+
+  <div class='pre p1 fill-light mt0'>view()</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hostpeers'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>peers</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Get this host's peers</p>
+
+
+  <div class='pre p1 fill-light mt0'>peers</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hostdiscover'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>discover(interval)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Discover peers</p>
+<p>Looks for peer hosts in the following locations (on Linux, equivalents on other OSs):</p>
+<ul>
+<li><code>/tmp/stencila/hosts</code> - hosts that are currently active (i.e. running)</li>
+<li><code>~/.local/share/stencila/hosts</code> - hosts that are installed but inactive</li>
+</ul>
+<p>Set the <code>interval</code> parameter to trigger ongoing discovery.</p>
+
+
+  <div class='pre p1 fill-light mt0'>discover(interval: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>)</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>interval</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>
+            = <code>0</code>)</code>
+	    The interval (seconds) between discovery attempts
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hostspawn'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>spawn(manifest)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Spawn a peer from an inactive host manifest</p>
+
+
+  <div class='pre p1 fill-light mt0'>spawn(manifest: [type]): [type]</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>manifest</span> <code class='quiet'>([type])</code>
+	    The manifest for the inactive host
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code>[type]</code>:
+        [
+description
+]
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+</div>
+
+  
+
+  
+</section>
+
+          
+        
+          
+            <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='hosthttpserver'>
+      HostHttpServer
+    </h3>
+    
+    
+  </div>
+  
+
+  <p>A HTTP server for a <code>Host</code></p>
+
+
+  <div class='pre p1 fill-light mt0'>new HostHttpServer(host: any, address: any, port: any, authorization: any, ticketsReuse: any)</div>
   
   
 
@@ -403,6 +1893,24 @@ in memory in each process (although, for purposes of testing, this is not enforc
           
         </div>
       
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>authorization</span> <code class='quiet'>(any
+            = <code>true</code>)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>ticketsReuse</span> <code class='quiet'>(any
+            = <code>true</code>)</code>
+	    
+          </div>
+          
+        </div>
+      
     </div>
   
 
@@ -420,7 +1928,7 @@ in memory in each process (although, for purposes of testing, this is not enforc
     <div class='py1 quiet mt1 prose-big'>Instance Members</div>
     <div class="clearfix">
   
-    <div class='border-bottom' id='HostHttpServer#url'>
+    <div class='border-bottom' id='hosthttpserverurl'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -432,14 +1940,10 @@ in memory in each process (although, for purposes of testing, this is not enforc
 
   
 
-  <p>Get a manifest for this host</p>
-<p>The manifest describes the host and it&#x27;s capabilities. It is used
-by peer hosts to determine which &quot;types&quot; this host provides and
-which &quot;instances&quot; have already been instantiated.</p>
+  <p>Get the URL of this server</p>
 
 
-  <div class='pre p1 fill-light mt0'>options(): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-
+  <div class='pre p1 fill-light mt0'>url</div>
   
   
 
@@ -457,7 +1961,7 @@ which &quot;instances&quot; have already been instantiated.</p>
   
     
       <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>:
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>:
         Server's URL, 
 <code>null</code>
  if not serving
@@ -480,11 +1984,11 @@ which &quot;instances&quot; have already been instantiated.</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='HostHttpServer#start'>
+    <div class='border-bottom' id='hosthttpserverstart'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>post(address, type, name, options)</span>
+            <span class='code strong strong truncate'>start()</span>
         </div>
       </div>
       <div class="clearfix display-none toggle-target">
@@ -495,8 +1999,7 @@ which &quot;instances&quot; have already been instantiated.</p>
   <p>Start this server</p>
 
 
-  <div class='pre p1 fill-light mt0'>post(address: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, type: Any, name: Any, options: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-
+  <div class='pre p1 fill-light mt0'>start(): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
   
   
 
@@ -505,42 +2008,8 @@ which &quot;instances&quot; have already been instantiated.</p>
   
   
   
-
   
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>address</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> Type of instance
 
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>type</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>name</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>options</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code> Options to be passed to type constructor
-
-          </div>
-          
-        </div>
-      
-    </div>
   
 
   
@@ -548,7 +2017,7 @@ which &quot;instances&quot; have already been instantiated.</p>
   
     
       <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
         
 
       
@@ -569,7 +2038,7 @@ which &quot;instances&quot; have already been instantiated.</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='HostHttpServer#stop'>
+    <div class='border-bottom' id='hosthttpserverstop'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -584,8 +2053,7 @@ which &quot;instances&quot; have already been instantiated.</p>
   <p>Stop this server</p>
 
 
-  <div class='pre p1 fill-light mt0'>get(id: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-
+  <div class='pre p1 fill-light mt0'>stop(): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
   
   
 
@@ -594,14 +2062,7 @@ which &quot;instances&quot; have already been instantiated.</p>
   
   
   
-
   
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>id</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> ID of instance
 
   
 
@@ -610,7 +2071,7 @@ which &quot;instances&quot; have already been instantiated.</p>
   
     
       <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
         
 
       
@@ -631,7 +2092,7 @@ which &quot;instances&quot; have already been instantiated.</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='HostHttpServer#handle'>
+    <div class='border-bottom' id='hosthttpserverhandle'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -646,8 +2107,7 @@ which &quot;instances&quot; have already been instantiated.</p>
   <p>Handle a HTTP request</p>
 
 
-  <div class='pre p1 fill-light mt0'>put(id: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, method: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, args: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">array</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-
+  <div class='pre p1 fill-light mt0'>handle(request: any, response: any)</div>
   
   
 
@@ -664,24 +2124,16 @@ which &quot;instances&quot; have already been instantiated.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>id</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> ID of instance
-
+            <span class='code bold'>request</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>method</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> Name of instance method
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>args</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">array</a>)</code> An array of method arguments
-
+            <span class='code bold'>response</span> <code class='quiet'>(any)</code>
+	    
           </div>
           
         </div>
@@ -707,7 +2159,7 @@ which &quot;instances&quot; have already been instantiated.</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='HostHttpServer#route'>
+    <div class='border-bottom' id='hosthttpserverroute'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -722,8 +2174,7 @@ which &quot;instances&quot; have already been instantiated.</p>
   <p>Route a HTTP request</p>
 
 
-  <div class='pre p1 fill-light mt0'>delete(id: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-
+  <div class='pre p1 fill-light mt0'>route(verb: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, path: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">array</a></div>
   
   
 
@@ -740,7 +2191,8 @@ which &quot;instances&quot; have already been instantiated.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>id</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> ID of the instance
+            <span class='code bold'>verb</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    The request's HTTP verb (aka. "method") eg. GET
 
           </div>
           
@@ -748,7 +2200,7 @@ which &quot;instances&quot; have already been instantiated.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>path</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+            <span class='code bold'>path</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
 	    The requested path
 
           </div>
@@ -763,8 +2215,10 @@ which &quot;instances&quot; have already been instantiated.</p>
   
     
       <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">array</a></code>:
+        An array with first element being the method to call,
+and subsequent elements being the call arguments
+
       
     
   
@@ -783,7 +2237,7 @@ which &quot;instances&quot; have already been instantiated.</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='HostHttpServer#options'>
+    <div class='border-bottom' id='hosthttpserveroptions'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -799,8 +2253,7 @@ which &quot;instances&quot; have already been instantiated.</p>
 <p>Necessary for preflighted CORS requests (<a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS#Preflighted_requests">https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS#Preflighted_requests</a>)</p>
 
 
-  <div class='pre p1 fill-light mt0'>start(): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-
+  <div class='pre p1 fill-light mt0'>options(request: any, response: any)</div>
   
   
 
@@ -837,13 +2290,6 @@ which &quot;instances&quot; have already been instantiated.</p>
   
 
   
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        
-      
-    
-  
 
   
 
@@ -859,7 +2305,7 @@ which &quot;instances&quot; have already been instantiated.</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='HostHttpServer#home'>
+    <div class='border-bottom' id='hosthttpserverhome'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -874,8 +2320,7 @@ which &quot;instances&quot; have already been instantiated.</p>
   <p>Handle a request to <code>home</code></p>
 
 
-  <div class='pre p1 fill-light mt0'>stop(): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-
+  <div class='pre p1 fill-light mt0'>home(request: any, response: any)</div>
   
   
 
@@ -912,13 +2357,6 @@ which &quot;instances&quot; have already been instantiated.</p>
   
 
   
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        
-      
-    
-  
 
   
 
@@ -934,7 +2372,7 @@ which &quot;instances&quot; have already been instantiated.</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='HostHttpServer#statico'>
+    <div class='border-bottom' id='hosthttpserverstatico'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -949,8 +2387,7 @@ which &quot;instances&quot; have already been instantiated.</p>
   <p>Handle a request for a static file</p>
 
 
-  <div class='pre p1 fill-light mt0'>servers</div>
-
+  <div class='pre p1 fill-light mt0'>statico(request: any, response: any, path_: any)</div>
   
   
 
@@ -959,7 +2396,6 @@ which &quot;instances&quot; have already been instantiated.</p>
   
   
   
-
   
 
   
@@ -1011,11 +2447,11 @@ which &quot;instances&quot; have already been instantiated.</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='HostHttpServer#post'>
+    <div class='border-bottom' id='hosthttpserverenvirons'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>post(request, response, type)</span>
+            <span class='code strong strong truncate'>environs(request, response)</span>
         </div>
       </div>
       <div class="clearfix display-none toggle-target">
@@ -1023,20 +2459,227 @@ which &quot;instances&quot; have already been instantiated.</p>
 
   
 
-  <p>Handle a request to <code>post</code></p>
+  <p>Handle a request to <code>environs</code></p>
 
 
-  <div class='pre p1 fill-light mt0'>urls</div>
-
-  
-  
-
-  
-  
-  
+  <div class='pre p1 fill-light mt0'>environs(request: any, response: any)</div>
   
   
 
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>request</span> <code class='quiet'>(any)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>response</span> <code class='quiet'>(any)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hosthttpservermanifest'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>manifest(request, response)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Handle a request to <code>manifest</code></p>
+
+
+  <div class='pre p1 fill-light mt0'>manifest(request: any, response: any)</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>request</span> <code class='quiet'>(any)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>response</span> <code class='quiet'>(any)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hosthttpserveropen'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>open(request, response, address)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Handle a request to <code>open</code></p>
+
+
+  <div class='pre p1 fill-light mt0'>open(request: any, response: any, address: any)</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>request</span> <code class='quiet'>(any)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>response</span> <code class='quiet'>(any)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>address</span> <code class='quiet'>(any)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hosthttpservercreate'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>create(request, response, type, args)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Handle a request to create an instance</p>
+
+
+  <div class='pre p1 fill-light mt0'>create(request: any, response: any, type: any, args: any)</div>
+  
+  
+
+  
+  
+  
+  
+  
   
 
   
@@ -1067,6 +2710,14 @@ which &quot;instances&quot; have already been instantiated.</p>
           
         </div>
       
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>args</span> <code class='quiet'>(any)</code>
+	    
+          </div>
+          
+        </div>
+      
     </div>
   
 
@@ -1088,7 +2739,7 @@ which &quot;instances&quot; have already been instantiated.</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='HostHttpServer#get'>
+    <div class='border-bottom' id='hosthttpserverget'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -1100,11 +2751,10 @@ which &quot;instances&quot; have already been instantiated.</p>
 
   
 
-  <p>Handle a request to <code>get</code></p>
+  <p>Handle a request to get an instance</p>
 
 
-  <div class='pre p1 fill-light mt0'>view()</div>
-
+  <div class='pre p1 fill-light mt0'>get(request: any, response: any, id: any)</div>
   
   
 
@@ -1164,11 +2814,11 @@ which &quot;instances&quot; have already been instantiated.</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='HostHttpServer#put'>
+    <div class='border-bottom' id='hosthttpservercall'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>put(request, response, id, method)</span>
+            <span class='code strong strong truncate'>call(request, response, id, method, args)</span>
         </div>
       </div>
       <div class="clearfix display-none toggle-target">
@@ -1176,24 +2826,11 @@ which &quot;instances&quot; have already been instantiated.</p>
 
   
 
-  <p>Handle a request to <code>put</code></p>
+  <p>Handle a request to call an instance method</p>
 
 
-  <div class='pre p1 fill-light mt0'>put(request: any, response: any, id: any, method: any)</div>
+  <div class='pre p1 fill-light mt0'>call(request: any, response: any, id: any, method: any, args: any)</div>
   
-  <div class='clearfix'>
-    <h3 class='fl m0' id='hosthttpserver'>
-      HostHttpServer
-    </h3>
-    
-  </div>
-  
-
-  <p>A HTTP server for a <code>Host</code></p>
-
-
-  <div class='pre p1 fill-light mt0'>new HostHttpServer()</div>
-
   
 
   
@@ -1239,6 +2876,14 @@ which &quot;instances&quot; have already been instantiated.</p>
           
         </div>
       
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>args</span> <code class='quiet'>(any)</code>
+	    
+          </div>
+          
+        </div>
+      
     </div>
   
 
@@ -1260,7 +2905,7 @@ which &quot;instances&quot; have already been instantiated.</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='HostHttpServer#delete'>
+    <div class='border-bottom' id='hosthttpserverdelete'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -1272,20 +2917,18 @@ which &quot;instances&quot; have already been instantiated.</p>
 
   
 
-  <p>Handle a request to <code>delete</code></p>
+  <p>Handle a request to delete an instance</p>
 
 
-  <div class='pre p1 fill-light mt0'>url</div>
-
-  
-  
-
-  
-  
-  
+  <div class='pre p1 fill-light mt0'>delete(request: any, response: any, id: any)</div>
   
   
 
+  
+  
+  
+  
+  
   
 
   
@@ -1320,12 +2963,6 @@ which &quot;instances&quot; have already been instantiated.</p>
   
 
   
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>:
-        Server&#x27;s URL, 
-<code>null</code>
- if not serving
 
   
 
@@ -1343,7 +2980,308 @@ which &quot;instances&quot; have already been instantiated.</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='HostHttpServer#error'>
+    <div class='border-bottom' id='hosthttpserverticketcreate'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>ticketCreate()</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Create a ticket (a single-use access token)</p>
+
+
+  <div class='pre p1 fill-light mt0'>ticketCreate(): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>:
+        A ticket
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hosthttpserverticketcheck'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>ticketCheck(ticket)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Check that a ticket is valid.</p>
+<p>If it is, then it is removed from the list of tickets
+and <code>true</code> is returned. Otherwise, returns <code>false</code></p>
+
+
+  <div class='pre p1 fill-light mt0'>ticketCheck(ticket: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>ticket</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    The ticket to check
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></code>:
+        Is the ticket valid?
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hosthttpserverticketedurl'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>ticketedUrl()</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Create a URL with a ticket query parameter so users
+can connect to this server</p>
+
+
+  <div class='pre p1 fill-light mt0'>ticketedUrl(): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>:
+        A ticket
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hosthttpservertokencreate'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>tokenCreate()</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Create a token (a multiple-use access token)</p>
+
+
+  <div class='pre p1 fill-light mt0'>tokenCreate(): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>:
+        A token
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hosthttpservertokencheck'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>tokenCheck(token)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Check that a token is valid.</p>
+
+
+  <div class='pre p1 fill-light mt0'>tokenCheck(token: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>token</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    The token to check
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></code>:
+        Is the token valid?
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='hosthttpservererror'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -1358,8 +3296,7 @@ which &quot;instances&quot; have already been instantiated.</p>
   <p>General error handling</p>
 
 
-  <div class='pre p1 fill-light mt0'>start(): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-
+  <div class='pre p1 fill-light mt0'>error(request: any, response: any, status: any, error: any)</div>
   
   
 
@@ -1412,13 +3349,6 @@ which &quot;instances&quot; have already been instantiated.</p>
   
 
   
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        
-      
-    
-  
 
   
 
@@ -1434,259 +3364,11 @@ which &quot;instances&quot; have already been instantiated.</p>
       </div>
     </div>
   
-</div>
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  <div class='pre p1 fill-light mt0'>stop(): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>userLibraryDir</span> <code class='quiet'>(any)</code>
-	    
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='filesystembuffer'>
-      FileSystemBuffer
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>A buffer that resides on the local file system</p>
-
-
-  <div class='pre p1 fill-light mt0'>handle(request: Any, response: Any)</div>
-
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>request</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>response</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='filesystemstorer'>
-      FileSystemStorer
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>A storer for the local file system</p>
-
-
-  <div class='pre p1 fill-light mt0'>route(verb: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, path: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">array</a></div>
-
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>verb</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> The request&#x27;s HTTP verb (aka. &quot;method&quot;) eg. GET
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>path</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code> The requested path
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>isExternal</span> <code class='quiet'>(any)</code>
-	    
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='util'>
-      util
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>Utility functions</p>
-
-
-  <div class='pre p1 fill-light mt0'>util</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Static Members</div>
-    <div class="clearfix">
-  
-    <div class='border-bottom' id='utilisSuperUser'>
+    <div class='border-bottom' id='hosthttpservererror400'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>isSuperUser()</span>
+            <span class='code strong strong truncate'>error400(request, response)</span>
         </div>
       </div>
       <div class="clearfix display-none toggle-target">
@@ -1694,374 +3376,10 @@ which &quot;instances&quot; have already been instantiated.</p>
 
   
 
-  <p>Is the user running this process a super user?</p>
+  <p>Specific error handling functions</p>
 
 
-  <div class='pre p1 fill-light mt0'>options(request: Any, response: Any)</div>
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>request</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>response</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id=''>
-      
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>A <code>Host</code> allows you to create, get, run methods of, and delete instances of various types.
-The types can be thought of a "services" provided by the host e.g. <code>NoteContext</code>, <code>FilesystemStorer</code></p>
-<p>The API of a host is similar to that of a HTTP server. It's methods names
-(e.g. <code>post</code>, <code>get</code>) are similar to HTTP methods (e.g. <code>POST</code>, <code>GET</code>) but
-the sematics sometimes differ (e.g. a host's <code>put()</code> method is used to call an
-instance method)</p>
-<p>A <code>Host</code> is not limited to beng served by HTTP and it's methods are exposed by both <code>HostHttpServer</code>
-and <code>HostWebsocketServer</code>. Those other classes are responsible for tasks associated with
-their communication protocol (e.g. serialising and deserialising objects).</p>
-<p>This is a singleton class. There should only ever be one <code>Host</code>
-in memory in each process (although, for purposes of testing, this is not enforced)</p>
-
-
-  <div class='pre p1 fill-light mt0'></div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='id'>
-      id
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>Get unique ID of this host</p>
-
-
-  <div class='pre p1 fill-light mt0'>id</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  <div class='pre p1 fill-light mt0'>home(request: Any, response: Any)</div>
-
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>request</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>response</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='tempdir'>
-      tempDir
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>Get the current Stencila temporary directory</p>
-
-
-  <div class='pre p1 fill-light mt0'>tempDir()</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='environ'>
-      environ
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>Get the environment of this host including the version of Node.js and versions
-of installed packages (local and globals)</p>
-
-
-  <div class='pre p1 fill-light mt0'>environ(): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  <div class='pre p1 fill-light mt0'>statico(request: Any, response: Any, path_: Any)</div>
-
-  
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>request</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>response</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='manifest'>
-      manifest
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>Get a manifest for this host</p>
-<p>The manifest describes the host and it's capabilities. It is used
-by peer hosts to determine which "types" this host provides and
-which "instances" have already been instantiated.</p>
-
-
-  <div class='pre p1 fill-light mt0'>manifest(): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        Resolves to a manifest object
-
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>path_</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='install'>
-      install
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>Install this Stencila Host on this machine.</p>
-<p>Installation of a host involves creating a file <code>node.json</code> inside of
-the user's Stencila data (see <code>userDir()</code>) directory which describes
-the capabilities of this host.</p>
-
-
-  <div class='pre p1 fill-light mt0'>install()</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  <div class='pre p1 fill-light mt0'>post(request: Any, response: Any, type: Any)</div>
-
+  <div class='pre p1 fill-light mt0'>error400(request: any, response: any)</div>
   
   
 
@@ -2078,886 +3396,7 @@ the capabilities of this host.</p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>request</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>response</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>type</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>address</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
-	    Type of instance
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        Resolves to the ID string of newly created instance
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='get'>
-      get
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>Get an instance</p>
-
-
-  <div class='pre p1 fill-light mt0'>get(request: Any, response: Any, id: Any)</div>
-
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>request</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>response</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>id</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        Resolves to the instance
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='put'>
-      put
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>Call a method of an instance</p>
-
-
-  <div class='pre p1 fill-light mt0'>put(request: Any, response: Any, id: Any, method: Any)</div>
-
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>request</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>response</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>id</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>method</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        Resolves to result of method call
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='delete'>
-      delete
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>Delete an instance</p>
-
-
-  <div class='pre p1 fill-light mt0'>delete(request: Any, response: Any, id: Any)</div>
-
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>request</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='start'>
-      start
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>Start serving this host</p>
-<p>Currently, HTTP is the only server available
-for hosts. We plan to implement a <code>HostWebsocketServer</code> soon.</p>
-
-
-  <div class='pre p1 fill-light mt0'>start(address: any, port: any): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>response</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>id</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='heartbeat'>
-      heartbeat
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>Update this host's heartbeat</p>
-<p>Can be called explictly by a peer (i.e. <code>PUT /!heartbeat</code>)
-but also called by the <code>post</code>, <code>get</code>, <code>put</code> and <code>delete</code> methods
-above.</p>
-
-
-  <div class='pre p1 fill-light mt0'>heartbeat(): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date">Date</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  <div class='pre p1 fill-light mt0'>error(request: Any, response: Any, status: Any, error: Any)</div>
-
-  
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='stop'>
-      stop
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>Stop serving this host</p>
-
-
-  <div class='pre p1 fill-light mt0'>stop(): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='run'>
-      run
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>Start serving this host and wait for connections
-indefinitely</p>
-
-
-  <div class='pre p1 fill-light mt0'>run(address: any, port: any, timeout: any, duration: any): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>request</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>response</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>status</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>error</span> <code class='quiet'>(Any)</code> 
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a></code>:
-        
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='servers'>
-      servers
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>Get a list of server names for this host</p>
-<p>Servers are identified by the protocol shorthand
-e.g. <code>http</code> for <code>HostHttpServer</code></p>
-
-
-  <div class='pre p1 fill-light mt0'>servers</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">array</a></code>:
-        Array of strings
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    <h3 class='fl m0' id='filesystembackend'>
-      FileSystemBackend
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>Get a list of URLs for this host</p>
-
-
-  <div class='pre p1 fill-light mt0'>new FileSystemBackend()</div>
-
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">array</a></code>:
-        Array of strings
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    <h3 class='fl m0' id='filesystembuffer'>
-      FileSystemBuffer
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>View this host in the browser</p>
-<p>Opens the default browser at the URL of this host</p>
-
-
-  <div class='pre p1 fill-light mt0'>new FileSystemBuffer()</div>
-
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    <h3 class='fl m0' id='filesystemstorer'>
-      FileSystemStorer
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>Get this host's peers</p>
-
-
-  <div class='pre p1 fill-light mt0'>new FileSystemStorer()</div>
-
-  
-    <p>
-      Extends
-      
-        <a href="#filesystembuffer">FileSystemBuffer</a>
-      
-    </p>
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    <h3 class='fl m0' id='util'>
-      util
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>Discover peers</p>
-<p>Looks for peer hosts in the following locations (on Linux, equivalents on other OSs):</p>
-<ul>
-<li><code>/tmp/stencila/hosts</code> - hosts that are currently active (i.e. running)</li>
-<li><code>~/.local/share/stencila/hosts</code> - hosts that are installed but inactive</li>
-</ul>
-<p>Set the <code>interval</code> parameter to trigger ongoing discovery.</p>
-
-
-  <div class='pre p1 fill-light mt0'>util</div>
-
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>interval</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>
-            = <code>0</code>)</code>
-	    The interval (seconds) between discovery attempts
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  <div class='pre p1 fill-light mt0'>isSuperUser()</div>
-
-  <p>Spawn a peer from an inactive host manifest</p>
-
-
-  <div class='pre p1 fill-light mt0'>spawn(host: any, peer: [type]): [type]</div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>host</span> <code class='quiet'>(any)</code>
+            <span class='code bold'>request</span> <code class='quiet'>(any)</code>
 	    
           </div>
           
@@ -2965,138 +3404,7 @@ e.g. <code>http</code> for <code>HostHttpServer</code></p>
       
         <div class='space-bottom0'>
           <div>
-            <span class='code bold'>peer</span> <code class='quiet'>([type])</code>
-	    [
-description
-]
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-</section>
-
-      </div>
-    </div>
-  
-</div>
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code>[type]</code>:
-        [
-description
-]
-
-      
-    
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-</section>
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='DatStorer#key'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>key</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>The dat's key as a hex string</p>
-
-
-  <div class='pre p1 fill-light mt0'>key</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='DatStorer#readFile'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>readFile(filePath)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>Read a file from the Dat</p>
-
-
-  <div class='pre p1 fill-light mt0'>readFile(filePath: any)</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>filePath</span> <code class='quiet'>(any)</code>
+            <span class='code bold'>response</span> <code class='quiet'>(any)</code>
 	    
           </div>
           
@@ -3134,8 +3442,8 @@ description
         
       </div>
     </div>
-  </div>
   <script src='assets/anchor.js'></script>
+  <script src='assets/split.js'></script>
   <script src='assets/site.js'></script>
 </body>
 </html>
