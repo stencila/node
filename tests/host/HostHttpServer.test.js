@@ -53,7 +53,7 @@ test('HostHttpServer.handle unauthorized', function (t) {
   let mock = httpMocks.createMocks({method: 'GET', url: '/'})
   s.handle(mock.req, mock.res)
     .then(() => {
-      t.equal(mock.res.statusCode, 403)
+      t.equal(mock.res.statusCode, 401)
       t.end()
     })
     .catch(error => {
@@ -198,29 +198,18 @@ test('HostHttpServer.route', function (t) {
 })
 
 test('HostHttpServer.home', function (t) {
-  t.plan(3)
-  
   let h = new Host()
   let s = new HostHttpServer(h)
 
-  let mock1 = httpMocks.createMocks({headers:{'Accept': 'application/json'}})
-  s.home(mock1.req, mock1.res)
+  let mock = httpMocks.createMocks()
+  s.home(mock.req, mock.res)
     .then(() => {
-      t.equal(mock1.res.statusCode, 200)
-      let manifest = JSON.parse(mock1.res._getData())
-      t.deepEqual(manifest, h.manifest())
+      t.equal(mock.res.statusCode, 200)
+      t.end()
     })
     .catch(error => {
       t.notOk(error)
-    })
-
-  let mock2 = httpMocks.createMocks()
-  s.home(mock2.req, mock2.res)
-    .then(() => {
-      t.equal(mock2.res.statusCode, 200)
-    })
-    .catch(error => {
-      t.notOk(error)
+      t.end()
     })
 })
 
@@ -243,7 +232,7 @@ test('HostHttpServer.statico', function (t) {
   s.statico(mock2.req, mock2.res, '/foo')
     .then(() => {
       t.equal(mock2.res.statusCode, 404)
-      t.equal(mock2.res._getData(), 'Not found\n\n/foo')
+      t.equal(mock2.res._getData(), 'Not found:/foo')
     })
     .catch(error => {
       t.notOk(error)
@@ -253,7 +242,7 @@ test('HostHttpServer.statico', function (t) {
   s.statico(mock3.req, mock3.res, '../../../foo')
     .then(() => {
       t.equal(mock3.res.statusCode, 403)
-      t.equal(mock3.res._getData(), 'Access denied\n\n../../../foo')
+      t.equal(mock3.res._getData(), 'Access denied:../../../foo')
     })
     .catch(error => {
       t.notOk(error)

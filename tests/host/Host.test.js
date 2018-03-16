@@ -15,16 +15,17 @@ test('Host', t => {
 test('Host.manifest', t => {
   let h = new Host()
 
-  let manifest = h.manifest()
-  t.equal(manifest.stencila.package, 'node')
-  t.equal(manifest.stencila.version, version)
-  t.deepEqual(manifest.schemes.new.NodeContext, NodeContext.spec)
-  t.notOk(manifest.id)
-
-  h.start().then(() => {
-    let manifest = h.manifest()
+  h.manifest().then(manifest => {
+    t.equal(manifest.stencila.package, 'node')
+    t.equal(manifest.stencila.version, version)
+    t.deepEqual(manifest.types.NodeContext, NodeContext.spec)
+    t.notOk(manifest.id)
+    return h.start()
+  }).then(() => {
+    return h.manifest()
+  }).then(manifest => {
     t.ok(manifest.id)
-    t.equal(manifest.process, process.pid)
+    t.equal(manifest.process.pid, process.pid)
     t.equal(manifest.instances.length, 0)
     h.stop()
     t.end()
