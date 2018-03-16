@@ -68,7 +68,6 @@
     "rimraf": "2.6.1",
     "send": "^0.15.4",
     "stencila": "0.28.0-preview.4",
-    "stencila-convert": "^0.29.3",
     "strip-dirs": "^2.0.0",
     "tar-fs": "^1.15.3",
     "untildify": "^3.0.2",
