@@ -2,20 +2,20 @@
   "name": "stencila-node",
   "version": "0.28.4",
   "description": "Stencila for Node.js",
-  "main": "index.js",
+  "main": "lib/index.js",
   "directories": {
-    "test": "tests"
+    "test": "test"
   },
   "bin": {
     "stencila-node": "bin/stencila-node.js"
   },
   "scripts": {
-    "lint": "eslint *.js src tests",
-    "test": "tape tests | tap-spec",
-    "cover": "istanbul cover tests",
+    "lint": "eslint *.js lib test",
+    "test": "tape test | tap-spec",
+    "cover": "istanbul cover test",
     "docs": "documentation build --config docs/docs.yml --output docs --format html",
     "docs-serve": "documentation serve --config docs/docs.yml --watch",
-    "start": "nodemon stencila-node.js"
+    "start": "nodemon bin/stencila-node.js"
   },
   "repository": {
     "type": "git",

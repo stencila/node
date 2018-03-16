@@ -1,7 +1,7 @@
 const test = require('tape')
 
-const Host = require('../../src/host/Host')
-const NodeContext = require('../../src/contexts/NodeContext')
+const Host = require('../../lib/host/Host')
+const NodeContext = require('../../lib/contexts/NodeContext')
 const version = require('../../package').version
 
 test('Host', t => {

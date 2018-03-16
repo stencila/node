@@ -1,8 +1,8 @@
 const test = require('tape')
 var httpMocks = require('node-mocks-http');
 
-const Host = require('../../src/host/Host')
-const HostHttpServer = require('../../src/host/HostHttpServer')
+const Host = require('../../lib/host/Host')
+const HostHttpServer = require('../../lib/host/HostHttpServer')
 
 test('HostHttpServer.stop+start', function (t) {
   let s = new HostHttpServer()

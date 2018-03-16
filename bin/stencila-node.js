@@ -1,4 +1,4 @@
 #!/usr/bin/env node
 
-const stencila = require('.')
+const stencila = require('./lib/index.js')
 stencila.run()
