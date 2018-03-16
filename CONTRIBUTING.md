@@ -7,6 +7,7 @@ Task                                                    |`npm` et al            
 Install and setup dependencies                          | `npm install`         | `make setup`
 Check code for lint                                     | `npm run lint`        | `make lint`
 Run tests                                               | `npm test`            | `make test`
+Run dependency checker                                  | `npm check`           | `make check`
 Run tests with coverage                                 | `npm run cover`       | `make cover`
 Build documentation                                     | `npm run docs`        | `make docs`
 Serve and watch docs for updates                        | `npm run docs-serve`  | `make docs-serve`
