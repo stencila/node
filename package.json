@@ -54,10 +54,12 @@
     "cookie": "^0.3.1",
     "execa": "^0.10.0",
     "http-shutdown": "^1.2.0",
+    "kernelspecs": "^2.0.0",
     "mkdirp": "^0.5.1",
     "path-is-inside": "^1.0.2",
     "request-promise": "^4.2.2",
     "send": "^0.15.4",
+    "spawnteract": "^4.0.0",
     "stencila": "0.28.0-preview.4"
   }
 }
