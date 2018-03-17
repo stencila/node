@@ -1,11 +1,20 @@
 const test = require('tape')
 
-var testPromise = (name, f) => {
-  test(name, t => {
-    f(t).catch(e => {
-      t.fail(e.message)
-      console.log(e.stack) // eslint-disable-line
-      t.end()
+/**
+ * Test a promise
+ *
+ * A convienience function that provides for consistent
+ * handling of errors when testing Promise based functions/class methods
+ *
+ * @param  {String} name Name of test
+ * @param  {Function} func Test function returning a promise
+ */
+var testPromise = (name, func) => {
+  test(name, assert => {
+    func(assert).catch(error => {
+      assert.fail(error.message)
+      console.log(error.stack) // eslint-disable-line
+      assert.end()
     })
   })
 }
