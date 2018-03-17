@@ -1,6 +1,6 @@
 const test = require('tape')
 
-const JupyterContext = require('../../src/contexts/JupyterContext')
+const JupyterContext = require('../../lib/contexts/JupyterContext')
 
 test('JupyterContext.setup', t => {
   JupyterContext.setup().then(() => {
@@ -11,7 +11,7 @@ test('JupyterContext.setup', t => {
     if (Object.keys(JupyterContext.spec.kernels).length >= 1) {
       t.test('JupyterContext', t => {
         let c = new JupyterContext()
-        
+
         t.pass('JupyterContext.kernel: ' + c.kernel)
         c.initialize().then(() => {
           t.pass('JupyterContext.config: ' + JSON.stringify(c.config))
