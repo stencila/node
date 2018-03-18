@@ -17,6 +17,33 @@ testPromise('JupyterContext.setup', assert => {
           assert.pass('JupyterContext.config: ' + JSON.stringify(context.config))
           assert.ok(context._connectionFile)
           assert.ok(context._process)
+        }).then(() => {
+          return context.executeEval({
+            type: 'eval',
+            source: {
+              type: 'string',
+              data: '2 * 2 -1'
+            }
+          })
+        }).then((result) => {
+          assert.deepEqual(result, {
+            type: 'number',
+            data: 3
+          })
+
+          return context.executeRun({
+            type: 'run',
+            source: {
+              type: 'string',
+              data: 'print(22)\n6 * 7\n'
+            }
+          })
+        }).then((result) => {
+          assert.deepEqual(result, {
+            type: 'number',
+            data: 42
+          })
+
           return context.finalize()
         }).then(() => {
           assert.end()
