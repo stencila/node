@@ -60,6 +60,7 @@
     "path-is-inside": "^1.0.2",
     "request-promise": "^4.2.2",
     "send": "^0.15.4",
-    "spawnteract": "^4.0.0"
+    "spawnteract": "^4.0.0",
+    "uuid": "^3.2.1"
   }
 }
