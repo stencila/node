@@ -11,7 +11,7 @@
   },
   "scripts": {
     "lint": "standard \"lib/**/*.js\" test/**/*.js",
-    "check": "dependency-check ./package.json && dependency-check ./package.json --unused --no-dev",
+    "check": "dependency-check ./package.json && dependency-check ./package.json --unused --no-dev --ignore-module request",
     "test": "tape test | tap-spec",
     "cover": "istanbul cover test",
     "docs": "documentation build --config docs/docs.yml --output docs --format html",
@@ -58,6 +58,7 @@
     "kernelspecs": "^2.0.0",
     "mkdirp": "^0.5.1",
     "path-is-inside": "^1.0.2",
+    "request": "^2.85.0",
     "request-promise": "^4.2.2",
     "send": "^0.15.4",
     "spawnteract": "^4.0.0",
