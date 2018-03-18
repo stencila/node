@@ -288,7 +288,7 @@ test('HostHttpServer.get', function (t) {
     })
 })
 
-test('HostHttpServer.call', function (t) {
+test.skip('HostHttpServer.call', function (t) {
   let h = new Host()
   let s = new HostHttpServer(h)
 

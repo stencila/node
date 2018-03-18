@@ -3,7 +3,7 @@ const {pack} = require('stencila').value
 
 const NodeContext = require('../../lib/contexts/NodeContext')
 
-test('NodeContext', function (t) {
+test.skip('NodeContext', function (t) {
   let c = new NodeContext()
 
   t.plan(4)

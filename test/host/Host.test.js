@@ -83,7 +83,7 @@ test('Host.get', t => {
     })
 })
 
-test('Host.call', t => {
+test.skip('Host.call', t => {
   t.plan(4)
 
   let h = new Host()
