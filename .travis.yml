@@ -10,7 +10,8 @@ addons:
       - python3-pip
 
 before_install:
-  - pip3 install --user travis ipykernel
+  - pip3 install pip --upgrade
+  - pip3 install ipykernel
 
 cache:
   directories:
