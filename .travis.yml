@@ -7,7 +7,7 @@ addons:
   apt:
     sources:
       # Use deadsnakes for an up to date Python 2
-      - deadsnakes
+      - sourceline: 'ppa:fkrull/deadsnakes-python2.7'
     packages:
       - python2.7
       - python-pip
