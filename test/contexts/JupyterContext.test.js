@@ -10,7 +10,7 @@ testPromise('JupyterContext.setup', assert => {
     if (Object.keys(JupyterContext.spec.kernels).length >= 1) {
       assert.test('JupyterContext', t => {
         let context = new JupyterContext({
-          kernel: 'python3',
+          language: 'python',
           debug: true,
           timeout: 10
         })

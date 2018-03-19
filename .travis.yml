@@ -5,21 +5,26 @@ node_js:
 
 addons:
   apt:
+    sources:
+      # Use deadsnakes for an up to date Python 2
+      - deadsnakes
     packages:
-      - python3
-      - python3-pip
+      - python
+      - python-pip
 
 before_install:
-  - pip3 install pip --upgrade --user
-  - pip3 install ipykernel --user
-  # Check that ipykernel will run
-  - python -m ipykernel_launcher &
+  - python --version
+  - pip install pip --upgrade --user
+  - pip install ipykernel --user
 
 cache:
   directories:
     - node_modules
 
 script:
+  # Check that ipykernel will run
+  - python -m ipykernel_launcher &
+
   - make lint
   - make check
   - make cover
