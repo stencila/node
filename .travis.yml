@@ -9,7 +9,7 @@ addons:
       # Use deadsnakes for an up to date Python 2
       - deadsnakes
     packages:
-      - python
+      - python2.7
       - python-pip
 
 before_install:
