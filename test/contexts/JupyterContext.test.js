@@ -10,8 +10,9 @@ testPromise('JupyterContext.setup', assert => {
     if (Object.keys(JupyterContext.spec.kernels).length >= 1) {
       assert.test('JupyterContext', t => {
         let context = new JupyterContext({
+          kernel: 'python3',
           debug: true,
-          timeout: 20
+          timeout: 10
         })
 
         assert.pass('JupyterContext.kernel: ' + context.kernel)
@@ -21,7 +22,7 @@ testPromise('JupyterContext.setup', assert => {
           assert.ok(context._connectionFile)
           assert.ok(context._process)
         }).then(() => {
-          // eval with no error
+          // eval
           return context.executeEval({
             type: 'eval',
             source: {
@@ -30,10 +31,7 @@ testPromise('JupyterContext.setup', assert => {
             }
           }).then((result) => {
             assert.deepEqual(result, {
-              value: {
-                type: 'number',
-                data: 3
-              },
+              value: { type: 'number', data: 3 },
               messages: []
             })
           })
@@ -48,23 +46,52 @@ testPromise('JupyterContext.setup', assert => {
           }).then((result) => {
             assert.deepEqual(result, {
               value: null,
-              messages: [{ type: 'error', message: 'name \'foo\' is not defined' }]
+              messages: [{ type: 'error', message: 'NameError: name \'foo\' is not defined' }]
             })
           })
         }).then((result) => {
+          // run
           return context.executeRun({
             type: 'run',
             source: {
               type: 'string',
               data: 'print(22)\n6 * 7\n'
             }
+          }).then((result) => {
+            assert.deepEqual(result, {
+              value: { type: 'number', data: 42 },
+              messages: []
+            })
           })
         }).then((result) => {
-          assert.deepEqual(result, {
-            type: 'number',
-            data: 42
+          // run with error
+          return context.executeRun({
+            type: 'run',
+            source: {
+              type: 'string',
+              data: 'foo'
+            }
+          }).then((result) => {
+            assert.deepEqual(result, {
+              value: null,
+              messages: [{ type: 'error', message: 'NameError: name \'foo\' is not defined' }]
+            })
           })
-
+        }).then((result) => {
+          // run with timeout
+          return context.executeRun({
+            type: 'run',
+            source: {
+              type: 'string',
+              data: 'import time\ntime.sleep(30)\n'
+            }
+          }).then((result) => {
+            assert.deepEqual(result, {
+              value: null,
+              messages: [{ type: 'error', message: 'Request timed out' }]
+            })
+          })
+        }).then(() => {
           return context.finalize()
         }).then(() => {
           assert.end()
