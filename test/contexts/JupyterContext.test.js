@@ -9,27 +9,49 @@ testPromise('JupyterContext.setup', assert => {
     // If at least one kernel insalled can continue
     if (Object.keys(JupyterContext.spec.kernels).length >= 1) {
       assert.test('JupyterContext', t => {
-        let context = new JupyterContext()
+        let context = new JupyterContext({
+          debug: true,
+          timeout: 20
+        })
 
         assert.pass('JupyterContext.kernel: ' + context.kernel)
         context.initialize().then(() => {
-          assert.pass('JupyterContext.config: ' + JSON.stringify(context._config))
+          assert.pass('JupyterContext._config: ' + JSON.stringify(context._config))
+          assert.pass('JupyterContext._kernelInfo: ' + JSON.stringify(context._kernelInfo))
           assert.ok(context._connectionFile)
           assert.ok(context._process)
         }).then(() => {
+          // eval with no error
           return context.executeEval({
             type: 'eval',
             source: {
               type: 'string',
-              data: '2 * 2 -1'
+              data: '2 * 2 - 1'
             }
+          }).then((result) => {
+            assert.deepEqual(result, {
+              value: {
+                type: 'number',
+                data: 3
+              },
+              messages: []
+            })
+          })
+        }).then(() => {
+          // eval with runtime error
+          return context.executeEval({
+            type: 'eval',
+            source: {
+              type: 'string',
+              data: '1 + foo'
+            }
+          }).then((result) => {
+            assert.deepEqual(result, {
+              value: null,
+              messages: [{ type: 'error', message: 'name \'foo\' is not defined' }]
+            })
           })
         }).then((result) => {
-          assert.deepEqual(result, {
-            type: 'number',
-            data: 3
-          })
-
           return context.executeRun({
             type: 'run',
             source: {
