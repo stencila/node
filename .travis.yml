@@ -12,6 +12,8 @@ addons:
 before_install:
   - pip3 install pip --upgrade --user
   - pip3 install ipykernel --user
+  # Check that ipykernel will run
+  - python -m ipykernel_launcher &
 
 cache:
   directories:
