@@ -11,8 +11,8 @@ testPromise('JupyterContext.setup', assert => {
       assert.test('JupyterContext', t => {
         let context = new JupyterContext({
           language: 'python',
-          debug: true,
-          timeout: 10
+          // debug: true,
+          timeout: 5
         })
 
         assert.pass('JupyterContext.kernel: ' + context.kernel)
