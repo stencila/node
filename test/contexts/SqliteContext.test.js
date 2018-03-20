@@ -99,3 +99,49 @@ test('SqliteContext.compileExpr', async assert => {
 
   assert.end()
 })
+
+test('SqliteContext.compileBlock', async assert => {
+  const context = new SqliteContext()
+  let block
+  let compiled
+  let error
+
+  // Test it be called with a `block` node or a string of SQL
+  // and returns a compiled `block` node
+
+  block = {
+    type: 'block',
+    source: {
+      type: 'text',
+      lang: 'sql',
+      data: 'out = SELECT * FROM inp'
+    }
+  }
+  compiled = await context.compileBlock(block)
+  assert.deepEqual(compiled.type, block.type)
+  assert.deepEqual(compiled.source, block.source)
+  assert.deepEqual(compiled.inputs, ['inp'])
+  assert.deepEqual(compiled.output, 'out')
+  assert.deepEqual(compiled.messages, [])
+
+  let compiledFromString = await context.compileBlock('out = SELECT * FROM inp')
+  assert.deepEqual(compiled, compiledFromString)
+
+  // Test that it errors with malformed output extension syntax
+  compiled = await context.compileBlock('out = DELETE FROM foo')
+  assert.deepEqual(compiled.messages, [{
+    type: 'error',
+    message: 'Syntax error found near WITH Clause (Statement)',
+    line: 0,
+    column: 0
+  }])
+
+  // Test that it warns of potential side-effects
+  compiled = await context.compileBlock('CREATE TABLE foo (bar INT); DROP TABLE foo')
+  assert.deepEqual(compiled.messages, [{
+    type: 'warning',
+    message: 'Block has potential side effects caused by using "CREATE, DROP" statements'
+  }])
+
+  assert.end()
+})
