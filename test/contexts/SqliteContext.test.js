@@ -71,18 +71,31 @@ test('SqliteContext.compileExpr', async assert => {
   // Tests of parsing expression for string interpolation inputs
 
   compiled = await context.compileExpr('SELECT * FROM data WHERE height > ${x} AND width < ${y}') // eslint-disable-line no-template-curly-in-string
-  assert.equal(compiled.messages.length, 0)
+  assert.deepEqual(compiled.messages, [])
   assert.deepEqual(compiled.inputs, ['x', 'y', 'data'])
 
   // Tests of parsing expression for table inputs
 
   compiled = await context.compileExpr('SELECT * FROM table1')
-  assert.equal(compiled.messages.length, 0)
+  assert.deepEqual(compiled.messages, [])
   assert.deepEqual(compiled.inputs, ['table1'])
 
   compiled = await context.compileExpr('SELECT * FROM table1 LEFT JOIN table2')
-  assert.equal(compiled.messages.length, 0)
+  assert.deepEqual(compiled.messages, [])
   assert.deepEqual(compiled.inputs, ['table1', 'table2'])
+
+  // Test that any existing tables in the database are not
+  // considered expression inputs
+  context._db.run('CREATE TABLE existing1 (col1 TEXT)')
+  context._db.run('CREATE TABLE existing2 (col2 REAL)')
+
+  compiled = await context.compileExpr('SELECT * FROM input1 RIGHT JOIN existing1')
+  assert.deepEqual(compiled.messages, [])
+  assert.deepEqual(compiled.inputs, ['input1'])
+
+  compiled = await context.compileExpr('SELECT * FROM existing2, existing1')
+  assert.deepEqual(compiled.messages, [])
+  assert.deepEqual(compiled.inputs, [])
 
   assert.end()
 })
