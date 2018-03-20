@@ -62,6 +62,8 @@
     "request-promise": "^4.2.2",
     "send": "^0.15.4",
     "spawnteract": "^4.0.0",
+    "sqlite-parser": "^1.0.1",
+    "sqlite3": "^4.0.0",
     "uuid": "^3.2.1"
   }
 }
