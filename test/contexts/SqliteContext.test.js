@@ -135,6 +135,13 @@ test('SqliteContext.compileBlock', async assert => {
     column: 0
   }])
 
+  // Test that it errors if more than one output
+  compiled = await context.compileBlock('out1 = SELECT 42;\nout2 = SELECT 42')
+  assert.deepEqual(compiled.messages, [{
+    type: 'error',
+    message: 'Block must have only one output but 2 found "out1, out2"'
+  }])
+
   // Test that it warns of potential side-effects
   compiled = await context.compileBlock('CREATE TABLE foo (bar INT); DROP TABLE foo')
   assert.deepEqual(compiled.messages, [{
