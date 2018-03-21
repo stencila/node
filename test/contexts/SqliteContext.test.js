@@ -72,7 +72,7 @@ test('SqliteContext.compileExpr', async assert => {
 
   compiled = await context.compileExpr('SELECT * FROM data WHERE height > ${x} AND width < ${y}') // eslint-disable-line no-template-curly-in-string
   assert.deepEqual(compiled.messages, [])
-  assert.deepEqual(compiled.inputs, ['x', 'y', 'data'])
+  assert.deepEqual(compiled.inputs, ['data', 'x', 'y'])
 
   // Tests of parsing expression for table inputs
 
@@ -104,7 +104,6 @@ test('SqliteContext.compileBlock', async assert => {
   const context = new SqliteContext()
   let block
   let compiled
-  let error
 
   // Test it be called with a `block` node or a string of SQL
   // and returns a compiled `block` node
@@ -142,6 +141,13 @@ test('SqliteContext.compileBlock', async assert => {
     type: 'warning',
     message: 'Block has potential side effects caused by using "CREATE, DROP" statements'
   }])
+
+  // Test that it returns inputs properly
+  context._db.run('CREATE TABLE existing1 (col1 TEXT)')
+
+  compiled = await context.compileExpr('SELECT * FROM input1 RIGHT JOIN existing1 WHERE existing1.col1 < ${input2}') // eslint-disable-line no-template-curly-in-string
+  assert.deepEqual(compiled.messages, [])
+  assert.deepEqual(compiled.inputs, ['input1', 'input2'])
 
   assert.end()
 })
