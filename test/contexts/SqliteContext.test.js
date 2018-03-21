@@ -23,7 +23,7 @@ test('SqliteContext.compileExpr', async assert => {
   assert.deepEqual(compiled.type, expr.type)
   assert.deepEqual(compiled.source, expr.source)
   assert.deepEqual(compiled.messages, [])
-  assert.deepEqual(compiled.inputs, ['data'])
+  assert.deepEqual(compiled.inputs, [{name: 'data'}])
 
   let compiledFromString = await context.compileExpr('SELECT * FROM data')
   assert.deepEqual(compiled, compiledFromString)
@@ -72,26 +72,32 @@ test('SqliteContext.compileExpr', async assert => {
 
   compiled = await context.compileExpr('SELECT * FROM data WHERE height > ${x} AND width < ${y}') // eslint-disable-line no-template-curly-in-string
   assert.deepEqual(compiled.messages, [])
-  assert.deepEqual(compiled.inputs, ['data', 'x', 'y'])
+  assert.deepEqual(compiled.inputs, [
+    {name: 'data'},
+    {name: 'x'},
+    {name: 'y'}
+  ])
 
   // Tests of parsing expression for table inputs
 
   compiled = await context.compileExpr('SELECT * FROM table1')
   assert.deepEqual(compiled.messages, [])
-  assert.deepEqual(compiled.inputs, ['table1'])
+  assert.deepEqual(compiled.inputs, [{name: 'table1'}])
 
   compiled = await context.compileExpr('SELECT * FROM table1 LEFT JOIN table2')
   assert.deepEqual(compiled.messages, [])
-  assert.deepEqual(compiled.inputs, ['table1', 'table2'])
+  assert.deepEqual(compiled.inputs, [{name: 'table1'}, {name: 'table2'}])
 
   // Test that any existing tables in the database are not
   // considered expression inputs
-  context._db.run('CREATE TABLE existing1 (col1 TEXT)')
-  context._db.run('CREATE TABLE existing2 (col2 REAL)')
+  context._db.exec(`
+    CREATE TABLE existing1 (col1 TEXT);
+    CREATE TABLE existing2 (col2 REAL)
+  `)
 
   compiled = await context.compileExpr('SELECT * FROM input1 RIGHT JOIN existing1')
   assert.deepEqual(compiled.messages, [])
-  assert.deepEqual(compiled.inputs, ['input1'])
+  assert.deepEqual(compiled.inputs, [{name: 'input1'}])
 
   compiled = await context.compileExpr('SELECT * FROM existing2, existing1')
   assert.deepEqual(compiled.messages, [])
@@ -119,8 +125,8 @@ test('SqliteContext.compileBlock', async assert => {
   compiled = await context.compileBlock(block)
   assert.deepEqual(compiled.type, block.type)
   assert.deepEqual(compiled.source, block.source)
-  assert.deepEqual(compiled.inputs, ['inp'])
-  assert.deepEqual(compiled.output, 'out')
+  assert.deepEqual(compiled.inputs, [{name: 'inp'}])
+  assert.deepEqual(compiled.output, {name: 'out'})
   assert.deepEqual(compiled.messages, [])
 
   let compiledFromString = await context.compileBlock('out = SELECT * FROM inp')
@@ -150,11 +156,116 @@ test('SqliteContext.compileBlock', async assert => {
   }])
 
   // Test that it returns inputs properly
-  context._db.run('CREATE TABLE existing1 (col1 TEXT)')
+  context._db.exec('CREATE TABLE existing1 (col1 TEXT)')
 
   compiled = await context.compileExpr('SELECT * FROM input1 RIGHT JOIN existing1 WHERE existing1.col1 < ${input2}') // eslint-disable-line no-template-curly-in-string
   assert.deepEqual(compiled.messages, [])
-  assert.deepEqual(compiled.inputs, ['input1', 'input2'])
+  assert.deepEqual(compiled.inputs, [{name: 'input1'}, {name: 'input2'}])
 
   assert.end()
 })
+
+test('SqliteContext.executeExpr', async assert => {
+  const context = new SqliteContext()
+  let executed
+
+  context._db.exec(SMALL_TABLE_SQL)
+
+  // Test using no inputs
+  executed = await context.executeExpr('SELECT 42 AS answer')
+  assert.deepEqual(executed.inputs, [])
+  assert.deepEqual(executed.output, {value: {type: 'table', data: {'answer': [42]}}})
+  assert.deepEqual(executed.messages, [])
+
+  // Test using an existing table
+  executed = await context.executeExpr('SELECT * FROM test_table_small')
+  assert.deepEqual(executed.inputs, [])
+  assert.deepEqual(executed.output, {
+    value: {
+      type: 'table',
+      data: {
+        col1: ['a', 'b', 'c'],
+        col2: [1, 2, 3]
+      }
+    }
+  })
+  assert.deepEqual(executed.messages, [])
+
+  // Test with an interpolated variable input
+  executed = await context.executeExpr({
+    type: 'expr',
+    source: {data: 'SELECT * FROM test_table_small WHERE col2 <= ${x}'}, // eslint-disable-line
+    inputs: [{
+      name: 'x',
+      value: {type: 'number', data: 2}
+    }],
+    messages: []
+  })
+  assert.deepEqual(executed.output, {
+    value: {
+      type: 'table',
+      data: {
+        col1: ['a', 'b'],
+        col2: [1, 2]
+      }
+    }
+  })
+  assert.deepEqual(executed.messages, [])
+
+  // Test with a table input
+  executed = await context.executeExpr({
+    type: 'expr',
+    source: {data: 'SELECT * FROM mydata WHERE col2 <= 2'},
+    inputs: [{
+      name: 'mydata',
+      value: {
+        type: 'table',
+        data: {
+          col1: ['A', 'B', 'C', 'D'],
+          col2: [1, 2, 3, 4]
+        }
+      }
+    }],
+    messages: []
+  })
+  assert.deepEqual(executed.output, {
+    value: {
+      type: 'table',
+      data: {
+        col1: ['A', 'B'],
+        col2: [1, 2]
+      }
+    }
+  })
+  assert.deepEqual(executed.messages, [])
+
+  assert.end()
+})
+
+// Some SQL to create test tables
+const SMALL_TABLE_SQL = `
+  CREATE TABLE test_table_small (col1 TEXT, col2 INT);
+  INSERT INTO test_table_small VALUES ('a', 1);
+  INSERT INTO test_table_small VALUES ('b', 2);
+  INSERT INTO test_table_small VALUES ('c', 3);
+`
+const LARGE_TABLE_SQL = `
+  CREATE TABLE test_table_large (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    x TEXT NOT NULL,
+    y INT NOT NULL
+  );
+  INSERT INTO test_table_1 (col1 TEXT, col2 INT)
+  SELECT 'a', 42
+  FROM (SELECT * FROM (
+       (SELECT 0 UNION ALL SELECT 1) t2,
+       (SELECT 0 UNION ALL SELECT 1) t4,
+       (SELECT 0 UNION ALL SELECT 1) t8,
+       (SELECT 0 UNION ALL SELECT 1) t16,
+       (SELECT 0 UNION ALL SELECT 1) t32,
+       (SELECT 0 UNION ALL SELECT 1) t64,
+       (SELECT 0 UNION ALL SELECT 1) t128,
+       (SELECT 0 UNION ALL SELECT 1) t256
+       )
+  );
+`
