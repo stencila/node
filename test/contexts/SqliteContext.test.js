@@ -245,9 +245,13 @@ test('SqliteContext.executeExpr', async assert => {
 
 test('SqliteContext.executeBlock', async assert => {
   const context = new SqliteContext()
+  let compiled
   let executed
 
-  // Test with an interpolated variable input
+  context._db.exec(SMALL_TABLE_SQL)
+  context._db.exec(LARGE_TABLE_SQL)
+
+  // Test with named output on last line
   executed = await context.executeBlock({
     type: 'expr',
     source: {
@@ -264,7 +268,9 @@ test('SqliteContext.executeBlock', async assert => {
       name: 'x',
       value: {type: 'number', data: 2}
     }],
-    output: {},
+    output: {
+      name: 'x'
+    },
     messages: []
   })
   assert.deepEqual(executed.output, {
@@ -278,6 +284,18 @@ test('SqliteContext.executeBlock', async assert => {
     }
   })
   assert.deepEqual(executed.messages, [])
+
+  // Test with an interpolated variable input
+  compiled = await context.compileBlock('SELECT * FROM test_table_small')
+  executed = await context.executeBlock(compiled)
+  assert.deepEqual(executed.output.value.data.col1.length, 3)
+  assert.deepEqual(executed.messages, [])
+
+  // Ignore all SELECT statements except for the last
+  compiled = await context.compileBlock('SELECT * FROM test_table_large; SELECT * FROM test_table_small')
+  executed = await context.executeBlock(compiled)
+  assert.deepEqual(executed.output.value.data.col1.length, 3)
+  assert.deepEqual(executed.messages, [ { type: 'warning', message: 'Ignored a SELECT statement that is before the last statement' } ])
 
   assert.end()
 })
