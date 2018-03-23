@@ -50,7 +50,7 @@ test('HostHttpServer.stop+start multiple', function (t) {
 
 test('HostHttpServer.handle unauthorized', function (t) {
   let s = new HostHttpServer()
-  let mock = httpMocks.createMocks({method: 'GET', url: '/'})
+  let mock = httpMocks.createMocks({method: 'GET', url: '/manifest'})
   s.handle(mock.req, mock.res)
     .then(() => {
       t.equal(mock.res.statusCode, 401)
@@ -63,10 +63,11 @@ test('HostHttpServer.handle unauthorized', function (t) {
 })
 
 test('HostHttpServer.handle authorized', function (t) {
-  let s = new HostHttpServer()
+  let h = new Host()
+  let s = new HostHttpServer(h)
 
   // Authorization using a ticket
-  let mock = httpMocks.createMocks({method: 'GET', url: '/?ticket=' + s.ticketCreate()})
+  let mock = httpMocks.createMocks({method: 'GET', url: '/manifest?ticket=' + s.ticketCreate()})
   let cookie = null
   s.handle(mock.req, mock.res).then(() => {
     t.equal(mock.res.statusCode, 200)
@@ -75,7 +76,7 @@ test('HostHttpServer.handle authorized', function (t) {
     t.ok(cookie.match(/^token=/))
   }).then(() => {
     // Authorization using the token passed in Set-Cookie
-    let mock = httpMocks.createMocks({method: 'GET', url: '/', headers: {'Cookie': cookie}})
+    let mock = httpMocks.createMocks({method: 'GET', url: '/manifest', headers: {'Cookie': cookie}})
     return s.handle(mock.req, mock.res)
       .then(() => {
         t.equal(mock.res.statusCode, 200)
@@ -218,11 +219,11 @@ test('HostHttpServer.statico', function (t) {
   let s = new HostHttpServer()
 
   let mock1 = httpMocks.createMocks()
-  s.statico(mock1.req, mock1.res, 'logo-name-beta.svg')
+  s.statico(mock1.req, mock1.res, 'index.html')
     .then(() => {
       t.equal(mock1.res.statusCode, 200)
-      t.equal(mock1.res._getHeaders()['Content-Type'], 'image/svg+xml')
-      t.equal(mock1.res._getData().substring(0, 54), '<?xml version="1.0" encoding="UTF-8" standalone="no"?>')
+      t.equal(mock1.res._getHeaders()['Content-Type'], 'text/html; charset=UTF-8')
+      t.equal(mock1.res._getData().substring(0, 23), '<!doctype html>\n<html>\n')
     })
     .catch(error => {
       t.notOk(error)
