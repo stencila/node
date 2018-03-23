@@ -30,10 +30,6 @@ test('SqliteContext.compileExpr', async assert => {
 
   // Tests of malformed `expr` node
 
-  compiled = await context.compileExpr({foo: null})
-  error = compiled.messages[0]
-  assert.deepEqual(error.message, 'Expression must have a `source` property')
-
   compiled = await context.compileExpr({source: {lang: 'python'}})
   error = compiled.messages[0]
   assert.deepEqual(error.message, 'Expression `source.lang` property must be either "sql" or "sqlite"')
@@ -134,19 +130,11 @@ test('SqliteContext.compileBlock', async assert => {
 
   // Test that it errors with malformed output extension syntax
   compiled = await context.compileBlock('out = DELETE FROM foo')
-  assert.deepEqual(compiled.messages, [{
-    type: 'error',
-    message: 'Syntax error found near WITH Clause (Statement)',
-    line: 0,
-    column: 0
-  }])
+  assert.deepEqual(compiled.messages[0].message, 'Syntax error found near WITH Clause (Statement)')
 
   // Test that it errors if more than one output
   compiled = await context.compileBlock('out1 = SELECT 42;\nout2 = SELECT 42')
-  assert.deepEqual(compiled.messages, [{
-    type: 'error',
-    message: 'Block must have only one output but 2 found "out1, out2"'
-  }])
+  assert.deepEqual(compiled.messages[0].message, 'Block must have only one output but 2 found "out1, out2"')
 
   // Test that it warns of potential side-effects
   compiled = await context.compileBlock('CREATE TABLE foo (bar INT); DROP TABLE foo')
@@ -162,23 +150,34 @@ test('SqliteContext.compileBlock', async assert => {
   assert.deepEqual(compiled.messages, [])
   assert.deepEqual(compiled.inputs, [{name: 'input1'}, {name: 'input2'}])
 
+  // Test various types of output name syntax
+  compiled = await context.compileBlock('out = SELECT * FROM inp')
+  assert.deepEqual(compiled.output.name, 'out')
+
+  compiled = await context.compileBlock('\n  out = SELECT * FROM inp')
+  assert.deepEqual(compiled.output.name, 'out')
+
   assert.end()
 })
 
 test('SqliteContext.executeExpr', async assert => {
   const context = new SqliteContext()
+  let compiled
   let executed
 
   context._db.exec(SMALL_TABLE_SQL)
+  context._db.exec(LARGE_TABLE_SQL)
 
   // Test using no inputs
-  executed = await context.executeExpr('SELECT 42 AS answer')
+  compiled = await context.compileExpr('SELECT 42 AS answer')
+  executed = await context.executeExpr(compiled)
   assert.deepEqual(executed.inputs, [])
   assert.deepEqual(executed.output, {value: {type: 'table', data: {'answer': [42]}}})
   assert.deepEqual(executed.messages, [])
 
   // Test using an existing table
-  executed = await context.executeExpr('SELECT * FROM test_table_small')
+  compiled = await context.compileExpr('SELECT * FROM test_table_small')
+  executed = await context.executeExpr(compiled)
   assert.deepEqual(executed.inputs, [])
   assert.deepEqual(executed.output, {
     value: {
@@ -199,6 +198,7 @@ test('SqliteContext.executeExpr', async assert => {
       name: 'x',
       value: {type: 'number', data: 2}
     }],
+    output: {},
     messages: []
   })
   assert.deepEqual(executed.output, {
@@ -226,6 +226,7 @@ test('SqliteContext.executeExpr', async assert => {
         }
       }
     }],
+    output: {},
     messages: []
   })
   assert.deepEqual(executed.output, {
@@ -233,6 +234,45 @@ test('SqliteContext.executeExpr', async assert => {
       type: 'table',
       data: {
         col1: ['A', 'B'],
+        col2: [1, 2]
+      }
+    }
+  })
+  assert.deepEqual(executed.messages, [])
+
+  assert.end()
+})
+
+test('SqliteContext.executeBlock', async assert => {
+  const context = new SqliteContext()
+  let executed
+
+  // Test with an interpolated variable input
+  executed = await context.executeBlock({
+    type: 'expr',
+    source: {
+      data: `
+        CREATE TABLE mytable (col1 TEXT, col2 INT);
+        INSERT INTO mytable VALUES ('a', 1);
+        INSERT INTO mytable VALUES ('b', 2);
+        INSERT INTO mytable VALUES ('c', 3);
+
+        x = SELECT * FROM mytable WHERE col2 <= \${x}
+      `
+    },
+    inputs: [{
+      name: 'x',
+      value: {type: 'number', data: 2}
+    }],
+    output: {},
+    messages: []
+  })
+  assert.deepEqual(executed.output, {
+    name: 'x',
+    value: {
+      type: 'table',
+      data: {
+        col1: ['a', 'b'],
         col2: [1, 2]
       }
     }
@@ -252,10 +292,10 @@ const SMALL_TABLE_SQL = `
 const LARGE_TABLE_SQL = `
   CREATE TABLE test_table_large (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    x TEXT NOT NULL,
-    y INT NOT NULL
+    col1 TEXT NOT NULL,
+    col2 INT NOT NULL
   );
-  INSERT INTO test_table_1 (col1 TEXT, col2 INT)
+  INSERT INTO test_table_large (col1, col2)
   SELECT 'a', 42
   FROM (SELECT * FROM (
        (SELECT 0 UNION ALL SELECT 1) t2,
