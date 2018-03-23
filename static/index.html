@@ -3,20 +3,32 @@
   <head>
     <meta charset="utf-8">
     <title>Stencila for Node.js</title>
+    <style type="text/css">
+      body {
+        color: #777;
+        font-size: 1.1rem;
+        font-family: Lato, Helvetica, sans;
+        margin: 5rem auto;
+        max-width: 40rem;
+        padding: 3em;
+        text-align: center;
+      }
+      a {
+        text-decoration: none;
+      }
+    </style>
   </head>
   <body>
-    <div style="width: 40em; margin: 10em auto">
-      <img src="/static/logo-name-beta.svg" style="display: block; width: 20em; margin: 0 auto">
-      <pre style="font-size: 1.2em; text-align: center;">
-console.info(<span style="color: #c91630">"work in progress. dashboard coming soon!"</span>)
-      </pre>
-    </div>
-    <script>
-    setInterval(function(){
-      var xhr = new XMLHttpRequest();
-      xhr.open("PUT", "/!heartbeat");
-      xhr.send();
-    }, 60 * 1000)
-    </script>
+    <p>
+      Hello! This is a Stencila Host running in Node.js. You can connect
+      a Stencila client (e.g. <a href="https://github.com/stencila/desktop">Stencila Desktop</a>)
+      to it and ask for execution contexts (e.g. for running SQL).
+    </p>
+    <p>
+      To connect to this host use the URL (containing a security ticket) that was printed in the console
+      where you started it. Or, if this host was launched automatically for you but you need
+      to connect manually, get the ticket from the host file created in your file system's temporary directory
+      e.g. <code>/tmp/stencila/hosts</code> on MacOS and Linux. See the <a href="http://docs.stenci.la">documentation</a> for more.
+    </p>
   </body>
 </html>
