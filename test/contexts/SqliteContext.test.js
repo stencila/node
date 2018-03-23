@@ -300,6 +300,26 @@ test('SqliteContext.executeBlock', async assert => {
   assert.end()
 })
 
+test('SqliteContext.list', async assert => {
+  const context = new SqliteContext()
+
+  context._db.exec(SMALL_TABLE_SQL)
+
+  let list = await context.list()
+  assert.deepEqual(list, [])
+
+  await context.executeBlock(await context.compileBlock('a = SELECT 1'))
+  assert.deepEqual(await context.list(), ['a'])
+
+  await context.executeBlock(await context.compileBlock('SELECT 2'))
+  assert.deepEqual(await context.list(), ['a'])
+
+  await context.executeBlock(await context.compileBlock('b = SELECT 3'))
+  assert.deepEqual(await context.list(), ['a', 'b'])
+
+  assert.end()
+})
+
 // Some SQL to create test tables
 const SMALL_TABLE_SQL = `
   CREATE TABLE test_table_small (col1 TEXT, col2 INT);
