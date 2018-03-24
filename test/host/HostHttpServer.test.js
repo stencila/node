@@ -71,7 +71,8 @@ test('HostHttpServer.handle authorized', function (t) {
   // Function for creating a JWT
   let jwt = function () {
     return jsonwebtoken.sign({}, s.key, {
-      jwtid: crypto.randomBytes(64).toString('base64'),
+      algorithm: 'HS256',
+      jwtid: crypto.randomBytes(8).toString('base64'),
       expiresIn: 3600
     })
   }
