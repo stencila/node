@@ -155,7 +155,7 @@ test('Host.start+stop+servers', t => {
       t.ok(h._servers.http)
       let http = h.servers['http']
       t.ok(http.url)
-      t.ok(http.ticket)
+      t.ok(http.key)
       h.stop()
         .then(() => {
           t.notOk(h._servers.http)

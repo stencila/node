@@ -1,5 +1,7 @@
 const test = require('tape')
-var httpMocks = require('node-mocks-http')
+const crypto = require('crypto')
+const jsonwebtoken = require('jsonwebtoken')
+const httpMocks = require('node-mocks-http')
 
 const Host = require('../../lib/host/Host')
 const HostHttpServer = require('../../lib/host/HostHttpServer')
@@ -53,7 +55,7 @@ test('HostHttpServer.handle unauthorized', function (t) {
   let mock = httpMocks.createMocks({method: 'GET', url: '/manifest'})
   s.handle(mock.req, mock.res)
     .then(() => {
-      t.equal(mock.res.statusCode, 401)
+      t.equal(mock.res.statusCode, 403)
       t.end()
     })
     .catch(error => {
@@ -66,24 +68,46 @@ test('HostHttpServer.handle authorized', function (t) {
   let h = new Host()
   let s = new HostHttpServer(h)
 
+  // Function for creating a JWT
+  let jwt = function () {
+    return jsonwebtoken.sign({}, s.key, {
+      jwtid: crypto.randomBytes(64).toString('base64'),
+      expiresIn: 3600
+    })
+  }
+
   // Authorization using a ticket
-  let mock = httpMocks.createMocks({method: 'GET', url: '/manifest?ticket=' + s.ticketCreate()})
-  let cookie = null
+  let mock = httpMocks.createMocks({
+    method: 'GET',
+    url: '/manifest',
+    headers: {
+      'Authorization': 'Bearer ' + jwt()
+    }
+  })
   s.handle(mock.req, mock.res).then(() => {
     t.equal(mock.res.statusCode, 200)
-
-    cookie = mock.res._headers['Set-Cookie']
-    t.ok(cookie.match(/^token=/))
   }).then(() => {
     // Authorization using the token passed in Set-Cookie
-    let mock = httpMocks.createMocks({method: 'GET', url: '/manifest', headers: {'Cookie': cookie}})
+    let mock = httpMocks.createMocks({
+      method: 'GET',
+      url: '/manifest',
+      headers: {
+        'Authorization': 'Bearer ' + jwt()
+      }
+    })
     return s.handle(mock.req, mock.res)
       .then(() => {
         t.equal(mock.res.statusCode, 200)
       })
   }).then(() => {
     // Authorization using the token but bad request
-    let mock = httpMocks.createMocks({method: 'FOO', url: '/foo/bar', headers: {'Cookie': cookie}})
+    let mock = httpMocks.createMocks({
+      method: 'FOO',
+      url: '/foo',
+      headers: {
+        'Authorization': 'Bearer ' + jwt()
+      }
+    })
     return s.handle(mock.req, mock.res)
       .then(() => {
         t.equal(mock.res.statusCode, 400)
@@ -102,7 +126,7 @@ test('HostHttpServer.handle CORS passes', function (t) {
   Promise.resolve().then(() => {
     let mock = httpMocks.createMocks({
       method: 'GET',
-      url: '/?ticket=' + s.ticketCreate(),
+      url: '/',
       headers: {'origin': 'http://127.0.0.1'}
     })
     return s.handle(mock.req, mock.res)
@@ -113,7 +137,7 @@ test('HostHttpServer.handle CORS passes', function (t) {
   }).then(() => {
     let mock = httpMocks.createMocks({
       method: 'GET',
-      url: '/?ticket=' + s.ticketCreate(),
+      url: '/',
       headers: {'referer': 'http://localhost/some/page'}
     })
     return s.handle(mock.req, mock.res)
@@ -124,7 +148,7 @@ test('HostHttpServer.handle CORS passes', function (t) {
   }).then(() => {
     let mock = httpMocks.createMocks({
       method: 'GET',
-      url: '/?ticket=' + s.ticketCreate(),
+      url: '/',
       headers: {'referer': 'http://builds.stenci.la'}
     })
     return s.handle(mock.req, mock.res)
@@ -147,7 +171,7 @@ test('HostHttpServer.handle CORS fails', function (t) {
   Promise.resolve().then(() => {
     let mock = httpMocks.createMocks({
       method: 'GET',
-      url: '/?ticket=' + s.ticketCreate(),
+      url: '/',
       headers: {'referer': 'http://evilhackers.com/some/page'}
     })
     return s.handle(mock.req, mock.res)
@@ -158,7 +182,7 @@ test('HostHttpServer.handle CORS fails', function (t) {
   }).then(() => {
     let mock = httpMocks.createMocks({
       method: 'GET',
-      url: '/?ticket=' + s.ticketCreate(),
+      url: '/',
       headers: {'origin': 'http://spoof-stenci.la/'}
     })
     return s.handle(mock.req, mock.res)
@@ -176,7 +200,8 @@ test('HostHttpServer.handle CORS fails', function (t) {
 })
 
 test('HostHttpServer.route', function (t) {
-  let s = new HostHttpServer()
+  // Set key to false for this test
+  let s = new HostHttpServer(null, null, null, false)
 
   t.deepEqual(s.route('GET', '/'), [s.home])
 
@@ -185,13 +210,11 @@ test('HostHttpServer.route', function (t) {
 
   t.deepEqual(s.route('POST', '/type'), [s.create, 'type'])
 
-  t.deepEqual(s.route('GET', '/address'), [s.get, 'address'])
+  t.deepEqual(s.route('GET', '/name'), [s.get, 'name'])
 
-  t.deepEqual(s.route('GET', '/address$path'), [s.file, 'address', 'path'])
+  t.deepEqual(s.route('PUT', '/name!method'), [s.call, 'name', 'method'])
 
-  t.deepEqual(s.route('PUT', '/address!method'), [s.call, 'address', 'method'])
-
-  t.deepEqual(s.route('DELETE', '/address'), [s.delete, 'address'])
+  t.deepEqual(s.route('DELETE', '/name'), [s.delete, 'name'])
 
   t.deepEqual(s.route('FOO', 'foo'), null)
 
@@ -233,7 +256,7 @@ test('HostHttpServer.statico', function (t) {
   s.statico(mock2.req, mock2.res, '/foo')
     .then(() => {
       t.equal(mock2.res.statusCode, 404)
-      t.equal(mock2.res._getData(), 'Not found:/foo')
+      t.equal(mock2.res._getData(), 'Not found: /foo')
     })
     .catch(error => {
       t.notOk(error)
@@ -243,7 +266,7 @@ test('HostHttpServer.statico', function (t) {
   s.statico(mock3.req, mock3.res, '../../../foo')
     .then(() => {
       t.equal(mock3.res.statusCode, 403)
-      t.equal(mock3.res._getData(), 'Access denied:../../../foo')
+      t.equal(mock3.res._getData(), 'Forbidden: ../../../foo')
     })
     .catch(error => {
       t.notOk(error)
