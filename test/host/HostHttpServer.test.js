@@ -207,7 +207,6 @@ test('HostHttpServer.route', function (t) {
   t.deepEqual(s.route('GET', '/'), [s.home])
 
   t.deepEqual(s.route('GET', '/static/some/file.js'), [s.statico, 'some/file.js'])
-  t.deepEqual(s.route('GET', '/favicon.ico'), [s.statico, 'favicon.ico'])
 
   t.deepEqual(s.route('POST', '/type'), [s.create, 'type'])
 
