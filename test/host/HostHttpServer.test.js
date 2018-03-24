@@ -1,6 +1,4 @@
 const test = require('tape')
-const crypto = require('crypto')
-const jsonwebtoken = require('jsonwebtoken')
 const httpMocks = require('node-mocks-http')
 
 const Host = require('../../lib/host/Host')
@@ -51,7 +49,8 @@ test('HostHttpServer.stop+start multiple', function (t) {
 })
 
 test('HostHttpServer.handle unauthorized', function (t) {
-  let s = new HostHttpServer()
+  let h = new Host()
+  let s = new HostHttpServer(h)
   let mock = httpMocks.createMocks({method: 'GET', url: '/manifest'})
   s.handle(mock.req, mock.res)
     .then(() => {
@@ -67,52 +66,45 @@ test('HostHttpServer.handle unauthorized', function (t) {
 test('HostHttpServer.handle authorized', function (t) {
   let h = new Host()
   let s = new HostHttpServer(h)
-
-  // Function for creating a JWT
-  let jwt = function () {
-    return jsonwebtoken.sign({}, s.key, {
-      algorithm: 'HS256',
-      jwtid: crypto.randomBytes(8).toString('base64'),
-      expiresIn: 3600
-    })
-  }
-
-  // Authorization using a ticket
-  let mock = httpMocks.createMocks({
-    method: 'GET',
-    url: '/manifest',
-    headers: {
-      'Authorization': 'Bearer ' + jwt()
-    }
-  })
-  s.handle(mock.req, mock.res).then(() => {
-    t.equal(mock.res.statusCode, 200)
-  }).then(() => {
-    // Authorization using the token passed in Set-Cookie
+  h.token().then(token => {
+    console.log(token)
+    // Authorization using a ticket
     let mock = httpMocks.createMocks({
       method: 'GET',
       url: '/manifest',
       headers: {
-        'Authorization': 'Bearer ' + jwt()
+        'Authorization': 'Bearer ' + token
       }
     })
-    return s.handle(mock.req, mock.res)
-      .then(() => {
-        t.equal(mock.res.statusCode, 200)
+    s.handle(mock.req, mock.res).then(() => {
+      t.equal(mock.res.statusCode, 200)
+    }).then(() => {
+      // Authorization using the token passed in Set-Cookie
+      let mock = httpMocks.createMocks({
+        method: 'GET',
+        url: '/manifest',
+        headers: {
+          'Authorization': 'Bearer ' + token
+        }
       })
-  }).then(() => {
-    // Authorization using the token but bad request
-    let mock = httpMocks.createMocks({
-      method: 'FOO',
-      url: '/foo',
-      headers: {
-        'Authorization': 'Bearer ' + jwt()
-      }
+      return s.handle(mock.req, mock.res)
+        .then(() => {
+          t.equal(mock.res.statusCode, 200)
+        })
+    }).then(() => {
+      // Authorization using the token but bad request
+      let mock = httpMocks.createMocks({
+        method: 'FOO',
+        url: '/foo',
+        headers: {
+          'Authorization': 'Bearer ' + token
+        }
+      })
+      return s.handle(mock.req, mock.res)
+        .then(() => {
+          t.equal(mock.res.statusCode, 400)
+        })
     })
-    return s.handle(mock.req, mock.res)
-      .then(() => {
-        t.equal(mock.res.statusCode, 400)
-      })
   }).then(() => {
     t.end()
   }).catch(error => {
@@ -202,7 +194,7 @@ test('HostHttpServer.handle CORS fails', function (t) {
 
 test('HostHttpServer.route', function (t) {
   // Set key to false for this test
-  let s = new HostHttpServer(null, null, null, false)
+  let s = new HostHttpServer()
 
   t.deepEqual(s.route('GET', '/'), [s.home])
 

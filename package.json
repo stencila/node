@@ -50,6 +50,7 @@
     "tape": "^4.9.0"
   },
   "dependencies": {
+    "address": "^1.0.3",
     "body": "^5.1.0",
     "execa": "^0.10.0",
     "http-shutdown": "^1.2.0",
