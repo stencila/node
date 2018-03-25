@@ -41,7 +41,6 @@
   "devDependencies": {
     "dependency-check": "^3.1.0",
     "documentation": "^6.1.0",
-    "glob": "^7.1.2",
     "node-mocks-http": "^1.6.7",
     "nodemon": "^1.17.2",
     "nyc": "^11.6.0",
@@ -53,6 +52,7 @@
     "address": "^1.0.3",
     "body": "^5.1.0",
     "execa": "^0.10.0",
+    "glob": "^7.1.2",
     "http-shutdown": "^1.2.0",
     "jmp": "^1.0.0",
     "jsonwebtoken": "^8.2.0",

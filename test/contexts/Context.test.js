@@ -3,24 +3,25 @@ const test = require('tape')
 const Host = require('../../lib/host/Host')
 // const Context = require('../../lib/contexts/Context')
 
-test.skip('Context.packPointer+unpackPointer', async assert => {
+test('Context.packPointer+unpackPointer', async assert => {
   const hostA = new Host()
   const hostB = new Host()
   await hostA.start()
   await hostB.start()
-  let m = await hostA.manifest()
-  hostB._peers.push(m)
 
   const contextA1 = (await hostA.create('Context')).instance
   const contextA2 = (await hostA.create('Context')).instance
   const contextB1 = (await hostB.create('Context')).instance
 
-  contextA1._data['fourty_two'] = 42
+  contextA1._data['A1X'] = 'a1x'
+  contextB1._data['B1X'] = 'b1x'
 
-  const pointerA1 = await contextA1.packPointer('number', 'fourty_two')
-  assert.deepEqual(pointerA1, {
-    type: 'number',
-    name: 'fourty_two',
+  const pointerA1X = await contextA1.packPointer('string', 'A1X')
+  const pointerB1X = await contextB1.packPointer('string', 'B1X')
+
+  assert.deepEqual(pointerA1X, {
+    type: 'string',
+    name: 'A1X',
     context: {
       id: contextA1.id,
       name: contextA1.name
@@ -35,14 +36,11 @@ test.skip('Context.packPointer+unpackPointer', async assert => {
     }
   })
 
-  const dataA1 = await contextA1.unpackPointer(pointerA1)
-  assert.deepEqual(dataA1, 42)
+  assert.deepEqual(await contextA1.unpackPointer(pointerA1X), 'a1x', 'Acessible from same context')
+  assert.deepEqual(await contextA2.unpackPointer(pointerA1X), 'a1x', 'Acessible from another context on host')
+  assert.deepEqual(await contextB1.unpackPointer(pointerA1X), 'a1x', 'Acessible from another context on another host')
 
-  const dataA2 = await contextA2.unpackPointer(pointerA1)
-  assert.deepEqual(dataA2, 42)
-
-  const dataB1 = await contextB1.unpackPointer(pointerA1)
-  assert.deepEqual(dataB1, 42)
+  assert.deepEqual(await contextA1.unpackPointer(pointerB1X), 'b1x', 'Acessible from same context')
 
   await hostA.stop()
   await hostB.stop()
