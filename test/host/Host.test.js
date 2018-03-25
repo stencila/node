@@ -69,16 +69,16 @@ test('Host.get', t => {
 
   h.create('NodeContext')
     .then(result => {
-      let {id} = result
-      t.ok(id)
-      return h.get(id)
+      let {name} = result
+      t.ok(name)
+      return h.get(name)
     })
-    .then(instance => {
-      t.ok(instance)
+    .then(repr => {
+      t.ok(repr)
       return h.get('foobar')
     })
     .catch(error => {
-      t.ok(error.message.match('Unknown instance'))
+      t.equal(error.message, 'No instance found with name "foobar"')
       t.end()
     })
 })
@@ -90,10 +90,10 @@ test.skip('Host.call', t => {
 
   h.create('NodeContext')
     .then(result => {
-      let {id} = result
-      t.ok(id)
+      let {name} = result
+      t.ok(name)
 
-      h.call(id, 'runCode', ['6*7'])
+      h.call(name, 'runCode', ['6*7'])
         .then(result => {
           t.deepEqual(result, { errors: null, output: { content: '42', format: 'text', type: 'integer' } })
         })
@@ -101,7 +101,7 @@ test.skip('Host.call', t => {
           t.notOk(error)
         })
 
-      h.call(id, 'fooMethod')
+      h.call(name, 'fooMethod')
         .then(() => {
           t.fail('should not return a result')
         })
@@ -154,8 +154,9 @@ test('Host.start+stop+servers', t => {
     .then(() => {
       t.ok(h._servers.http)
       let http = h.servers['http']
+      t.ok(http.address)
+      t.ok(http.port)
       t.ok(http.url)
-      t.ok(http.key)
       h.stop()
         .then(() => {
           t.notOk(h._servers.http)

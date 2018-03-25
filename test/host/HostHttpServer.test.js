@@ -5,7 +5,8 @@ const Host = require('../../lib/host/Host')
 const HostHttpServer = require('../../lib/host/HostHttpServer')
 
 test('HostHttpServer.stop+start', function (t) {
-  let s = new HostHttpServer()
+  let h = new Host()
+  let s = new HostHttpServer(h)
 
   s.start()
     .then(() => {
@@ -21,8 +22,9 @@ test('HostHttpServer.stop+start', function (t) {
 })
 
 test('HostHttpServer.stop+start multiple', function (t) {
-  let s1 = new HostHttpServer()
-  let s2 = new HostHttpServer()
+  let h = new Host()
+  let s1 = new HostHttpServer(h)
+  let s2 = new HostHttpServer(h)
 
   s1.start()
     .then(() => {
@@ -63,12 +65,23 @@ test('HostHttpServer.handle unauthorized', function (t) {
     })
 })
 
-test('HostHttpServer.handle authorized', function (t) {
-  let h = new Host()
-  let s = new HostHttpServer(h)
-  h.token().then(token => {
-    console.log(token)
-    // Authorization using a ticket
+test('HostHttpServer.handle authorized', async function (t) {
+  let host = new Host()
+  await host.start()
+  const s = host._servers.http
+  const token = await host.token()
+
+  // Authorization using a ticket
+  let mock = httpMocks.createMocks({
+    method: 'GET',
+    url: '/manifest',
+    headers: {
+      'Authorization': 'Bearer ' + token
+    }
+  })
+  s.handle(mock.req, mock.res).then(() => {
+    t.equal(mock.res.statusCode, 200)
+  }).then(() => {
     let mock = httpMocks.createMocks({
       method: 'GET',
       url: '/manifest',
@@ -76,35 +89,23 @@ test('HostHttpServer.handle authorized', function (t) {
         'Authorization': 'Bearer ' + token
       }
     })
-    s.handle(mock.req, mock.res).then(() => {
-      t.equal(mock.res.statusCode, 200)
-    }).then(() => {
-      // Authorization using the token passed in Set-Cookie
-      let mock = httpMocks.createMocks({
-        method: 'GET',
-        url: '/manifest',
-        headers: {
-          'Authorization': 'Bearer ' + token
-        }
+    return s.handle(mock.req, mock.res)
+      .then(() => {
+        t.equal(mock.res.statusCode, 200)
       })
-      return s.handle(mock.req, mock.res)
-        .then(() => {
-          t.equal(mock.res.statusCode, 200)
-        })
-    }).then(() => {
-      // Authorization using the token but bad request
-      let mock = httpMocks.createMocks({
-        method: 'FOO',
-        url: '/foo',
-        headers: {
-          'Authorization': 'Bearer ' + token
-        }
-      })
-      return s.handle(mock.req, mock.res)
-        .then(() => {
-          t.equal(mock.res.statusCode, 400)
-        })
+  }).then(() => {
+    // Authorization using the token but bad request
+    let mock = httpMocks.createMocks({
+      method: 'FOO',
+      url: '/foo',
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
     })
+    return s.handle(mock.req, mock.res)
+      .then(() => {
+        t.equal(mock.res.statusCode, 400)
+      })
   }).then(() => {
     t.end()
   }).catch(error => {
@@ -114,7 +115,8 @@ test('HostHttpServer.handle authorized', function (t) {
 })
 
 test('HostHttpServer.handle CORS passes', function (t) {
-  let s = new HostHttpServer()
+  let h = new Host()
+  let s = new HostHttpServer(h)
 
   Promise.resolve().then(() => {
     let mock = httpMocks.createMocks({
@@ -159,7 +161,8 @@ test('HostHttpServer.handle CORS passes', function (t) {
 })
 
 test('HostHttpServer.handle CORS fails', function (t) {
-  let s = new HostHttpServer()
+  let h = new Host()
+  let s = new HostHttpServer(h)
 
   Promise.resolve().then(() => {
     let mock = httpMocks.createMocks({
@@ -194,7 +197,8 @@ test('HostHttpServer.handle CORS fails', function (t) {
 
 test('HostHttpServer.route', function (t) {
   // Set key to false for this test
-  let s = new HostHttpServer()
+  let h = new Host(false)
+  let s = new HostHttpServer(h)
 
   t.deepEqual(s.route('GET', '/'), [s.home])
 
@@ -231,7 +235,8 @@ test('HostHttpServer.home', function (t) {
 
 test('HostHttpServer.statico', function (t) {
   t.plan(7)
-  let s = new HostHttpServer()
+  let h = new Host()
+  let s = new HostHttpServer(h)
 
   let mock1 = httpMocks.createMocks()
   s.statico(mock1.req, mock1.res, 'index.html')
@@ -274,8 +279,8 @@ test('HostHttpServer.create', function (t) {
   s.create(req, res, 'NodeContext') // Testing this
     .then(() => {
       t.equal(res.statusCode, 200)
-      let id = JSON.parse(res._getData())
-      t.ok(h._instances[id])
+      let name = JSON.parse(res._getData())
+      t.ok(h._instances[name])
       t.end()
     })
     .catch(error => {
@@ -291,8 +296,7 @@ test('HostHttpServer.get', function (t) {
   let {req, res} = httpMocks.createMocks()
   h.create('NodeContext')
     .then(result => {
-      let {id} = result
-      return s.get(req, res, id) // Testing this
+      return s.get(req, res, result.name) // Testing this
     })
     .then(() => {
       t.equal(res.statusCode, 200)
@@ -312,9 +316,9 @@ test.skip('HostHttpServer.call', function (t) {
 
   h.create('NodeContext')
     .then(result => {
-      let {id} = result
-      t.ok(h._instances[id])
-      return s.call(req, res, id, 'runCode', {code: '6*7'}) // Testing this
+      let {name} = result
+      t.ok(h._instances[name])
+      return s.call(req, res, name, 'runCode', {code: '6*7'}) // Testing this
     })
     .then(() => {
       t.equal(res.statusCode, 200)
@@ -335,12 +339,12 @@ test('HostHttpServer.delete', function (t) {
   let {req, res} = httpMocks.createMocks()
   h.create('NodeContext')
     .then(result => {
-      let {id} = result
-      t.ok(h._instances[id])
-      s.delete(req, res, id) // Testing this
+      let {name} = result
+      t.ok(h._instances[name])
+      s.delete(req, res, name) // Testing this
         .then(() => {
           t.equal(res.statusCode, 200)
-          t.notOk(h._instances[id])
+          t.notOk(h._instances[name])
           t.end()
         })
     })
