@@ -19,7 +19,7 @@ test('Host.manifest', t => {
     t.equal(manifest.stencila.package, 'node')
     t.equal(manifest.stencila.version, version)
     t.deepEqual(manifest.types.NodeContext, NodeContext.spec)
-    t.notOk(manifest.id)
+    t.ok(manifest.id)
     return h.start()
   }).then(() => {
     return h.manifest()

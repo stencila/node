@@ -50,68 +50,44 @@ test('HostHttpServer.stop+start multiple', function (t) {
     })
 })
 
-test('HostHttpServer.handle unauthorized', function (t) {
-  let h = new Host()
-  let s = new HostHttpServer(h)
-  let mock = httpMocks.createMocks({method: 'GET', url: '/manifest'})
-  s.handle(mock.req, mock.res)
-    .then(() => {
-      t.equal(mock.res.statusCode, 403)
-      t.end()
-    })
-    .catch(error => {
-      t.notOk(error)
-      t.end()
-    })
-})
+test('HostHttpServer.handle authorization', async assert => {
+  const host = new Host()
+  await host.start() // To generate key file and start server
+  const server = host._servers.http
 
-test('HostHttpServer.handle authorized', async function (t) {
-  let host = new Host()
-  await host.start()
-  const s = host._servers.http
-  const token = await host.token()
+  const peer = new Host()
+  await peer.discoverPeers() // To get key for `host`
 
-  // Authorization using a ticket
-  let mock = httpMocks.createMocks({
-    method: 'GET',
-    url: '/manifest',
-    headers: {
-      'Authorization': 'Bearer ' + token
-    }
-  })
-  s.handle(mock.req, mock.res).then(() => {
-    t.equal(mock.res.statusCode, 200)
-  }).then(() => {
-    let mock = httpMocks.createMocks({
-      method: 'GET',
-      url: '/manifest',
-      headers: {
-        'Authorization': 'Bearer ' + token
-      }
-    })
-    return s.handle(mock.req, mock.res)
-      .then(() => {
-        t.equal(mock.res.statusCode, 200)
-      })
-  }).then(() => {
-    // Authorization using the token but bad request
-    let mock = httpMocks.createMocks({
-      method: 'FOO',
-      url: '/foo',
-      headers: {
-        'Authorization': 'Bearer ' + token
-      }
-    })
-    return s.handle(mock.req, mock.res)
-      .then(() => {
-        t.equal(mock.res.statusCode, 400)
-      })
-  }).then(() => {
-    t.end()
-  }).catch(error => {
-    t.notOk(error)
-    t.end()
-  })
+  const token1 = await peer.generateToken(host.id)
+  const token2 = await peer.generateToken(host.id)
+
+  let mock
+  function authHeader (token) {
+    return {'Authorization': 'Bearer ' + token}
+  }
+
+  mock = httpMocks.createMocks({method: 'GET', url: '/manifest'})
+  await server.handle(mock.req, mock.res)
+  assert.equal(mock.res.statusCode, 403, 'Authorization fails because no token')
+
+  mock = httpMocks.createMocks({method: 'GET', url: '/manifest', headers: {'Authorization': 'Bearer foo'}})
+  await server.handle(mock.req, mock.res)
+  assert.equal(mock.res.statusCode, 403, 'Authorization fails because bad token')
+
+  mock = httpMocks.createMocks({method: 'GET', url: '/manifest', headers: authHeader(token1)})
+  await server.handle(mock.req, mock.res)
+  assert.equal(mock.res.statusCode, 200, 'Authorization succeeds')
+
+  mock = httpMocks.createMocks({method: 'GET', url: '/manifest', headers: authHeader(token1)})
+  await server.handle(mock.req, mock.res)
+  assert.equal(mock.res.statusCode, 403, 'Authorization fails because attempting to reuse token')
+
+  mock = httpMocks.createMocks({method: 'GET', url: '/manifest', headers: authHeader(token2)})
+  await server.handle(mock.req, mock.res)
+  assert.equal(mock.res.statusCode, 200, 'Authorization succeeds')
+
+  await host.stop()
+  assert.end()
 })
 
 test('HostHttpServer.handle CORS passes', function (t) {
@@ -195,26 +171,28 @@ test('HostHttpServer.handle CORS fails', function (t) {
     })
 })
 
-test('HostHttpServer.route', function (t) {
-  // Set key to false for this test
-  let h = new Host(false)
-  let s = new HostHttpServer(h)
+test('HostHttpServer.route', assert => {
+  let host = new Host()
+  let server = new HostHttpServer(host)
 
-  t.deepEqual(s.route('GET', '/'), [s.home])
+  assert.deepEqual(server.route('GET', '/', true), [server.home])
+  assert.deepEqual(server.route('GET', '/', false), [server.home])
 
-  t.deepEqual(s.route('GET', '/static/some/file.js'), [s.statico, 'some/file.js'])
+  assert.deepEqual(server.route('GET', '/static/some/file.js', true), [server.statico, 'some/file.js'])
+  assert.deepEqual(server.route('GET', '/static/some/file.js', false), [server.statico, 'some/file.js'])
 
-  t.deepEqual(s.route('POST', '/type'), [s.create, 'type'])
+  assert.deepEqual(server.route('POST', '/type', true), [server.create, 'type'])
+  assert.deepEqual(server.route('POST', '/type', false), [server.error403, 'Authorization is required for POST /type'])
 
-  t.deepEqual(s.route('GET', '/name'), [s.get, 'name'])
+  assert.deepEqual(server.route('GET', '/name', true), [server.get, 'name'])
 
-  t.deepEqual(s.route('PUT', '/name!method'), [s.call, 'name', 'method'])
+  assert.deepEqual(server.route('PUT', '/name!method', true), [server.call, 'name', 'method'])
 
-  t.deepEqual(s.route('DELETE', '/name'), [s.delete, 'name'])
+  assert.deepEqual(server.route('DELETE', '/name', true), [server.delete, 'name'])
 
-  t.deepEqual(s.route('FOO', 'foo'), null)
+  assert.deepEqual(server.route('FOO', 'foo', true), null)
 
-  t.end()
+  assert.end()
 })
 
 test('HostHttpServer.home', function (t) {
