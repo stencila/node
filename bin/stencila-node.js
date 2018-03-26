@@ -1,4 +1,5 @@
 #!/usr/bin/env node
 
 const stencila = require('../lib/index.js')
-stencila.run()
+
+stencila[process.argv[2] || 'run']()

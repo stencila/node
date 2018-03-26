@@ -9,22 +9,30 @@
 ### Install
 
 ```sh
-npm install stencila-node
+npm install stencila-node -g
 ```
+
+Register this Stencila package so that it is 
+
+```
+stencila-node register
+```
+
+This creates a host manifest file in the Stencila hosts directory (e.g. `~/.stencila/hosts` on Linux). This file is used by Stencila Desktop and other packages to determine which Stencila hosts you have installed on your machine.
 
 ### Use
 
-This package lets you run JavaScript code from inside Stencila documents. First, you need to start serving the Stencila Host within this package. You can do that from inside Node.js:
+This package lets you run JavaScript and other code from inside Stencila documents. First, you need to start serving the Stencila Host within this package. You can do that at a terminal,
+
+```sh
+stencila-node
+```
+
+or inside Node.js:
 
 ```js
 const stencila = require('stencila-node')
-stencila.start()
-```
-
-Or from the shell,
-
-```sh
-./node_modules/.bin/stencila-node
+stencila.run()
 ```
 
 This will serve a Stencila `Host` on localhost. You can then open your Stencila document from within the [Stencila Desktop](https://github.com/stencila/desktop). The host will be automatically detected by the desktop app and you'll be able to execute Javascript code cells from within your documents.
