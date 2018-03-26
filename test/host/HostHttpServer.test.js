@@ -194,16 +194,7 @@ test('HostHttpServer.environs', async assert => {
   await server.environs(req, res)
   assert.equal(res.statusCode, 200)
   let environs = JSON.parse(res._getData())
-  assert.deepEqual(environs, [{
-    id: 'local',
-    name: 'local',
-    version: null,
-    servers: {
-      http: {
-        path: '/'
-      }
-    }
-  }])
+  assert.deepEqual(environs, await host.environs())
 
   assert.end()
 })

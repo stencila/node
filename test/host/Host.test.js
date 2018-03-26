@@ -1,4 +1,6 @@
 const test = require('tape')
+const fs = require('fs')
+const path = require('path')
 
 const Host = require('../../lib/host/Host')
 const NodeContext = require('../../lib/contexts/NodeContext')
@@ -8,6 +10,36 @@ test('Host', assert => {
   const host = new Host()
 
   assert.ok(host instanceof Host)
+
+  assert.end()
+})
+
+test('Host.register', async assert => {
+  const host = new Host()
+
+  await host.register()
+  let manifest = JSON.parse(
+    fs.readFileSync(path.join(Host.userDir(), 'hosts', 'node.json'))
+  )
+  assert.equal(manifest.id, host.id)
+
+  assert.end()
+})
+
+test('Host.environs', async assert => {
+  const host = new Host()
+
+  let environs = await host.environs()
+  assert.deepEqual(environs, [{
+    id: 'local',
+    name: 'local',
+    version: null,
+    servers: {
+      http: {
+        path: '/'
+      }
+    }
+  }])
 
   assert.end()
 })
