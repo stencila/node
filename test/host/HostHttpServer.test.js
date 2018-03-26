@@ -77,7 +77,7 @@ test('HostHttpServer.handle authorization', async assert => {
   assert.end()
 })
 
-test('HostHttpServer.handle CORS passes', async assert => {
+test('HostHttpServer.handle CORS', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
   let mock
@@ -134,6 +134,24 @@ test('HostHttpServer.route', assert => {
   assert.end()
 })
 
+test('HostHttpServer.options', async assert => {
+  let host = new Host()
+  let server = new HostHttpServer(host)
+  let {req, res} = httpMocks.createMocks({method: 'OPTIONS', url: '/', headers: {'origin': 'http://localhost'}})
+
+  await server.handle(req, res)
+  assert.equal(res.statusCode, 200)
+  assert.deepEqual(res._headers, {
+    'Access-Control-Allow-Origin': 'http://localhost',
+    'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Max-Age': '86400'
+  })
+
+  assert.end()
+})
+
 test('HostHttpServer.home', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
@@ -164,6 +182,28 @@ test('HostHttpServer.statico', async assert => {
   await server.statico(mock3.req, mock3.res, '../../../foo')
   assert.equal(mock3.res.statusCode, 403)
   assert.equal(mock3.res._getData(), 'Forbidden: ../../../foo')
+
+  assert.end()
+})
+
+test('HostHttpServer.environs', async assert => {
+  let host = new Host()
+  let server = new HostHttpServer(host)
+  let {req, res} = httpMocks.createMocks()
+
+  await server.environs(req, res)
+  assert.equal(res.statusCode, 200)
+  let environs = JSON.parse(res._getData())
+  assert.deepEqual(environs, [{
+    id: 'local',
+    name: 'local',
+    version: null,
+    servers: {
+      http: {
+        path: '/'
+      }
+    }
+  }])
 
   assert.end()
 })
