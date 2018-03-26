@@ -61,7 +61,3 @@ test('Context.packPointer+unpackPointer', async assert => {
   await hostB.stop()
   assert.end()
 })
-
-test.onFinish(function () {
-  process.exit()
-})
