@@ -18,12 +18,6 @@ test('Context.packPointer+unpackPointer', async assert => {
 
   const pointerA1X = await contextA1.packPointer('string', 'A1X')
   const pointerB1X = await contextB1.packPointer('string', 'B1X')
-  // Simulate a pointer to data on another machine
-  const pointerC1X = Object.assign({}, pointerB1X)
-  pointerC1X.machine = {
-    mac: 'Some other MAC',
-    ip: 'Some other IP'
-  }
 
   assert.deepEqual(pointerA1X, {
     type: 'string',
@@ -48,6 +42,12 @@ test('Context.packPointer+unpackPointer', async assert => {
 
   assert.deepEqual(await contextA1.unpackPointer(pointerB1X), 'b1x', 'Accessible from another context on another host started before')
 
+  // Simulate a pointer to data on another machine
+  const pointerC1X = Object.assign({}, pointerB1X)
+  pointerC1X.machine = {
+    mac: 'Some other MAC',
+    ip: 'Some other IP'
+  }
   async function tryCatch () {
     try {
       await contextA1.unpackPointer(pointerC1X)
