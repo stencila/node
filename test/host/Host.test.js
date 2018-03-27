@@ -1,170 +1,158 @@
 const test = require('tape')
+const fs = require('fs')
+const path = require('path')
 
 const Host = require('../../lib/host/Host')
 const NodeContext = require('../../lib/contexts/NodeContext')
 const version = require('../../package').version
 
-test('Host', t => {
-  let h = new Host()
+test('Host', assert => {
+  const host = new Host()
 
-  t.ok(h instanceof Host)
+  assert.ok(host instanceof Host)
 
-  t.end()
+  assert.end()
 })
 
-test('Host.manifest', t => {
-  let h = new Host()
+test('Host.register', async assert => {
+  const host = new Host()
 
-  h.manifest().then(manifest => {
-    t.equal(manifest.stencila.package, 'node')
-    t.equal(manifest.stencila.version, version)
-    t.deepEqual(manifest.types.NodeContext, NodeContext.spec)
-    t.notOk(manifest.id)
-    return h.start()
-  }).then(() => {
-    return h.manifest()
-  }).then(manifest => {
-    t.ok(manifest.id)
-    t.equal(manifest.process.pid, process.pid)
-    t.equal(manifest.instances.length, 0)
-    h.stop()
-    t.end()
-  })
+  await host.register()
+  let manifest = JSON.parse(
+    fs.readFileSync(path.join(Host.userDir(), 'hosts', 'node.json'))
+  )
+  assert.equal(manifest.id, host.id)
+
+  assert.end()
 })
 
-test.skip('Host.create', t => {
-  t.plan(4)
+test('Host.environs', async assert => {
+  const host = new Host()
 
-  let h = new Host()
+  let environs = await host.environs()
+  assert.deepEqual(environs, [{
+    id: 'local',
+    name: 'local',
+    version: null,
+    path: ''
+  }])
 
-  let first
-  h.create('NodeContext')
-    .then(id => {
-      t.ok(id)
-      first = id
-      return h.get(id)
-    })
-    .then(instance => {
-      t.ok(instance)
-      return h.create('NodeContext')
-    })
-    .then(id => {
-      t.notEqual(id, first)
-    })
-    .catch(error => {
-      t.notOk(error)
-    })
-
-  h.create('fooType')
-    .then(() => {
-      t.fail('should not create anything')
-    })
-    .catch(error => {
-      t.equal(error.message, 'Unknown type: fooType')
-    })
+  assert.end()
 })
 
-test('Host.get', t => {
-  let h = new Host()
+test('Host.manifest', async assert => {
+  const host = new Host()
 
-  h.create('NodeContext')
-    .then(result => {
-      let {id} = result
-      t.ok(id)
-      return h.get(id)
-    })
-    .then(instance => {
-      t.ok(instance)
-      return h.get('foobar')
-    })
-    .catch(error => {
-      t.ok(error.message.match('Unknown instance'))
-      t.end()
-    })
+  let manifest
+
+  manifest = await host.manifest()
+  assert.equal(manifest.stencila.package, 'node')
+  assert.equal(manifest.stencila.version, version)
+  assert.deepEqual(manifest.types.NodeContext, NodeContext.spec)
+  assert.ok(manifest.id)
+
+  await host.start()
+
+  manifest = await host.manifest()
+  assert.ok(manifest.id)
+  assert.equal(manifest.process.pid, process.pid)
+  assert.equal(manifest.instances.length, 0)
+
+  await host.stop()
+  assert.end()
 })
 
-test.skip('Host.call', t => {
-  t.plan(4)
+test('Host.create', async assert => {
+  const host = new Host()
 
-  let h = new Host()
+  let instance1 = await host.create('NodeContext')
+  assert.ok(await host.get(instance1.name))
 
-  h.create('NodeContext')
-    .then(result => {
-      let {id} = result
-      t.ok(id)
+  let instance2 = await host.create('NodeContext')
+  assert.notEqual(instance2.name, instance1.name)
 
-      h.call(id, 'runCode', ['6*7'])
-        .then(result => {
-          t.deepEqual(result, { errors: null, output: { content: '42', format: 'text', type: 'integer' } })
-        })
-        .catch(error => {
-          t.notOk(error)
-        })
+  try {
+    await host.create('fooType')
+  } catch (error) {
+    assert.equal(error.message, 'No type with name "fooType"')
+  }
 
-      h.call(id, 'fooMethod')
-        .then(() => {
-          t.fail('should not return a result')
-        })
-        .catch(error => {
-          t.equal(error.message, 'Unknown method: fooMethod')
-        })
-    })
-    .catch(error => {
-      t.notOk(error)
-    })
-
-  h.call('fooId')
-    .then(() => {
-      t.fail('should not return a result')
-    })
-    .catch(error => {
-      t.ok(error.message.match('Unknown instance'))
-    })
+  assert.end()
 })
 
-test('Host.delete', t => {
-  let h = new Host()
+test('Host.get', async assert => {
+  const host = new Host()
 
-  let id_
-  h.create('NodeContext')
-    .then(result => {
-      let {id} = result
-      id_ = id
-      t.ok(result)
-      return h.delete(id)
-    })
-    .then(() => {
-      t.pass('sucessfully deleted')
-      return h.delete(id_)
-    })
-    .then(() => {
-      t.fail('should not be able to delete again')
-      t.end()
-    })
-    .catch(error => {
-      t.equal(error.message, `Unknown instance: ${id_}`)
-      t.end()
-    })
+  let instance = await host.create('NodeContext')
+  assert.ok(await host.get(instance.name))
+
+  try {
+    await host.get('foobar')
+  } catch (error) {
+    assert.equal(error.message, 'No instance with name "foobar"')
+  }
+
+  assert.end()
 })
 
-test('Host.start+stop+servers', t => {
-  let h = new Host()
+test('Host.call', async assert => {
+  const host = new Host()
 
-  h.start()
-    .then(() => {
-      t.ok(h._servers.http)
-      let http = h.servers['http']
-      t.ok(http.url)
-      t.ok(http.ticket)
-      h.stop()
-        .then(() => {
-          t.notOk(h._servers.http)
-          t.deepEqual(h.servers, [])
-          t.end()
-        })
-    })
-    .catch(error => {
-      t.notOk(error)
-      t.end()
-    })
+  let {name} = await host.create('Context')
+  assert.ok(name)
+
+  let result = await host.call(name, 'pack', 42)
+  assert.deepEqual(result, {type: 'number', data: 42})
+
+  try {
+    await host.call(name, 'fooMethod')
+  } catch (error) {
+    assert.equal(error.message, 'No method with name "fooMethod"')
+  }
+
+  try {
+    await host.call('fooName')
+  } catch (error) {
+    assert.equal(error.message, 'No instance with name "fooName"')
+  }
+
+  assert.end()
+})
+
+test('Host.delete', async assert => {
+  const host = new Host()
+
+  let {name} = await host.create('NodeContext')
+  await host.delete(name)
+
+  try {
+    await host.get(name)
+  } catch (error) {
+    assert.equal(error.message, `No instance with name "${name}"`)
+  }
+
+  try {
+    await host.delete(name)
+  } catch (error) {
+    assert.equal(error.message, `No instance with name "${name}"`)
+  }
+
+  assert.end()
+})
+
+test('Host.start+stop+servers', async assert => {
+  const host = new Host()
+
+  await host.start()
+  let http = host.servers['http']
+  assert.ok(http)
+  assert.ok(http.address)
+  assert.ok(http.port)
+  assert.ok(http.url)
+
+  await host.stop()
+  assert.notOk(host._servers.http)
+  assert.deepEqual(host.servers, [])
+
+  assert.end()
 })
