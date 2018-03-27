@@ -34,11 +34,7 @@ test('Host.environs', async assert => {
     id: 'local',
     name: 'local',
     version: null,
-    servers: {
-      http: {
-        path: '/'
-      }
-    }
+    path: ''
   }])
 
   assert.end()
