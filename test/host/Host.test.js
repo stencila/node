@@ -30,12 +30,11 @@ test('Host.environs', async assert => {
   const host = new Host()
 
   let environs = await host.environs()
-  assert.deepEqual(environs, [{
+  assert.deepEqual(environs[0], {
     id: 'local',
     name: 'local',
-    version: null,
-    path: ''
-  }])
+    version: null
+  })
 
   assert.end()
 })
