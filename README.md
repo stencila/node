@@ -12,7 +12,7 @@
 npm install stencila-node -g
 ```
 
-Register this Stencila package so that it is 
+Register this Stencila package,
 
 ```
 stencila-node register

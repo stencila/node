@@ -53,23 +53,23 @@ test('HostHttpServer.handle authorization', async assert => {
     return {'Authorization': 'Bearer ' + token}
   }
 
-  mock = httpMocks.createMocks({method: 'GET', url: '/manifest'})
+  mock = httpMocks.createMocks({method: 'POST', url: '/NodeContext'})
   await server.handle(mock.req, mock.res)
   assert.equal(mock.res.statusCode, 403, 'Authorization fails because no token')
 
-  mock = httpMocks.createMocks({method: 'GET', url: '/manifest', headers: {'Authorization': 'Bearer foo'}})
+  mock = httpMocks.createMocks({method: 'POST', url: '/NodeContext', headers: {'Authorization': 'Bearer foo'}})
   await server.handle(mock.req, mock.res)
   assert.equal(mock.res.statusCode, 403, 'Authorization fails because bad token')
 
-  mock = httpMocks.createMocks({method: 'GET', url: '/manifest', headers: authHeader(token1)})
+  mock = httpMocks.createMocks({method: 'POST', url: '/NodeContext', headers: authHeader(token1)})
   await server.handle(mock.req, mock.res)
   assert.equal(mock.res.statusCode, 200, 'Authorization succeeds')
 
-  mock = httpMocks.createMocks({method: 'GET', url: '/manifest', headers: authHeader(token1)})
+  mock = httpMocks.createMocks({method: 'POST', url: '/NodeContext', headers: authHeader(token1)})
   await server.handle(mock.req, mock.res)
   assert.equal(mock.res.statusCode, 403, 'Authorization fails because attempting to reuse token')
 
-  mock = httpMocks.createMocks({method: 'GET', url: '/manifest', headers: authHeader(token2)})
+  mock = httpMocks.createMocks({method: 'POST', url: '/NodeContext', headers: authHeader(token2)})
   await server.handle(mock.req, mock.res)
   assert.equal(mock.res.statusCode, 200, 'Authorization succeeds')
 
@@ -145,7 +145,7 @@ test('HostHttpServer.options', async assert => {
     'Access-Control-Allow-Origin': 'http://localhost',
     'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Authorization, Content-Type',
     'Access-Control-Max-Age': '86400'
   })
 
@@ -182,19 +182,6 @@ test('HostHttpServer.statico', async assert => {
   await server.statico(mock3.req, mock3.res, '../../../foo')
   assert.equal(mock3.res.statusCode, 403)
   assert.equal(mock3.res._getData(), 'Forbidden: ../../../foo')
-
-  assert.end()
-})
-
-test('HostHttpServer.environs', async assert => {
-  let host = new Host()
-  let server = new HostHttpServer(host)
-  let {req, res} = httpMocks.createMocks()
-
-  await server.environs(req, res)
-  assert.equal(res.statusCode, 200)
-  let environs = JSON.parse(res._getData())
-  assert.deepEqual(environs, await host.environs())
 
   assert.end()
 })
