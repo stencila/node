@@ -50,6 +50,7 @@
   },
   "dependencies": {
     "address": "^1.0.3",
+    "better-sqlite3": "^4.1.0",
     "body": "^5.1.0",
     "execa": "^0.10.0",
     "get-stdin": "^6.0.0",
@@ -64,6 +65,7 @@
     "request-promise": "^4.2.2",
     "send": "^0.15.4",
     "spawnteract": "^4.0.0",
+    "sqlite-parser": "^1.0.1",
     "uuid": "^3.2.1"
   }
 }
