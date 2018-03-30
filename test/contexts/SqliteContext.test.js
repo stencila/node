@@ -139,8 +139,7 @@ test('SqliteContext.compile block', async assert => {
 
   // Test that it errors on potential side-effects
   compiled = await context.compile('CREATE TABLE foo (bar INT); DROP TABLE foo', 'block')
-  assert.equal(compiled.messages[0].message,'Block has potential side effects caused by using "CREATE, DROP" statements')
-  
+  assert.equal(compiled.messages[0].message, 'Block has potential side effects caused by using "CREATE, DROP" statements')
   // Test that global cells can have side effects
   compiled.global = true
   compiled = await context.compile(compiled)
@@ -244,6 +243,16 @@ test('SqliteContext.execute expressions', async assert => {
     })
   })
   assert.deepEqual(executed.messages, [])
+  assert.deepEqual(
+    context._db.prepare('SELECT name FROM inputs.sqlite_master').pluck().all(),
+    ['mydata'],
+    'input tables are in inputs database schema'
+  )
+  assert.deepEqual(
+    context._db.prepare('SELECT name FROM sqlite_master WHERE name NOT LIKE "sqlite%" ').pluck().all(),
+    ['test_table_small', 'test_table_large'],
+    'input tables do not pollute the main database schema'
+  )
 
   assert.end()
 })
@@ -285,6 +294,7 @@ test('SqliteContext.execute blocks', async assert => {
       }
     })
   })
+  assert.deepEqual(executed.messages, [])
 
   // Test with an interpolated variable input
   executed = await context.execute('SELECT * FROM test_table_small')
