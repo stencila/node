@@ -137,12 +137,14 @@ test('SqliteContext.compile block', async assert => {
   compiled = await context.compile('out1 = SELECT 42;\nout2 = SELECT 42', 'block')
   assert.deepEqual(compiled.messages[0].message, 'Block must have only one output but 2 found "out1, out2"')
 
-  // Test that it warns of potential side-effects
+  // Test that it errors on potential side-effects
   compiled = await context.compile('CREATE TABLE foo (bar INT); DROP TABLE foo', 'block')
-  assert.deepEqual(compiled.messages, [{
-    type: 'warning',
-    message: 'Block has potential side effects caused by using "CREATE, DROP" statements'
-  }])
+  assert.equal(compiled.messages[0].message,'Block has potential side effects caused by using "CREATE, DROP" statements')
+  
+  // Test that global cells can have side effects
+  compiled.global = true
+  compiled = await context.compile(compiled)
+  assert.equal(compiled.messages.length, 0)
 
   // Test that it returns inputs properly
   context._db.exec('CREATE TABLE existing1 (col1 TEXT)')
@@ -263,17 +265,18 @@ test('SqliteContext.execute blocks', async assert => {
         INSERT INTO mytable VALUES ('b', 2);
         INSERT INTO mytable VALUES ('c', 3);
 
-        x = SELECT * FROM mytable WHERE col2 <= \${x}
+        out = SELECT * FROM mytable WHERE col2 <= \${inp}
       `
     },
+    global: true,
     inputs: [{
-      name: 'x',
+      name: 'inp',
       value: {type: 'number', data: 2}
     }],
     messages: []
   })
   assert.deepEqual(executed.output, {
-    name: 'x',
+    name: 'out',
     value: await context.packPackage({
       type: 'table',
       data: {
@@ -282,8 +285,6 @@ test('SqliteContext.execute blocks', async assert => {
       }
     })
   })
-  assert.equal(executed.messages.length, 1)
-  assert.equal(executed.messages[0].type, 'warning')
 
   // Test with an interpolated variable input
   executed = await context.execute('SELECT * FROM test_table_small')
@@ -335,21 +336,21 @@ test('SqliteContext pointers', async assert => {
   assert.end()
 })
 
-test('SqliteContext.variables', async assert => {
+test('SqliteContext.outputs', async assert => {
   const context = new SqliteContext()
 
   context._db.exec(SMALL_TABLE_SQL)
 
-  assert.deepEqual(await context.variables(), [])
+  assert.deepEqual(await context.outputs(), [])
 
   await context.execute('a = SELECT 1')
-  assert.deepEqual(await context.variables(), ['a'])
+  assert.deepEqual(await context.outputs(), ['a'])
 
   await context.execute('SELECT 2')
-  assert.deepEqual(await context.variables(), ['a'])
+  assert.deepEqual(await context.outputs(), ['a'])
 
   await context.execute('b = SELECT 3')
-  assert.deepEqual(await context.variables(), ['a', 'b'])
+  assert.deepEqual(await context.outputs(), ['a', 'b'])
 
   assert.end()
 })
