@@ -362,7 +362,7 @@ test('SqliteContext pointers', async assert => {
   assert.deepEqual(res.messages, [], 'pointer to sibling context table as input')
   assert.deepEqual(res.output.value.data.data, {val: [2]})
   pointer2 = await contextA2.packPointer({type: 'table', name: 'second'})
-  
+
   res = await contextB1.execute({
     source: {data: 'third = SELECT first.val + second.val AS val FROM first, second'},
     inputs: [
