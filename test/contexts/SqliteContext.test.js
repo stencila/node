@@ -2,7 +2,7 @@ const test = require('tape')
 
 const SqliteContext = require('../../lib/contexts/SqliteContext')
 
-test('SqliteContext.compileExpr', async assert => {
+test('SqliteContext.compile expression', async assert => {
   const context = new SqliteContext()
   let expr
   let compiled
@@ -19,54 +19,54 @@ test('SqliteContext.compileExpr', async assert => {
       data: 'SELECT * FROM data'
     }
   }
-  compiled = await context.compileExpr(expr)
+  compiled = await context.compile(expr)
   assert.deepEqual(compiled.type, expr.type)
   assert.deepEqual(compiled.source, expr.source)
   assert.deepEqual(compiled.messages, [])
   assert.deepEqual(compiled.inputs, [{name: 'data'}])
 
-  let compiledFromString = await context.compileExpr('SELECT * FROM data')
+  let compiledFromString = await context.compile('SELECT * FROM data', 'expr')
   assert.deepEqual(compiled, compiledFromString)
 
   // Tests of malformed `expr` node
 
-  compiled = await context.compileExpr({source: {lang: 'python'}})
+  compiled = await context.compile({source: {lang: 'python'}})
   error = compiled.messages[0]
   assert.deepEqual(error.message, 'Expression `source.lang` property must be either "sql" or "sqlite"')
 
   // Tests of SQL syntax errors and non-expressions
 
-  compiled = await context.compileExpr('')
+  compiled = await context.compile('', 'expr')
   error = compiled.messages[0]
   assert.deepEqual(error.message, 'Expression could not be parsed')
 
-  compiled = await context.compileExpr('An intentional syntax error')
+  compiled = await context.compile('An intentional syntax error', 'expr')
   error = compiled.messages[0]
   assert.deepEqual(error.message, 'Syntax error found near WITH Clause (Statement)')
   assert.deepEqual(error.line, 0)
   assert.deepEqual(error.column, 0)
 
-  compiled = await context.compileExpr('SELECT * FROM mytable WHERE')
+  compiled = await context.compile('SELECT * FROM mytable WHERE', 'expr')
   error = compiled.messages[0]
   assert.deepEqual(error.message, 'Syntax error found near Column Identifier (WHERE Clause)')
   assert.deepEqual(error.line, 0)
   assert.deepEqual(error.column, 27)
 
-  compiled = await context.compileExpr('SELECT 42; SELECT 24;')
+  compiled = await context.compile('SELECT 42; SELECT 24;', 'expr')
   error = compiled.messages[0]
   assert.deepEqual(error.message, 'Expression must be a single "SELECT" statement')
 
-  compiled = await context.compileExpr('DROP TABLE mypreciousdata')
+  compiled = await context.compile('DROP TABLE mypreciousdata', 'expr')
   error = compiled.messages[0]
   assert.deepEqual(error.message, 'Expression must be a "SELECT" statement, "DROP" not allowed')
 
-  compiled = await context.compileExpr('DELETE FROM mypreciousdata')
+  compiled = await context.compile('DELETE FROM mypreciousdata', 'expr')
   error = compiled.messages[0]
   assert.deepEqual(error.message, 'Expression must be a "SELECT" statement, "DELETE" not allowed')
 
   // Tests of parsing expression for string interpolation inputs
 
-  compiled = await context.compileExpr('SELECT * FROM data WHERE height > ${x} AND width < ${y}') // eslint-disable-line no-template-curly-in-string
+  compiled = await context.compile('SELECT * FROM data WHERE height > ${x} AND width < ${y}', 'expr') // eslint-disable-line no-template-curly-in-string
   assert.deepEqual(compiled.messages, [])
   assert.deepEqual(compiled.inputs, [
     {name: 'data'},
@@ -76,11 +76,11 @@ test('SqliteContext.compileExpr', async assert => {
 
   // Tests of parsing expression for table inputs
 
-  compiled = await context.compileExpr('SELECT * FROM table1')
+  compiled = await context.compile('SELECT * FROM table1')
   assert.deepEqual(compiled.messages, [])
   assert.deepEqual(compiled.inputs, [{name: 'table1'}])
 
-  compiled = await context.compileExpr('SELECT * FROM table1 LEFT JOIN table2')
+  compiled = await context.compile('SELECT * FROM table1 LEFT JOIN table2')
   assert.deepEqual(compiled.messages, [])
   assert.deepEqual(compiled.inputs, [{name: 'table1'}, {name: 'table2'}])
 
@@ -91,18 +91,18 @@ test('SqliteContext.compileExpr', async assert => {
     CREATE TABLE existing2 (col2 REAL)
   `)
 
-  compiled = await context.compileExpr('SELECT * FROM input1 RIGHT JOIN existing1')
+  compiled = await context.compile('SELECT * FROM input1 RIGHT JOIN existing1')
   assert.deepEqual(compiled.messages, [])
   assert.deepEqual(compiled.inputs, [{name: 'input1'}])
 
-  compiled = await context.compileExpr('SELECT * FROM existing2, existing1')
+  compiled = await context.compile('SELECT * FROM existing2, existing1')
   assert.deepEqual(compiled.messages, [])
   assert.deepEqual(compiled.inputs, [])
 
   assert.end()
 })
 
-test('SqliteContext.compileBlock', async assert => {
+test('SqliteContext.compile block', async assert => {
   const context = new SqliteContext()
   let block
   let compiled
@@ -118,26 +118,26 @@ test('SqliteContext.compileBlock', async assert => {
       data: 'out = SELECT * FROM inp'
     }
   }
-  compiled = await context.compileBlock(block)
+  compiled = await context.compile(block, 'block')
   assert.deepEqual(compiled.type, block.type)
   assert.deepEqual(compiled.source, block.source)
   assert.deepEqual(compiled.inputs, [{name: 'inp'}])
   assert.deepEqual(compiled.output, {name: 'out'})
   assert.deepEqual(compiled.messages, [])
 
-  let compiledFromString = await context.compileBlock('out = SELECT * FROM inp')
+  let compiledFromString = await context.compile('out = SELECT * FROM inp', 'block')
   assert.deepEqual(compiled, compiledFromString)
 
   // Test that it errors with malformed output extension syntax
-  compiled = await context.compileBlock('out = DELETE FROM foo')
+  compiled = await context.compile('out = DELETE FROM foo', 'block')
   assert.deepEqual(compiled.messages[0].message, 'Syntax error found near WITH Clause (Statement)')
 
   // Test that it errors if more than one output
-  compiled = await context.compileBlock('out1 = SELECT 42;\nout2 = SELECT 42')
+  compiled = await context.compile('out1 = SELECT 42;\nout2 = SELECT 42', 'block')
   assert.deepEqual(compiled.messages[0].message, 'Block must have only one output but 2 found "out1, out2"')
 
   // Test that it warns of potential side-effects
-  compiled = await context.compileBlock('CREATE TABLE foo (bar INT); DROP TABLE foo')
+  compiled = await context.compile('CREATE TABLE foo (bar INT); DROP TABLE foo', 'block')
   assert.deepEqual(compiled.messages, [{
     type: 'warning',
     message: 'Block has potential side effects caused by using "CREATE, DROP" statements'
@@ -146,52 +146,54 @@ test('SqliteContext.compileBlock', async assert => {
   // Test that it returns inputs properly
   context._db.exec('CREATE TABLE existing1 (col1 TEXT)')
 
-  compiled = await context.compileExpr('SELECT * FROM input1 RIGHT JOIN existing1 WHERE existing1.col1 < ${input2}') // eslint-disable-line no-template-curly-in-string
+  compiled = await context.compile('SELECT * FROM input1 RIGHT JOIN existing1 WHERE existing1.col1 < ${input2}', 'block') // eslint-disable-line no-template-curly-in-string
   assert.deepEqual(compiled.messages, [])
   assert.deepEqual(compiled.inputs, [{name: 'input1'}, {name: 'input2'}])
 
   // Test various types of output name syntax
-  compiled = await context.compileBlock('out = SELECT * FROM inp')
+  compiled = await context.compile('out = SELECT * FROM inp', 'block')
   assert.deepEqual(compiled.output.name, 'out')
 
-  compiled = await context.compileBlock('\n  out = SELECT * FROM inp')
+  compiled = await context.compile('\n  out = SELECT * FROM inp', 'block')
   assert.deepEqual(compiled.output.name, 'out')
 
   assert.end()
 })
 
-test('SqliteContext.executeExpr', async assert => {
+test('SqliteContext.execute expressions', async assert => {
   const context = new SqliteContext()
-  let compiled
   let executed
 
   context._db.exec(SMALL_TABLE_SQL)
   context._db.exec(LARGE_TABLE_SQL)
 
   // Test using no inputs
-  compiled = await context.compileExpr('SELECT 42 AS answer')
-  executed = await context.executeExpr(compiled)
+  executed = await context.execute('SELECT 42 AS answer', 'expr')
   assert.deepEqual(executed.inputs, [])
-  assert.deepEqual(executed.output, {value: {type: 'table', data: {'answer': [42]}}})
+  assert.deepEqual(executed.output, {
+    value: await context.packPackage({
+      type: 'table',
+      data: {'answer': [42]}
+    })
+  })
   assert.deepEqual(executed.messages, [])
 
   // Test using an existing table
-  compiled = await context.compileExpr('SELECT * FROM test_table_small')
-  executed = await context.executeExpr(compiled)
+  executed = await context.execute('SELECT * FROM test_table_small', 'expr')
   assert.deepEqual(executed.inputs, [])
   assert.deepEqual(executed.output, {
-    value: {
+    value: await context.packPackage({
       type: 'table',
       data: {
         col1: ['a', 'b', 'c'],
         col2: [1, 2, 3]
       }
-    }
+    })
   })
   assert.deepEqual(executed.messages, [])
 
   // Test with an interpolated variable input
-  executed = await context.executeExpr({
+  executed = await context.execute({
     type: 'expr',
     source: {data: 'SELECT * FROM test_table_small WHERE col2 <= ${x}'}, // eslint-disable-line
     inputs: [{
@@ -202,48 +204,48 @@ test('SqliteContext.executeExpr', async assert => {
     messages: []
   })
   assert.deepEqual(executed.output, {
-    value: {
+    value: await context.packPackage({
       type: 'table',
       data: {
         col1: ['a', 'b'],
         col2: [1, 2]
       }
-    }
+    })
   })
   assert.deepEqual(executed.messages, [])
 
   // Test with a table input
-  executed = await context.executeExpr({
+  executed = await context.execute({
     type: 'expr',
     source: {data: 'SELECT * FROM mydata WHERE col2 <= 2'},
     inputs: [{
       name: 'mydata',
-      value: {
+      value: await context.packPackage({
         type: 'table',
         data: {
           col1: ['A', 'B', 'C', 'D'],
           col2: [1, 2, 3, 4]
         }
-      }
+      })
     }],
     output: {},
     messages: []
   })
   assert.deepEqual(executed.output, {
-    value: {
+    value: await context.packPackage({
       type: 'table',
       data: {
         col1: ['A', 'B'],
         col2: [1, 2]
       }
-    }
+    })
   })
   assert.deepEqual(executed.messages, [])
 
   assert.end()
 })
 
-test('SqliteContext.executeBlock', async assert => {
+test('SqliteContext.execute blocks', async assert => {
   const context = new SqliteContext()
   let compiled
   let executed
@@ -252,8 +254,8 @@ test('SqliteContext.executeBlock', async assert => {
   context._db.exec(LARGE_TABLE_SQL)
 
   // Test with named output on last line
-  executed = await context.executeBlock({
-    type: 'expr',
+  executed = await context.execute({
+    type: 'block',
     source: {
       data: `
         CREATE TABLE mytable (col1 TEXT, col2 INT);
@@ -268,54 +270,51 @@ test('SqliteContext.executeBlock', async assert => {
       name: 'x',
       value: {type: 'number', data: 2}
     }],
-    output: {
-      name: 'x'
-    },
     messages: []
   })
   assert.deepEqual(executed.output, {
     name: 'x',
-    value: {
+    value: await context.packPackage({
       type: 'table',
       data: {
         col1: ['a', 'b'],
         col2: [1, 2]
       }
-    }
+    })
   })
-  assert.deepEqual(executed.messages, [])
+  assert.equal(executed.messages.length, 1)
+  assert.equal(executed.messages[0].type, 'warning')
 
   // Test with an interpolated variable input
-  compiled = await context.compileBlock('SELECT * FROM test_table_small')
-  executed = await context.executeBlock(compiled)
-  assert.deepEqual(executed.output.value.data.col1.length, 3)
+  compiled = await context.compile('SELECT * FROM test_table_small', 'block')
+  executed = await context.execute(compiled)
+  assert.deepEqual(executed.output.value.data.data.col1.length, 3)
   assert.deepEqual(executed.messages, [])
 
   // Ignore all SELECT statements except for the last
-  compiled = await context.compileBlock('SELECT * FROM test_table_large; SELECT * FROM test_table_small')
-  executed = await context.executeBlock(compiled)
-  assert.deepEqual(executed.output.value.data.col1.length, 3)
+  compiled = await context.compile('SELECT * FROM test_table_large; SELECT * FROM test_table_small', 'block')
+  executed = await context.execute(compiled)
+  assert.deepEqual(executed.output.value.data.data.col1.length, 3)
   assert.deepEqual(executed.messages, [ { type: 'warning', message: 'Ignored a SELECT statement that is before the last statement' } ])
 
   assert.end()
 })
 
-test('SqliteContext.list', async assert => {
+test('SqliteContext.variables', async assert => {
   const context = new SqliteContext()
 
   context._db.exec(SMALL_TABLE_SQL)
 
-  let list = await context.list()
-  assert.deepEqual(list, [])
+  assert.deepEqual(await context.variables(), [])
 
-  await context.executeBlock(await context.compileBlock('a = SELECT 1'))
-  assert.deepEqual(await context.list(), ['a'])
+  await context.execute(await context.compile('a = SELECT 1'), 'block')
+  assert.deepEqual(await context.variables(), ['a'])
 
-  await context.executeBlock(await context.compileBlock('SELECT 2'))
-  assert.deepEqual(await context.list(), ['a'])
+  await context.execute(await context.compile('SELECT 2'), 'block')
+  assert.deepEqual(await context.variables(), ['a'])
 
-  await context.executeBlock(await context.compileBlock('b = SELECT 3'))
-  assert.deepEqual(await context.list(), ['a', 'b'])
+  await context.execute(await context.compile('b = SELECT 3'), 'block')
+  assert.deepEqual(await context.variables(), ['a', 'b'])
 
   assert.end()
 })
