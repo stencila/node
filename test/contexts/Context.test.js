@@ -13,17 +13,17 @@ test('Context.packPointer+unpackPointer', async assert => {
   const contextA2 = (await hostA.create('Context')).instance
   const contextB1 = (await hostB.create('Context')).instance
 
-  contextA1._data['A1X'] = 'a1x'
-  contextB1._data['B1X'] = 'b1x'
+  contextA1._variables['A1X'] = 'a1x'
+  contextB1._variables['B1X'] = 'b1x'
 
-  const pointerA1X = await contextA1.packPointer('string', 'A1X')
-  const pointerB1X = await contextB1.packPointer('string', 'B1X')
+  const pointerA1X = await contextA1.packPointer({type: 'string', name: 'A1X'})
+  const pointerB1X = await contextB1.packPointer({type: 'string', name: 'B1X'})
 
   assert.deepEqual(pointerA1X, {
     type: 'string',
     path: {
       value: {
-        id: null,
+        id: pointerA1X.path.value.id,
         name: 'A1X'
       },
       context: {

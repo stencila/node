@@ -1,5 +1,6 @@
 const test = require('tape')
 
+const Host = require('../../lib/host/Host')
 const SqliteContext = require('../../lib/contexts/SqliteContext')
 
 test('SqliteContext.compile expression', async assert => {
@@ -247,7 +248,6 @@ test('SqliteContext.execute expressions', async assert => {
 
 test('SqliteContext.execute blocks', async assert => {
   const context = new SqliteContext()
-  let compiled
   let executed
 
   context._db.exec(SMALL_TABLE_SQL)
@@ -286,16 +286,51 @@ test('SqliteContext.execute blocks', async assert => {
   assert.equal(executed.messages[0].type, 'warning')
 
   // Test with an interpolated variable input
-  compiled = await context.compile('SELECT * FROM test_table_small', 'block')
-  executed = await context.execute(compiled)
+  executed = await context.execute('SELECT * FROM test_table_small')
   assert.deepEqual(executed.output.value.data.data.col1.length, 3)
   assert.deepEqual(executed.messages, [])
 
   // Ignore all SELECT statements except for the last
-  compiled = await context.compile('SELECT * FROM test_table_large; SELECT * FROM test_table_small', 'block')
-  executed = await context.execute(compiled)
+  executed = await context.execute('SELECT * FROM test_table_large; SELECT * FROM test_table_small')
   assert.deepEqual(executed.output.value.data.data.col1.length, 3)
   assert.deepEqual(executed.messages, [ { type: 'warning', message: 'Ignored a SELECT statement that is before the last statement' } ])
+
+  assert.end()
+})
+
+test('SqliteContext pointers', async assert => {
+  const hostA = new Host()
+  const hostB = new Host()
+  await hostA.start()
+  await hostB.start()
+
+  const contextA1 = (await hostA.create('SqliteContext')).instance
+  const contextA2 = (await hostA.create('SqliteContext')).instance
+  const contextB1 = (await hostB.create('SqliteContext')).instance
+
+  contextA1._db.exec(LARGE_TABLE_SQL)
+
+  let pointer1 = (await contextA1.execute('SELECT * FROM test_table_large')).output.value
+  assert.equal(pointer1.type, 'table')
+  assert.ok(pointer1.path.value.id, 'should have an id which identifies value')
+  assert.ok(pointer1.path.value.name, 'should have a name for getting this value from context')
+  assert.equal(pointer1.type, 'table')
+
+  let pointer2 = (await contextA1.execute('SELECT * FROM test_table_large')).output.value
+  assert.notEqual(pointer1.path.value.id, pointer2.path.value.id, 'each pointer value has a unique id')
+
+  let pointer3 = (await contextA1.execute('out = SELECT * FROM test_table_large')).output.value
+  assert.equal(pointer3.path.value.name, 'out', 'when an output name is explicitly set then that is the name of pointer value')
+
+  const data1 = await contextA1.unpackPointer(pointer1)
+  assert.deepEqual(data1, true, 'unpacking the pointer with the same context resolves to true (i.e. no serialisation)')
+
+  const data2 = await contextA2.unpackPointer(pointer1)
+  const data3 = await contextB1.unpackPointer(pointer1)
+  assert.deepEqual(data2, data3, 'unpacking the pointer in different contexts provides a serialised version')
+
+  await hostA.stop()
+  await hostB.stop()
 
   assert.end()
 })
@@ -307,13 +342,13 @@ test('SqliteContext.variables', async assert => {
 
   assert.deepEqual(await context.variables(), [])
 
-  await context.execute(await context.compile('a = SELECT 1'), 'block')
+  await context.execute('a = SELECT 1')
   assert.deepEqual(await context.variables(), ['a'])
 
-  await context.execute(await context.compile('SELECT 2'), 'block')
+  await context.execute('SELECT 2')
   assert.deepEqual(await context.variables(), ['a'])
 
-  await context.execute(await context.compile('b = SELECT 3'), 'block')
+  await context.execute('b = SELECT 3')
   assert.deepEqual(await context.variables(), ['a', 'b'])
 
   assert.end()
