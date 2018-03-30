@@ -330,15 +330,48 @@ test('SqliteContext pointers', async assert => {
   let pointer2 = (await contextA1.execute('SELECT * FROM test_table_large')).output.value
   assert.notEqual(pointer1.path.value.id, pointer2.path.value.id, 'each pointer value has a unique id')
 
-  let pointer3 = (await contextA1.execute('out = SELECT * FROM test_table_large')).output.value
-  assert.equal(pointer3.path.value.name, 'out', 'when an output name is explicitly set then that is the name of pointer value')
+  let pointer3 = (await contextA1.execute('out1 = SELECT * FROM test_table_large')).output.value
+  assert.equal(pointer3.path.value.name, 'out1', 'when an output name is explicitly set then that is the name of pointer value')
 
-  const data1 = await contextA1.unpackPointer(pointer1)
-  assert.deepEqual(data1, true, 'unpacking the pointer with the same context resolves to true (i.e. no serialisation)')
+  const data1 = await contextA1.unpackPointer(pointer3)
+  assert.deepEqual(data1, {local: true, table: 'outputs.out1'}, 'unpacking the pointer with the same context resolves to true (i.e. no serialisation)')
 
   const data2 = await contextA2.unpackPointer(pointer1)
   const data3 = await contextB1.unpackPointer(pointer1)
   assert.deepEqual(data2, data3, 'unpacking the pointer in different contexts provides a serialised version')
+
+  let res
+  res = await contextA1.execute({
+    source: {data: 'first = SELECT 1 AS val'}
+  })
+  assert.deepEqual(res.messages, [])
+  assert.deepEqual(res.output.value.data.data, {val: [1]})
+  pointer1 = await contextA1.packPointer({type: 'table', name: 'first'})
+
+  res = await contextA1.execute({
+    source: {data: 'SELECT val+41 AS col FROM first'},
+    inputs: [{name: 'first', value: pointer1}]
+  })
+  assert.deepEqual(res.messages, [], 'pointer to local table as input')
+  assert.deepEqual(res.output.value.data.data, {col: [42]})
+
+  res = await contextA2.execute({
+    source: {data: 'second = SELECT first.val+1 AS val FROM first'},
+    inputs: [{name: 'first', value: pointer1}]
+  })
+  assert.deepEqual(res.messages, [], 'pointer to sibling context table as input')
+  assert.deepEqual(res.output.value.data.data, {val: [2]})
+  pointer2 = await contextA2.packPointer({type: 'table', name: 'second'})
+  
+  res = await contextB1.execute({
+    source: {data: 'third = SELECT first.val + second.val AS val FROM first, second'},
+    inputs: [
+      {name: 'first', value: pointer1},
+      {name: 'second', value: pointer2}
+    ]
+  })
+  assert.deepEqual(res.output.value.data.data, {val: [3]})
+  assert.deepEqual(res.messages, [], 'pointer to remote context tables as input')
 
   await hostA.stop()
   await hostB.stop()
