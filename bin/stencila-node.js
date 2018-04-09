@@ -3,9 +3,9 @@
 /**
  * A command line interface, primarily intended for machine use,
  * such as spawning new hosts. Provide a function name as first argument
- * and function options as a JSON object in the second argument or 
+ * and function options as a JSON object in the second argument or
  * standard input. e.g.
- * 
+ *
  *   stencila-node spawn '{"port":2300}'
  *   echo '{"port":2300}' | stencila-node spawn
  */
