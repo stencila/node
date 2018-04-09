@@ -13,7 +13,8 @@ test('SqliteContext.compile expression', async assert => {
   // and returns a compiled `expr` node
 
   expr = {
-    type: 'expr',
+    type: 'cell',
+    expr: true,
     source: {
       type: 'text',
       lang: 'sql',
@@ -22,52 +23,53 @@ test('SqliteContext.compile expression', async assert => {
   }
   compiled = await context.compile(expr)
   assert.deepEqual(compiled.type, expr.type)
+  assert.deepEqual(compiled.expr, expr.expr)
   assert.deepEqual(compiled.source, expr.source)
   assert.deepEqual(compiled.messages, [])
   assert.deepEqual(compiled.inputs, [{name: 'data'}])
 
-  let compiledFromString = await context.compile('SELECT * FROM data', 'expr')
+  let compiledFromString = await context.compile('SELECT * FROM data', 'cell', true)
   assert.deepEqual(compiled, compiledFromString)
 
   // Tests of malformed `expr` node
 
   compiled = await context.compile({source: {lang: 'python'}})
   error = compiled.messages[0]
-  assert.deepEqual(error.message, 'Expression `source.lang` property must be either "sql" or "sqlite"')
+  assert.deepEqual(error.message, 'Cell `source.lang` property must be either "sql" or "sqlite"')
 
   // Tests of SQL syntax errors and non-expressions
 
-  compiled = await context.compile('', 'expr')
+  compiled = await context.compile('', 'cell', true)
   error = compiled.messages[0]
-  assert.deepEqual(error.message, 'Expression could not be parsed')
+  assert.deepEqual(error.message, 'Cell source could not be parsed')
 
-  compiled = await context.compile('An intentional syntax error', 'expr')
+  compiled = await context.compile('An intentional syntax error', 'cell', true)
   error = compiled.messages[0]
   assert.deepEqual(error.message, 'Syntax error found near WITH Clause (Statement)')
   assert.deepEqual(error.line, 0)
   assert.deepEqual(error.column, 0)
 
-  compiled = await context.compile('SELECT * FROM mytable WHERE', 'expr')
+  compiled = await context.compile('SELECT * FROM mytable WHERE', 'cell', true)
   error = compiled.messages[0]
   assert.deepEqual(error.message, 'Syntax error found near Column Identifier (WHERE Clause)')
   assert.deepEqual(error.line, 0)
   assert.deepEqual(error.column, 27)
 
-  compiled = await context.compile('SELECT 42; SELECT 24;', 'expr')
+  compiled = await context.compile('SELECT 42; SELECT 24;', 'cell', true)
   error = compiled.messages[0]
-  assert.deepEqual(error.message, 'Expression must be a single "SELECT" statement')
+  assert.deepEqual(error.message, 'Cell source must be a single "SELECT" statement')
 
-  compiled = await context.compile('DROP TABLE mypreciousdata', 'expr')
+  compiled = await context.compile('DROP TABLE mypreciousdata', 'cell', true)
   error = compiled.messages[0]
-  assert.deepEqual(error.message, 'Expression must be a "SELECT" statement, "DROP" not allowed')
+  assert.deepEqual(error.message, 'Cell source must be a "SELECT" statement, "DROP" not allowed')
 
-  compiled = await context.compile('DELETE FROM mypreciousdata', 'expr')
+  compiled = await context.compile('DELETE FROM mypreciousdata', 'cell', true)
   error = compiled.messages[0]
-  assert.deepEqual(error.message, 'Expression must be a "SELECT" statement, "DELETE" not allowed')
+  assert.deepEqual(error.message, 'Cell source must be a "SELECT" statement, "DELETE" not allowed')
 
   // Tests of parsing expression for string interpolation inputs
 
-  compiled = await context.compile('SELECT * FROM data WHERE height > ${x} AND width < ${y}', 'expr') // eslint-disable-line no-template-curly-in-string
+  compiled = await context.compile('SELECT * FROM data WHERE height > ${x} AND width < ${y}', 'cell', true) // eslint-disable-line no-template-curly-in-string
   assert.deepEqual(compiled.messages, [])
   assert.deepEqual(compiled.inputs, [
     {name: 'data'},
@@ -112,34 +114,34 @@ test('SqliteContext.compile block', async assert => {
   // and returns a compiled `block` node
 
   block = {
-    type: 'block',
+    type: 'cell',
     source: {
       type: 'text',
       lang: 'sql',
       data: 'out = SELECT * FROM inp'
     }
   }
-  compiled = await context.compile(block, 'block')
+  compiled = await context.compile(block)
   assert.deepEqual(compiled.type, block.type)
   assert.deepEqual(compiled.source, block.source)
   assert.deepEqual(compiled.inputs, [{name: 'inp'}])
   assert.deepEqual(compiled.output, {name: 'out'})
   assert.deepEqual(compiled.messages, [])
 
-  let compiledFromString = await context.compile('out = SELECT * FROM inp', 'block')
+  let compiledFromString = await context.compile('out = SELECT * FROM inp')
   assert.deepEqual(compiled, compiledFromString)
 
   // Test that it errors with malformed output extension syntax
-  compiled = await context.compile('out = DELETE FROM foo', 'block')
+  compiled = await context.compile('out = DELETE FROM foo')
   assert.deepEqual(compiled.messages[0].message, 'Syntax error found near WITH Clause (Statement)')
 
   // Test that it errors if more than one output
-  compiled = await context.compile('out1 = SELECT 42;\nout2 = SELECT 42', 'block')
-  assert.deepEqual(compiled.messages[0].message, 'Block must have only one output but 2 found "out1, out2"')
+  compiled = await context.compile('out1 = SELECT 42;\nout2 = SELECT 42')
+  assert.deepEqual(compiled.messages[0].message, 'Cell must have only one output but 2 found "out1, out2"')
 
   // Test that it errors on potential side-effects
-  compiled = await context.compile('CREATE TABLE foo (bar INT); DROP TABLE foo', 'block')
-  assert.equal(compiled.messages[0].message, 'Block has potential side effects caused by using "CREATE, DROP" statements')
+  compiled = await context.compile('CREATE TABLE foo (bar INT); DROP TABLE foo')
+  assert.equal(compiled.messages[0].message, 'Cell has potential side effects caused by using "CREATE, DROP" statements')
   // Test that global cells can have side effects
   compiled.global = true
   compiled = await context.compile(compiled)
@@ -148,15 +150,15 @@ test('SqliteContext.compile block', async assert => {
   // Test that it returns inputs properly
   context._db.exec('CREATE TABLE existing1 (col1 TEXT)')
 
-  compiled = await context.compile('SELECT * FROM input1 RIGHT JOIN existing1 WHERE existing1.col1 < ${input2}', 'block') // eslint-disable-line no-template-curly-in-string
+  compiled = await context.compile('SELECT * FROM input1 RIGHT JOIN existing1 WHERE existing1.col1 < ${input2}') // eslint-disable-line no-template-curly-in-string
   assert.deepEqual(compiled.messages, [])
   assert.deepEqual(compiled.inputs, [{name: 'input1'}, {name: 'input2'}])
 
   // Test various types of output name syntax
-  compiled = await context.compile('out = SELECT * FROM inp', 'block')
+  compiled = await context.compile('out = SELECT * FROM inp')
   assert.deepEqual(compiled.output.name, 'out')
 
-  compiled = await context.compile('\n  out = SELECT * FROM inp', 'block')
+  compiled = await context.compile('\n  out = SELECT * FROM inp')
   assert.deepEqual(compiled.output.name, 'out')
 
   assert.end()
@@ -170,7 +172,7 @@ test('SqliteContext.execute expressions', async assert => {
   context._db.exec(LARGE_TABLE_SQL)
 
   // Test using no inputs
-  executed = await context.execute('SELECT 42 AS answer', 'expr')
+  executed = await context.execute('SELECT 42 AS answer', 'cell', true)
   assert.deepEqual(executed.inputs, [])
   assert.deepEqual(executed.output, {
     value: await context.packPackage({
@@ -181,7 +183,7 @@ test('SqliteContext.execute expressions', async assert => {
   assert.deepEqual(executed.messages, [])
 
   // Test using an existing table
-  executed = await context.execute('SELECT * FROM test_table_small', 'expr')
+  executed = await context.execute('SELECT * FROM test_table_small', 'cell', true)
   assert.deepEqual(executed.inputs, [])
   assert.deepEqual(executed.output, {
     value: await context.packPackage({
@@ -196,8 +198,9 @@ test('SqliteContext.execute expressions', async assert => {
 
   // Test with an interpolated variable input
   executed = await context.execute({
-    type: 'expr',
+    type: 'cell',
     source: {data: 'SELECT * FROM test_table_small WHERE col2 <= ${x}'}, // eslint-disable-line
+    expr: true,
     inputs: [{
       name: 'x',
       value: {type: 'number', data: 2}
@@ -218,8 +221,9 @@ test('SqliteContext.execute expressions', async assert => {
 
   // Test with a table input
   executed = await context.execute({
-    type: 'expr',
+    type: 'cell',
     source: {data: 'SELECT * FROM mydata WHERE col2 <= 2'},
+    expr: true,
     inputs: [{
       name: 'mydata',
       value: await context.packPackage({
@@ -266,7 +270,7 @@ test('SqliteContext.execute blocks', async assert => {
 
   // Test with named output on last line
   executed = await context.execute({
-    type: 'block',
+    type: 'cell',
     source: {
       data: `
         CREATE TABLE mytable (col1 TEXT, col2 INT);
@@ -277,6 +281,7 @@ test('SqliteContext.execute blocks', async assert => {
         out = SELECT * FROM mytable WHERE col2 <= \${inp}
       `
     },
+    expr: false,
     global: true,
     inputs: [{
       name: 'inp',
