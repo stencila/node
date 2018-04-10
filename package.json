@@ -14,8 +14,7 @@
     "check": "dependency-check ./package.json && dependency-check ./package.json --unused --no-dev --ignore-module request",
     "test": "tape test | tap-spec",
     "cover": "nyc --reporter=lcov --reporter=text npm test",
-    "docs": "documentation build --config docs/docs.yml --output docs --format html",
-    "docs-serve": "documentation serve --config docs/docs.yml --watch",
+    "docs": "esdoc",
     "start": "nodemon bin/stencila-nodemon.js",
     "prepublishOnly": "npm run lint && npm run test && npm run check && npm run docs"
   },
@@ -40,7 +39,9 @@
   "homepage": "https://github.com/stencila/node#readme",
   "devDependencies": {
     "dependency-check": "^3.1.0",
-    "documentation": "^6.1.0",
+    "esdoc": "^1.0.4",
+    "esdoc-node": "^1.0.3",
+    "esdoc-standard-plugin": "^1.0.0",
     "node-mocks-http": "^1.6.7",
     "nodemon": "^1.17.2",
     "nyc": "^11.6.0",
@@ -67,5 +68,17 @@
     "spawnteract": "^4.0.0",
     "sqlite-parser": "^1.0.1",
     "uuid": "^3.2.1"
+  },
+  "esdoc": {
+    "source": "./lib",
+    "destination": "./docs",
+    "plugins": [
+      {
+        "name": "esdoc-standard-plugin"
+      },
+      {
+        "name": "esdoc-node"
+      }
+    ]
   }
 }
