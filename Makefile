@@ -1,4 +1,4 @@
-all: setup lint cover docs
+all: setup lint check cover docs
 
 setup:
 	npm install
@@ -21,10 +21,6 @@ cover:
 
 docs:
 	npm run docs
-.PHONY: docs
-
-docs-serve:
-	npm run docs-serve
 
 clean:
 	rm -rf node_modules

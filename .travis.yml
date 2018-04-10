@@ -15,6 +15,7 @@ addons:
 before_install:
   - python --version
   - pip install pip --upgrade --user
+  # Install ipykernel for testing of JupyterContext
   - pip install ipykernel --user
 
 cache:
@@ -32,3 +33,13 @@ script:
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
+
+# Deploy documentation to Github Pages
+# See https://docs.travis-ci.com/user/deployment/pages/
+deploy:
+  provider: pages
+  skip-cleanup: true
+  github-token: $GITHUB_TOKEN
+  local-dir: docs
+  on:
+    branch: master

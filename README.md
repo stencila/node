@@ -37,7 +37,7 @@ stencila.run()
 
 This will serve a Stencila `Host` on localhost. You can then open your Stencila document from within the [Stencila Desktop](https://github.com/stencila/desktop). The host will be automatically detected by the desktop app and you'll be able to execute Javascript code cells from within your documents.
 
-More documentation is available at https://stencila.github.io/node.
+API documentation is available at https://stencila.github.io/node.
 
 ### Discuss
 
