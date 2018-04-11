@@ -12,27 +12,11 @@ test('JavascriptContext', assert => {
 test('JavascriptContext.compileFunc', assert => {
   let context = new JavascriptContext()
 
-  assert.deepEqual(
-    context.compileFunc('function square(value){return value*value}'),
-    {
-      type: 'func',
-      source: {
-        type: 'text',
-        lang: 'js',
-        data: 'function square(value){return value*value}'
-      },
-      name: 'square',
-      params: [
-        {
-          name: 'value'
-        }
-      ]
-    }
-  )
-
+  // Test that bad inputs are handled OK
   assert.throws(() => context.compileFunc(''), /No function definition found in the source code/, 'throws if no function defined')
   assert.throws(() => context.compileFunc('foo bar()'), /Syntax error in source code: Unexpected token \(1:4\)/, 'throws if syntax error')
 
+  // Check parameters parsed from function declaration and doc comments
   function checkParams (source, expect, message) {
     assert.deepEqual(context.compileFunc(source).params, expect, message)
   }
@@ -53,14 +37,55 @@ test('JavascriptContext.compileFunc', assert => {
 
   checkParams(`
     /**
-     * @param a Parameter a
-     * @param {typeB} b Parameter b
+     * @param a Description of parameter a
+     * @param {typeB} b Description of parameter b
      */
     function func (a, b){}
   `, [
-    {name: 'a', description: 'Parameter a'},
-    {name: 'b', type: 'typeB', description: 'Parameter b'}
+    {name: 'a', description: 'Description of parameter a'},
+    {name: 'b', type: 'typeB', description: 'Description of parameter b'}
   ], 'parameter descriptions and types from docs')
+
+  // Check return parsed from doc comment
+  function checkReturn (source, expect, message) {
+    assert.deepEqual(context.compileFunc(source)['return'], expect, message)
+  }
+
+  checkReturn(
+    `function func (){}`,
+    undefined,
+    'return can only come from doc comment'
+  )
+
+  checkReturn(
+    `
+    /**
+     * @return {typeReturn} Description of return
+     */
+    function func (a, b){}
+    `,
+    {type: 'typeReturn', description: 'Description of return'},
+    'return description and type from docs'
+  )
+
+  // Kitchensink test
+  assert.deepEqual(
+    context.compileFunc('function square(value){return value*value}'),
+    {
+      type: 'func',
+      source: {
+        type: 'text',
+        lang: 'js',
+        data: 'function square(value){return value*value}'
+      },
+      name: 'square',
+      params: [
+        {
+          name: 'value'
+        }
+      ]
+    }
+  )
 
   assert.end()
 })
