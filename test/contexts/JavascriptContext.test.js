@@ -120,6 +120,7 @@ test('JavascriptContext.compileFunc', assert => {
     name: 'funcname',
     title: 'Function title',
     summary: 'Function summary',
+    description: 'Function description',
     examples: [
       'funcname(1, 2, 3, 4)',
       'funcname(x, y, z)'
