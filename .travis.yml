@@ -3,6 +3,10 @@ language: node_js
 node_js:
   - 8
 
+cache:
+  directories:
+    - node_modules
+
 addons:
   apt:
     sources:
@@ -18,18 +22,14 @@ before_install:
   # Install ipykernel for testing of JupyterContext
   - pip install ipykernel --user
 
-cache:
-  directories:
-    - node_modules
-
 script:
   # Check that ipykernel will run
   - python -m ipykernel_launcher &
 
-  - make lint
-  - make check
-  - make cover
-  - make docs
+  - npm run lint
+  - npm run check
+  - npm run cover
+  - npm run docs
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
