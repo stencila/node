@@ -46,6 +46,24 @@ test('JavascriptContext.compileFunc', assert => {
     {name: 'b', type: 'typeB', description: 'Description of parameter b'}
   ], 'parameter descriptions and types from docs')
 
+  checkParams(`
+    /**
+     * @param {...number} pars Description of parameters
+     */
+    function func (...pars){}
+  `, [
+    {name: 'pars', type: 'number', repeats: true, description: 'Description of parameters'}
+  ], 'repeatable parameter with type specified and elipses')
+
+  checkParams(`
+    /**
+     * @param {number} pars Description of parameters
+     */
+    function func (___pars){}
+  `, [
+    {name: 'pars', type: 'number', extends: true, description: 'Description of parameters'}
+  ], 'extensible parameter with type specified')
+
   // Check return parsed from doc comment
   function checkReturn (source, expect, message) {
     assert.deepEqual(context.compileFunc(source)['return'], expect, message)
