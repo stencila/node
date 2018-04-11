@@ -21,7 +21,7 @@ test('JavascriptContext.compileFunc', assert => {
     assert.deepEqual(context.compileFunc(source).params, expect, message)
   }
 
-  checkParams('function func (){}', [], 'no parameters')
+  checkParams('function func (){}', undefined, 'no parameters')
   checkParams('function func (a){}', [{name: 'a'}], 'one parameter')
   checkParams('function func (a, b, c){}', [{name: 'a'}, {name: 'b'}, {name: 'c'}], 'three parameters')
 
@@ -68,24 +68,61 @@ test('JavascriptContext.compileFunc', assert => {
     'return description and type from docs'
   )
 
-  // Kitchensink test
-  assert.deepEqual(
-    context.compileFunc('function square(value){return value*value}'),
-    {
-      type: 'func',
-      source: {
-        type: 'text',
-        lang: 'js',
-        data: 'function square(value){return value*value}'
-      },
-      name: 'square',
-      params: [
-        {
-          name: 'value'
-        }
-      ]
+  // Kitchen sink test
+  const src = `
+    /**
+     * Function description
+     * 
+     * @title Function title
+     * @summary Function summary
+     *
+     * @example
+     *
+     * funcname(1, 2, 3, 4)
+     * 
+     * @example
+     *
+     * funcname(x, y, z)
+     *
+     * @param  {par1Type} par1 Parameter one description
+     * @param  {*} par2 Parameter two description
+     * @return {returnType} Return description
+     */
+    function funcname(par1, ...par2){
+      return par1 + sum(par2)
     }
-  )
+  `
+  assert.deepEqual(context.compileFunc(src), {
+    type: 'func',
+    source: {
+      type: 'text',
+      lang: 'js',
+      data: src
+    },
+    name: 'funcname',
+    title: 'Function title',
+    summary: 'Function summary',
+    examples: [
+      'funcname(1, 2, 3, 4)',
+      'funcname(x, y, z)'
+    ],
+    params: [
+      {
+        name: 'par1',
+        type: 'par1Type',
+        description: 'Parameter one description'
+      }, {
+        name: 'par2',
+        repeats: true,
+        type: 'any',
+        description: 'Parameter two description'
+      }
+    ],
+    return: {
+      type: 'returnType',
+      description: 'Return description'
+    }
+  })
 
   assert.end()
 })
