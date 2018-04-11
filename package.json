@@ -16,7 +16,8 @@
     "cover": "nyc --reporter=lcov --reporter=text npm test",
     "docs": "esdoc",
     "start": "nodemon bin/stencila-nodemon.js",
-    "prepublishOnly": "npm run lint && npm run test && npm run check && npm run docs"
+    "prepublishOnly": "npm run lint && npm run test && npm run check && npm run docs",
+    "clean": "rimraf .nyc_output docs"
   },
   "repository": {
     "type": "git",
@@ -45,6 +46,7 @@
     "node-mocks-http": "^1.6.7",
     "nodemon": "^1.17.2",
     "nyc": "^11.6.0",
+    "rimraf": "^2.6.2",
     "standard": "^11.0.1",
     "tap-spec": "^4.1.1",
     "tape": "^4.9.0"
