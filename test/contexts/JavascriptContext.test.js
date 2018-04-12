@@ -86,6 +86,26 @@ test('JavascriptContext.compileFunc', assert => {
     'return description and type from docs'
   )
 
+  // Check example parsed from doc comment
+  assert.deepEqual(
+    context.compileFunc(`
+    /**
+     * @example func(ex1)
+     * @example <caption>Example 2 function</caption> func(ex2)
+     */
+    function func (a, b){}
+    `).examples,
+    [
+      {
+        usage: 'func(ex1)'
+      }, {
+        usage: 'func(ex2)',
+        caption: 'Example 2 function'
+      }
+    ],
+    'examples from docs'
+  )
+
   // Kitchen sink test
   const src = `
     /**
@@ -94,7 +114,7 @@ test('JavascriptContext.compileFunc', assert => {
      * @title Function title
      * @summary Function summary
      *
-     * @example
+     * @example <caption>Example caption</caption>
      *
      * funcname(1, 2, 3, 4)
      * 
@@ -122,8 +142,12 @@ test('JavascriptContext.compileFunc', assert => {
     summary: 'Function summary',
     description: 'Function description',
     examples: [
-      'funcname(1, 2, 3, 4)',
-      'funcname(x, y, z)'
+      {
+        usage: 'funcname(1, 2, 3, 4)',
+        caption: 'Example caption'
+      }, {
+        usage: 'funcname(x, y, z)'
+      }
     ],
     params: [
       {
