@@ -9,16 +9,24 @@ test('JavascriptContext', assert => {
   assert.end()
 })
 
-test('JavascriptContext.compileFunc', assert => {
+test('JavascriptContext.compileFunc', async assert => {
   let context = new JavascriptContext()
 
   // Test that bad inputs are handled OK
-  assert.throws(() => context.compileFunc(''), /No function definition found in the source code/, 'throws if no function defined')
-  assert.throws(() => context.compileFunc('foo bar()'), /Syntax error in source code: Unexpected token \(1:4\)/, 'throws if syntax error')
+  try {
+    await context.compileFunc('')
+  } catch (error) {
+    assert.ok(error.message.match(/^No function definition found in the source code/), 'throws if no function defined')
+  }
+  try {
+    await context.compileFunc('foo bar()')
+  } catch (error) {
+    assert.ok(error.message.match(/^Syntax error in source code: Unexpected token \(1:4\)/), 'throws if syntax error')
+  }
 
   // Check parameters parsed from function declaration and doc comments
-  function checkParams (source, expect, message) {
-    assert.deepEqual(context.compileFunc(source).params, expect, message)
+  async function checkParams (source, expect, message) {
+    assert.deepEqual((await context.compileFunc(source)).params, expect, message)
   }
 
   checkParams('function func (){}', undefined, 'no parameters')
@@ -65,8 +73,8 @@ test('JavascriptContext.compileFunc', assert => {
   ], 'extensible parameter with type specified')
 
   // Check return parsed from doc comment
-  function checkReturn (source, expect, message) {
-    assert.deepEqual(context.compileFunc(source)['return'], expect, message)
+  async function checkReturn (source, expect, message) {
+    assert.deepEqual((await context.compileFunc(source))['return'], expect, message)
   }
 
   checkReturn(
@@ -88,13 +96,13 @@ test('JavascriptContext.compileFunc', assert => {
 
   // Check example parsed from doc comment
   assert.deepEqual(
-    context.compileFunc(`
+    (await context.compileFunc(`
     /**
      * @example func(ex1)
      * @example <caption>Example 2 function</caption> func(ex2)
      */
     function func (a, b){}
-    `).examples,
+    `)).examples,
     [
       {
         usage: 'func(ex1)'
@@ -130,7 +138,7 @@ test('JavascriptContext.compileFunc', assert => {
       return par1 + sum(par2)
     }
   `
-  assert.deepEqual(context.compileFunc(src), {
+  assert.deepEqual(await context.compileFunc(src), {
     type: 'func',
     source: {
       type: 'text',
