@@ -35,7 +35,7 @@ test('NodeContext.executeLibrary', async assert => {
 
   await context.executeLibrary(libtest, 'libtest')
   const libs = await context.libraries()
-  assert.deepEqual(Object.keys(libs), ['libtest'])
+  assert.deepEqual(Object.keys(libs), ['local', 'libtest'])
 
   assert.end()
 })

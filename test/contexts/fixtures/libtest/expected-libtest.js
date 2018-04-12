@@ -16,30 +16,29 @@
     return [a].concat(...b)
   }
 
-  const LIBRARY = {
-    "func1": {
-      "type": "func",
-      "name": "func1"
-    },
-    "func2": {
-      "type": "func",
-      "description": "A function with a repeatable parameter\n and this JsDoc string",
-      "name": "func2",
-      "params": [
-        {
-          "name": "a"
-        },
-        {
-          "name": "b",
-          "repeats": true
-        }
-      ]
-    }
+  const func1$1 = {
+    "type": "func",
+    "name": "func1"
   };
+  func1$1.body = func1;
+  const func2$1 = {
+    "type": "func",
+    "description": "A function with a repeatable parameter\n and this JsDoc string",
+    "name": "func2",
+    "params": [
+      {
+        "name": "a"
+      },
+      {
+        "name": "b",
+        "repeats": true
+      }
+    ]
+  };
+  func2$1.body = func2;
 
-  exports.LIBRARY = LIBRARY;
-  exports.func1 = func1;
-  exports.func2 = func2;
+  exports.func1 = func1$1;
+  exports.func2 = func2$1;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
