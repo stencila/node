@@ -208,123 +208,244 @@ test('JavascriptContext.executeFunc', async assert => {
 test('JavascriptContext.executeCall', async assert => {
   let context = new JavascriptContext()
 
-  // Functions that we are going to call...
+  async function testCall (call, expect, message) {
+    assert.deepEqual(await context.executeCall(call), expect, message)
+  }
+
+  async function testCallThrows (call, expect, message) {
+    try {
+      await context.executeCall(call)
+      assert.fail(message)
+    } catch (error) {
+      assert.equal(error.message, expect, message)
+    }
+  }
 
   function no_pars () { // eslint-disable-line camelcase
     return 'Hello!'
   }
   await context.executeFunc(no_pars)
 
-  function one_par (a) { // eslint-disable-line camelcase
-    return a
+  testCall(
+    {
+      type: 'call',
+      func: {type: 'get', name: 'no_pars'}
+    }, {
+      type: 'string',
+      data: 'Hello!'
+    },
+    'no_pars()'
+  )
+
+  testCallThrows(
+    {
+      type: 'call',
+      func: {type: 'get', name: 'no_pars'},
+      args: [
+        {type: 'number', data: 42}
+      ]
+    },
+    'Function was supplied 1 extra arguments',
+    'no_pars(42)'
+  )
+
+  function one_par (par) { // eslint-disable-line camelcase
+    return par * 3
   }
   await context.executeFunc(one_par)
 
-  function three_pars (foo, bar, baz) { // eslint-disable-line camelcase
-    return {foo, bar, baz}
+  testCallThrows(
+    {
+      type: 'call',
+      func: {type: 'get', name: 'one_par'}
+    },
+    'Function parameter "par" must be supplied'
+  )
+
+  testCall(
+    {
+      type: 'call',
+      func: {type: 'get', name: 'one_par'},
+      args: [
+        {type: 'number', data: 1}
+      ]
+    }, {
+      type: 'number',
+      data: 3
+    },
+    'one_par(1)'
+  )
+
+  testCall(
+    {
+      type: 'call',
+      func: {type: 'get', name: 'one_par'},
+      namedArgs: {
+        par: {type: 'number', data: 2}
+      }
+    }, {
+      type: 'number',
+      data: 6
+    },
+    'one_par(par=1)'
+  )
+
+  testCallThrows(
+    {
+      type: 'call',
+      func: {type: 'get', name: 'one_par'},
+      args: [
+        {type: 'number', data: 1}
+      ],
+      namedArgs: {
+        par: {type: 'number', data: 2}
+      }
+    },
+    'Function was supplied 1 extra arguments',
+    'one_par(1, par=2)'
+  )
+
+  testCallThrows(
+    {
+      type: 'call',
+      func: {type: 'get', name: 'one_par'},
+      namedArgs: {
+        par: {type: 'number', data: 1},
+        extra1: {type: 'number', data: 2},
+        extra2: {type: 'number', data: 3}
+      }
+    },
+    'Function was supplied extra named arguments "extra1", "extra2"',
+    'one_par(par=1, extra1=2, extra2=3)'
+  )
+
+  function three_pars (par1, par2, par3) { // eslint-disable-line camelcase
+    return {par1, par2, par3}
   }
   await context.executeFunc(three_pars)
 
-  function default_par (foo, bar = 'beep') { // eslint-disable-line camelcase
-    return bar
+  testCall(
+    {
+      type: 'call',
+      func: {type: 'get', name: 'three_pars'},
+      namedArgs: {
+        par1: {type: 'number', data: 1},
+        par2: {type: 'string', data: 'a'},
+        par3: {type: 'number', data: 3}
+      }
+    }, {
+      type: 'object',
+      data: {par1: 1, par2: 'a', par3: 3}
+    },
+    'three_pars(par1=1, par2="a", par3=3)'
+  )
+
+  function default_par (par1, par2 = 'beep') { // eslint-disable-line camelcase
+    return par1 + ' ' + par2
   }
   await context.executeFunc(default_par)
+
+  testCall(
+    {
+      type: 'call',
+      func: {type: 'get', name: 'default_par'},
+      args: [
+        {type: 'string', data: 'beep'},
+        {type: 'string', data: 'bop'}
+      ]
+    }, {
+      type: 'string',
+      data: 'beep bop'
+    },
+    'default_par("beep", "bop")'
+  )
+
+  testCall(
+    {
+      type: 'call',
+      func: {type: 'get', name: 'default_par'},
+      args: [
+        {type: 'string', data: 'beep'}
+      ]
+    }, {
+      type: 'string',
+      data: 'beep beep'
+    },
+    'default_par("beep")'
+  )
 
   function repeats_par (arg1, ...args) { // eslint-disable-line camelcase
     return `${arg1} ${args.join(',')}`
   }
   await context.executeFunc(repeats_par)
 
+  testCall(
+    {
+      type: 'call',
+      func: {type: 'get', name: 'repeats_par'},
+      args: [
+        {type: 'string', data: 'bar'},
+        {type: 'string', data: 'baz'},
+        {type: 'string', data: 'boop'}
+      ]
+    }, {
+      type: 'string',
+      data: 'bar baz,boop'
+    },
+    'repeats_par("bar", "baz", "boop")'
+  )
+
+  testCall(
+    {
+      type: 'call',
+      func: {type: 'get', name: 'repeats_par'},
+      args: [
+        {type: 'string', data: 'bar'}
+      ]
+    }, {
+      type: 'string',
+      data: 'bar '
+    },
+    'repeats_par("bar")'
+  )
+
   function extends_par (arg1, ___args) { // eslint-disable-line camelcase
-    return `${arg1} ${___args ? Object.entries(___args).join(' ') : ''}`
+    return `${arg1} ${___args ? Object.entries(___args).map(entry => entry.join(':')).join(' ') : ''}`
   }
   await context.executeFunc(extends_par)
 
-  // Now test calling those funcs...
-
-  assert.deepEqual(await context.executeCall({
-    type: 'call',
-    func: {type: 'get', name: 'no_pars'}
-  }), {
-    type: 'string',
-    data: 'Hello!'
-  })
-
-  /*
-  assert.throws(
-    await () => context.executeCall({type: 'call', func: one_par}),
-    /Function parameter "a" must be supplied/,
-    'one_par()'
-  )
-  assert.equal(
-    await context.executeCall({type: 'call', func: one_par, args: [1]}),
-    1,
-    'one_par(1)'
-  )
-  assert.equal(
-    await context.executeCall({type: 'call', func: one_par, namedArgs: {a: 1}}),
-    1,
-    'one_par(a=1)'
-  )
-  assert.throws(
-    await () => context.executeCall({type: 'call', func: one_par, args: [2], namedArgs: {a: 1}}),
-    /Function was supplied 1 extra arguments/,
-    'one_par(2, a=1)'
-  )
-  assert.throws(
-    await () => context.executeCall({type: 'call', func: one_par, namedArgs: {a: 1, b: 2, c: 3}}),
-    /Function was supplied extra named arguments "b", "c"/,
-    'one_par(a=1, b=2, c=3)'
-  )
-  assert.deepEqual(one_par.pars, [{name: 'a'}])
-
-  await context.executeCall({type: 'call', func: three_pars, namedArgs: {foo: 1, bar: 2, baz: 3}})
-  assert.deepEqual(three_pars.pars, [{name: 'foo'}, {name: 'bar'}, {name: 'baz'}])
-
-  assert.equal(
-    await context.executeCall({type: 'call', func: default_par, namedArgs: {foo: 1, bar: "bop"}}),
-    'bop',
-    'default_par(1, "bop")'
-  )
-  assert.equal(
-    await context.executeCall({type: 'call', func: default_par, args: [1]}),
-    'beep',
-    'default_par(1)'
-  )
-  assert.deepEqual(
-    default_par.pars,
-    [{name: 'foo'}, {name: 'bar', default: true}],
-    'default_par.pars'
+  testCall(
+    {
+      type: 'call',
+      func: {type: 'get', name: 'extends_par'},
+      args: [
+        {type: 'number', data: 1}
+      ]
+    }, {
+      type: 'string',
+      data: '1 '
+    },
+    'extends_par(1)'
   )
 
-  assert.equal(
-    await context.executeCall({type: 'call', func: repeats_par, args: ["bar", "baz", "boop"]}),
-    'bar baz,boop',
-    'repeats_par("bar", "baz", "boop")'
+  testCall(
+    {
+      type: 'call',
+      func: {type: 'get', name: 'extends_par'},
+      args: [
+        {type: 'number', data: 1}
+      ],
+      namedArgs: {
+        a: {type: 'number', data: 1},
+        b: {type: 'number', data: 2},
+        c: {type: 'number', data: 3}
+      }
+    }, {
+      type: 'string',
+      data: '1 a:1 b:2 c:3'
+    },
+    'extends_par(1, a=1, b=2, c=3)'
   )
-  assert.equal(
-    await context.executeCall({type: 'call', func: repeats_par, args: ["bar"]}),
-    'bar ',
-    'repeats_par("bar")'
-  )
-  assert.deepEqual(repeats_par.pars, [{name: 'arg1'}, {name: 'args', repeats: true}])
-
-  assert.equal(
-    await context.executeCall({type: 'call', func: named_repeats_par, args: [1]}),
-    '1 ',
-    'named_repeats_par(1)'
-  )
-  assert.equal(
-    await context.executeCall({type: 'call', func: named_repeats_par, args: [1], namedArgs: {a:1, b:2, c:3}}),
-    '1 a,1 b,2 c,3',
-    'named_repeats_par(1, a=1, b=2, c=3)'
-  )
-  assert.deepEqual(
-    named_repeats_par.pars,
-    [{name: 'arg1'}, {name: 'args', namedRepeats: true}],
-    'named_repeats_par.pars'
-  )
-  */
 
   assert.end()
 })
