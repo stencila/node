@@ -1,25 +1,31 @@
+const fs = require('fs')
+const path = require('path')
 const test = require('tape')
 
 const NodeContext = require('../../lib/contexts/NodeContext')
 
-test.skip('NodeContext', function (t) {
-  let c = new NodeContext()
+test('NodeContext', assert => {
+  let context = new NodeContext()
 
-  t.plan(4)
+  assert.ok(context instanceof NodeContext)
+  assert.end()
+})
 
-  t.ok(c instanceof NodeContext)
+test('NodeContext.compileLibrary', async assert => {
+  let context = new NodeContext()
 
-  c.runCode('foo = "bar"')
-    .then(() => {
-      c.runCode('foo + "t_simpson"')
-        .then(result => {
-          t.deepEqual(result, {errors: null, output: c.pack('bart_simpson')})
-        })
-    })
+  const libtest = path.join(__dirname, 'fixtures', 'libtest')
 
-  c.callCode('return a*6', {a: c.pack(7)}).then(result => {
-    t.deepEqual(result, {errors: null, output: c.pack(42)})
-  })
+  await context.compileLibrary(libtest, null, false)
+  assert.equal(
+    fs.readFileSync(path.join(libtest, 'libtest.js'), 'utf8'),
+    fs.readFileSync(path.join(libtest, 'expected-libtest.js'), 'utf8')
+  )
 
-  c.codeDependencies('foo').then(result => t.deepEqual(result, ['foo']))
+  await context.compileLibrary(libtest, null)
+  assert.ok(
+    fs.statSync(path.join(libtest, 'libtest.min.js'))
+  )
+
+  assert.end()
 })
