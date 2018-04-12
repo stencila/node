@@ -5,15 +5,14 @@ const test = require('tape')
 const NodeContext = require('../../lib/contexts/NodeContext')
 
 test('NodeContext', assert => {
-  let context = new NodeContext()
+  const context = new NodeContext()
 
   assert.ok(context instanceof NodeContext)
   assert.end()
 })
 
 test('NodeContext.compileLibrary', async assert => {
-  let context = new NodeContext()
-
+  const context = new NodeContext()
   const libtest = path.join(__dirname, 'fixtures', 'libtest')
 
   await context.compileLibrary(libtest, null, false)
@@ -26,6 +25,17 @@ test('NodeContext.compileLibrary', async assert => {
   assert.ok(
     fs.statSync(path.join(libtest, 'libtest.min.js'))
   )
+
+  assert.end()
+})
+
+test('NodeContext.executeLibrary', async assert => {
+  const context = new NodeContext()
+  const libtest = path.join(__dirname, 'fixtures', 'libtest')
+
+  await context.executeLibrary(libtest, 'libtest')
+  const libs = await context.libraries()
+  assert.deepEqual(Object.keys(libs), ['libtest'])
 
   assert.end()
 })

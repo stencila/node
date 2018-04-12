@@ -16,7 +16,7 @@
     return [a].concat(...b)
   }
 
-  const FUNCS = {
+  const LIBRARY = {
     "func1": {
       "type": "func",
       "name": "func1"
@@ -37,7 +37,7 @@
     }
   };
 
-  exports.FUNCS = FUNCS;
+  exports.LIBRARY = LIBRARY;
   exports.func1 = func1;
   exports.func2 = func2;
 
