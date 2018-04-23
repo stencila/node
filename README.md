@@ -8,7 +8,7 @@
 
 ### Install
 
-```sh
+```bash
 npm install stencila-node -g
 ```
 
@@ -24,7 +24,7 @@ This creates a host manifest file in the Stencila hosts directory (e.g. `~/.sten
 
 This package lets you run JavaScript and other code from inside Stencila documents. First, you need to start serving the Stencila Host within this package. You can do that at a terminal,
 
-```sh
+```bash
 stencila-node
 ```
 
@@ -36,6 +36,14 @@ stencila.run()
 ```
 
 This will serve a Stencila `Host` on localhost. You can then open your Stencila document from within the [Stencila Desktop](https://github.com/stencila/desktop). The host will be automatically detected by the desktop app and you'll be able to execute Javascript code cells from within your documents.
+
+You can also use this package to compile libraries of Javascript functions for use within Stencila:
+
+```bash
+stencila-node compile "~/stencila/source/libcore/"
+```
+
+This creates a minified Javascript bundle, in this example at `"~/stencila/source/libcore/libcore.min.js`
 
 API documentation is available at https://stencila.github.io/node.
 

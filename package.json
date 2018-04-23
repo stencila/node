@@ -16,7 +16,8 @@
     "cover": "nyc --reporter=lcov --reporter=text npm test",
     "docs": "esdoc",
     "start": "nodemon bin/stencila-nodemon.js",
-    "prepublishOnly": "npm run lint && npm run test && npm run check && npm run docs"
+    "prepublishOnly": "npm run lint && npm run test && npm run check && npm run docs",
+    "clean": "rimraf .nyc_output docs"
   },
   "repository": {
     "type": "git",
@@ -45,14 +46,17 @@
     "node-mocks-http": "^1.6.7",
     "nodemon": "^1.17.2",
     "nyc": "^11.6.0",
+    "rimraf": "^2.6.2",
     "standard": "^11.0.1",
     "tap-spec": "^4.1.1",
     "tape": "^4.9.0"
   },
   "dependencies": {
+    "acorn": "^5.5.3",
     "address": "^1.0.3",
     "better-sqlite3": "^4.1.0",
     "body": "^5.1.0",
+    "doctrine": "^2.1.0",
     "execa": "^0.10.0",
     "get-stdin": "^6.0.0",
     "glob": "^7.1.2",
@@ -64,9 +68,13 @@
     "path-is-inside": "^1.0.2",
     "request": "^2.85.0",
     "request-promise": "^4.2.2",
+    "rollup": "^0.57.1",
+    "rollup-plugin-uglify": "^3.0.0",
     "send": "^0.15.4",
     "spawnteract": "^4.0.0",
     "sqlite-parser": "^1.0.1",
+    "tmp": "0.0.33",
+    "untildify": "^3.0.2",
     "uuid": "^3.2.1"
   },
   "esdoc": {

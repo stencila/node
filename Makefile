@@ -21,6 +21,7 @@ cover:
 
 docs:
 	npm run docs
+.PHONY: docs
 
 clean:
-	rm -rf node_modules
+	npm run clean
