@@ -26,9 +26,14 @@ const stencila = require('../lib/index.js')
   let inp = process.argv[3] || await getStdin()
   let options
   if (inp && inp.length) {
-    try {
-      options = JSON.parse(inp)
-    } catch (error) {
+    if (inp[0] === '{') {
+      try {
+        options = JSON.parse(inp)
+      } catch (error) {
+        console.error('Could not parse JSON options supplied: ' + error.message)
+        process.exit(1)
+      }
+    } else {
       // Treat options as a string argument
       options = inp
     }
