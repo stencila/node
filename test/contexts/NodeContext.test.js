@@ -15,13 +15,13 @@ test('NodeContext.compileLibrary', async assert => {
   const context = new NodeContext()
   const libtest = path.join(__dirname, 'fixtures', 'libtest')
 
-  await context.compileLibrary(libtest, null, false)
+  await context.compileLibrary({src: libtest, minify: false})
   assert.equal(
     fs.readFileSync(path.join(libtest, 'libtest.js'), 'utf8'),
     fs.readFileSync(path.join(libtest, 'expected-libtest.js'), 'utf8')
   )
 
-  await context.compileLibrary(libtest, null)
+  await context.compileLibrary({src: libtest})
   assert.ok(
     fs.statSync(path.join(libtest, 'libtest.min.js'))
   )
@@ -33,9 +33,9 @@ test('NodeContext.executeLibrary', async assert => {
   const context = new NodeContext()
   const libtest = path.join(__dirname, 'fixtures', 'libtest')
 
-  await context.executeLibrary(libtest, 'libtest')
+  await context.executeLibrary({src: libtest, name: 'libtest'})
   const libs = await context.libraries()
-  assert.deepEqual(Object.keys(libs), ['local', 'libtest'])
+  assert.deepEqual(Object.keys(libs), ['libtest'])
 
   assert.end()
 })
