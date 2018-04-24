@@ -31,8 +31,7 @@ test('JavascriptContext.compileFunc', async assert => {
     {
       type: 'func',
       name: 'afunc',
-      source: { type: 'text', lang: 'js', data: 'function afunc() {}' },
-      body: afunc
+      source: { type: 'text', lang: 'js', data: 'function afunc() {}' }
     }
   )
 
@@ -209,7 +208,8 @@ test('JavascriptContext.executeCall', async assert => {
   let context = new JavascriptContext()
 
   async function testCall (call, expect, message) {
-    assert.deepEqual(await context.executeCall(call), expect, message)
+    let result = await context.executeCall(call)
+    assert.deepEqual(result.value, expect, message)
   }
 
   async function testCallThrows (call, expect, message) {
