@@ -40,7 +40,12 @@ const stencila = require('../lib/index.js')
   }
 
   // Execute the function and output any result as JSON
-  const result = await func(options)
+  let result
+  try {
+    result = await func(options)
+  } catch (error) {
+    console.error(error.stack)
+  }
   if (result) {
     const out = JSON.stringify(result)
     console.log(out)
