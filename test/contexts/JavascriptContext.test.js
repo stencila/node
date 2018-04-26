@@ -31,6 +31,7 @@ test('JavascriptContext.compileFunc', async assert => {
     {
       type: 'func',
       name: 'afunc',
+      signature: 'afunc()',
       source: { type: 'text', lang: 'js', data: 'function afunc() {}' }
     }
   )
@@ -162,14 +163,7 @@ test('JavascriptContext.compileFunc', async assert => {
     title: 'Function title',
     summary: 'Function summary',
     description: 'Function description',
-    examples: [
-      {
-        usage: 'funcname(1, 2, 3, 4)',
-        caption: 'Example caption'
-      }, {
-        usage: 'funcname(x, y, z)'
-      }
-    ],
+    signature: 'funcname(par1: par1Type, par2: any): returnType',
     params: [
       {
         name: 'par1',
@@ -185,7 +179,15 @@ test('JavascriptContext.compileFunc', async assert => {
     return: {
       type: 'returnType',
       description: 'Return description'
-    }
+    },
+    examples: [
+      {
+        usage: 'funcname(1, 2, 3, 4)',
+        caption: 'Example caption'
+      }, {
+        usage: 'funcname(x, y, z)'
+      }
+    ]
   })
 
   assert.end()
