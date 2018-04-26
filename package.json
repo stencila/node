@@ -1,6 +1,6 @@
 {
   "name": "stencila-node",
-  "version": "0.28.6",
+  "version": "0.28.7",
   "description": "Stencila for Node.js",
   "main": "lib/index.js",
   "directories": {
