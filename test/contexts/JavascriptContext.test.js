@@ -29,16 +29,25 @@ test('JavascriptContext.compileFunc', async assert => {
   assert.deepEqual(
     await context.compileFunc(afunc),
     {
-      type: 'func',
+      type: 'function',
       name: 'afunc',
-      signature: 'afunc()',
-      source: { type: 'text', lang: 'js', data: 'function afunc() {}' }
+      methods: {
+        'afunc()': {
+          type: 'method',
+          signature: 'afunc()'
+        }
+      },
+      source: {
+        type: 'text', lang: 'js', data: 'function afunc() {}'
+      }
     }
   )
 
   // Check parameters parsed from function declaration and doc comments
   async function checkParams (source, expect, message) {
-    assert.deepEqual((await context.compileFunc(source)).params, expect, message)
+    let func = await context.compileFunc(source)
+    let params = Object.values(func.methods)[0].params
+    assert.deepEqual(params, expect, message)
   }
 
   checkParams('function func (){}', undefined, 'no parameters')
@@ -86,7 +95,9 @@ test('JavascriptContext.compileFunc', async assert => {
 
   // Check return parsed from doc comment
   async function checkReturn (source, expect, message) {
-    assert.deepEqual((await context.compileFunc(source))['return'], expect, message)
+    let func = await context.compileFunc(source)
+    let return_ = Object.values(func.methods)[0]['return']
+    assert.deepEqual(return_, expect, message)
   }
 
   checkReturn(
@@ -108,13 +119,13 @@ test('JavascriptContext.compileFunc', async assert => {
 
   // Check example parsed from doc comment
   assert.deepEqual(
-    (await context.compileFunc(`
+    Object.values((await context.compileFunc(`
     /**
      * @example func(ex1)
      * @example <caption>Example 2 function</caption> func(ex2)
      */
     function func (a, b){}
-    `)).examples,
+    `)).methods)[0].examples,
     [
       {
         usage: 'func(ex1)'
@@ -150,39 +161,43 @@ test('JavascriptContext.compileFunc', async assert => {
       return par1 + sum(par2)
     }
   `
-  let func = await context.compileFunc(src1)
-  delete func.source
-  assert.deepEqual(func, {
-    type: 'func',
+  let func1 = await context.compileFunc(src1, false)
+  assert.deepEqual(func1, {
+    type: 'function',
     name: 'funcname',
-    signature: 'funcname(par1: par1Type, par2: any): returnType',
-    title: 'Function title',
-    summary: 'Function summary',
-    description: 'Function description',
-    params: [
-      {
-        name: 'par1',
-        type: 'par1Type',
-        description: 'Parameter one description'
-      }, {
-        name: 'par2',
-        repeats: true,
-        type: 'any',
-        description: 'Parameter two description'
+    methods: {
+      'funcname(par1: par1Type, par2: any): returnType': {
+        type: 'method',
+        signature: 'funcname(par1: par1Type, par2: any): returnType',
+        title: 'Function title',
+        summary: 'Function summary',
+        description: 'Function description',
+        params: [
+          {
+            name: 'par1',
+            type: 'par1Type',
+            description: 'Parameter one description'
+          }, {
+            name: 'par2',
+            repeats: true,
+            type: 'any',
+            description: 'Parameter two description'
+          }
+        ],
+        return: {
+          type: 'returnType',
+          description: 'Return description'
+        },
+        examples: [
+          {
+            usage: 'funcname(1, 2, 3, 4)',
+            caption: 'Example caption'
+          }, {
+            usage: 'funcname(x, y, z)'
+          }
+        ]
       }
-    ],
-    return: {
-      type: 'returnType',
-      description: 'Return description'
-    },
-    examples: [
-      {
-        usage: 'funcname(1, 2, 3, 4)',
-        caption: 'Example caption'
-      }, {
-        usage: 'funcname(x, y, z)'
-      }
-    ]
+    }
   }, 'kitchensink example')
 
   // Overloading
@@ -201,31 +216,28 @@ test('JavascriptContext.compileFunc', async assert => {
      */
     function funcname(...args){}
   `
-  let funcs = await context.compileFunc(src2)
-  assert.equal(funcs.length, 2)
-  assert.deepEqual(funcs, [
-    {
-      type: 'func',
-      name: 'funcname',
+  let func2 = await context.compileFunc(src2)
+  assert.equal(Object.keys(func2.methods).length, 2)
+  assert.deepEqual(func2.methods, {
+    'funcname(parA1: parA1Type): returnAType': {
+      type: 'method',
       signature: 'funcname(parA1: parA1Type): returnAType',
       description: 'Overload A description',
       params: [
         { name: 'parA1', type: 'parA1Type', description: 'Parameter A1 description' }
       ],
-      return: { type: 'returnAType', description: 'Return A description' },
-      source: { type: 'text', lang: 'js', data: '*\n     * Overload A description\n     *\n     * @param  {parA1Type} parA1 Parameter A1 description\n     * @return {returnAType} Return A description\n     ' }
-    }, {
-      type: 'func',
-      name: 'funcname',
+      return: { type: 'returnAType', description: 'Return A description' }
+    },
+    'funcname(parB1: parB1Type): returnBType': {
+      type: 'method',
       signature: 'funcname(parB1: parB1Type): returnBType',
       description: 'Overload B description',
       params: [
         { name: 'parB1', type: 'parB1Type', description: 'Parameter B1 description' }
       ],
-      return: { type: 'returnBType', description: 'Return B description' },
-      source: { type: 'text', lang: 'js', data: '*\n     * Overload B description\n     *\n     * @param  {parB1Type} parB1 Parameter B1 description\n     * @return {returnBType} Return B description\n     ' }
+      return: { type: 'returnBType', description: 'Return B description' }
     }
-  ])
+  })
 
   assert.end()
 })
@@ -237,7 +249,7 @@ test('JavascriptContext.executeFunc', async assert => {
   const got = await context.executeGet({name: 'afunc'})
   assert.deepEqual(
     {type: got.type, name: got.name},
-    {type: 'func', name: 'afunc'}
+    {type: 'function', name: 'afunc'}
   )
 
   assert.end()
