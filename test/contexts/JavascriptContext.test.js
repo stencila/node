@@ -127,7 +127,7 @@ test('JavascriptContext.compileFunc', async assert => {
   )
 
   // Kitchen sink test
-  const src = `
+  const src1 = `
     /**
      * Function description
      * 
@@ -150,20 +150,15 @@ test('JavascriptContext.compileFunc', async assert => {
       return par1 + sum(par2)
     }
   `
-  let func = await context.compileFunc(src)
-  delete func.body
+  let func = await context.compileFunc(src1)
+  delete func.source
   assert.deepEqual(func, {
     type: 'func',
-    source: {
-      type: 'text',
-      lang: 'js',
-      data: src
-    },
     name: 'funcname',
+    signature: 'funcname(par1: par1Type, par2: any): returnType',
     title: 'Function title',
     summary: 'Function summary',
     description: 'Function description',
-    signature: 'funcname(par1: par1Type, par2: any): returnType',
     params: [
       {
         name: 'par1',
@@ -188,7 +183,49 @@ test('JavascriptContext.compileFunc', async assert => {
         usage: 'funcname(x, y, z)'
       }
     ]
-  }, 'kitchensink')
+  }, 'kitchensink example')
+
+  // Overloading
+  const src2 = `
+    /**
+     * Overload A description
+     *
+     * @param  {parA1Type} parA1 Parameter A1 description
+     * @return {returnAType} Return A description
+     */
+    /**
+     * Overload B description
+     *
+     * @param  {parB1Type} parB1 Parameter B1 description
+     * @return {returnBType} Return B description
+     */
+    function funcname(...args){}
+  `
+  let funcs = await context.compileFunc(src2)
+  assert.equal(funcs.length, 2)
+  assert.deepEqual(funcs, [
+    {
+      type: 'func',
+      name: 'funcname',
+      signature: 'funcname(parA1: parA1Type): returnAType',
+      description: 'Overload A description',
+      params: [
+        { name: 'parA1', type: 'parA1Type', description: 'Parameter A1 description' }
+      ],
+      return: { type: 'returnAType', description: 'Return A description' },
+      source: { type: 'text', lang: 'js', data: '*\n     * Overload A description\n     *\n     * @param  {parA1Type} parA1 Parameter A1 description\n     * @return {returnAType} Return A description\n     ' }
+    }, {
+      type: 'func',
+      name: 'funcname',
+      signature: 'funcname(parB1: parB1Type): returnBType',
+      description: 'Overload B description',
+      params: [
+        { name: 'parB1', type: 'parB1Type', description: 'Parameter B1 description' }
+      ],
+      return: { type: 'returnBType', description: 'Return B description' },
+      source: { type: 'text', lang: 'js', data: '*\n     * Overload B description\n     *\n     * @param  {parB1Type} parB1 Parameter B1 description\n     * @return {returnBType} Return B description\n     ' }
+    }
+  ])
 
   assert.end()
 })
