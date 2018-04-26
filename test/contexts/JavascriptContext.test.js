@@ -77,7 +77,7 @@ test('JavascriptContext.compileFunc', async assert => {
 
   checkParams(`
     /**
-     * @param {number} pars Description of parameters
+     * @param {___number} pars Description of parameters
      */
     function func (___pars){}
   `, [
@@ -143,7 +143,7 @@ test('JavascriptContext.compileFunc', async assert => {
      * funcname(x, y, z)
      *
      * @param  {par1Type} par1 Parameter one description
-     * @param  {*} par2 Parameter two description
+     * @param  {...any} par2 Parameter two description
      * @return {returnType} Return description
      */
     function funcname(par1, ...par2){
@@ -188,7 +188,7 @@ test('JavascriptContext.compileFunc', async assert => {
         usage: 'funcname(x, y, z)'
       }
     ]
-  })
+  }, 'kitchensink')
 
   assert.end()
 })
