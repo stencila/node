@@ -18,22 +18,15 @@
 
   const func1$1 = {
     "type": "func",
-    "name": "func1"
+    "name": "func1",
+    "signature": "func1()"
   };
   func1$1.body = func1;
   const func2$1 = {
     "type": "func",
-    "description": "A function with a repeatable parameter\n and this JsDoc string",
     "name": "func2",
-    "params": [
-      {
-        "name": "a"
-      },
-      {
-        "name": "b",
-        "repeats": true
-      }
-    ]
+    "signature": "func2()",
+    "description": "A function with a repeatable parameter\n and this JsDoc string"
   };
   func2$1.body = func2;
 
