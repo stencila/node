@@ -34,7 +34,10 @@
     return
   }
 
-  const func1$1 = {
+  const type = 'library';
+        const name = 'libtest';
+        let funcs = {};
+  funcs['func1'] = {
     "type": "function",
     "name": "func1",
     "methods": {
@@ -49,8 +52,8 @@
       "data": "// A function without a JSDoc string\n\nexport default function func1 () {}\n"
     }
   };
-  func1$1.body = func1;
-  const func2$1 = {
+  funcs['func1'].body = func1;
+  funcs['func2'] = {
     "type": "function",
     "name": "func2",
     "methods": {
@@ -66,8 +69,8 @@
       "data": "/**\n * A function with a repeatable parameter\n * and this JsDoc string\n */\nexport default function func2 (a, ...b) {\n  return [a].concat(...b)\n}\n"
     }
   };
-  func2$1.body = func2;
-  const func3$1 = {
+  funcs['func2'].body = func2;
+  funcs['func3'] = {
     "type": "function",
     "name": "func3",
     "methods": {
@@ -106,11 +109,11 @@
       "data": "/**\n * A function with overloads\n *\n * @param {string} a\n * @return {string}\n */\n\n/**\n * A function with overloads\n *\n * @param {number} a\n * @return {number}\n */\n\nexport default function func3 (a) {\n  return\n}\n"
     }
   };
-  func3$1.body = func3;
+  funcs['func3'].body = func3;
 
-  exports.func1 = func1$1;
-  exports.func2 = func2$1;
-  exports.func3 = func3$1;
+  exports.type = type;
+  exports.name = name;
+  exports.funcs = funcs;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
