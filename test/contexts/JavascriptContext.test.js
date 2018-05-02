@@ -33,7 +33,6 @@ test('JavascriptContext.compileFunc', async assert => {
       name: 'afunc',
       methods: {
         'afunc()': {
-          type: 'method',
           signature: 'afunc()'
         }
       },
@@ -165,13 +164,12 @@ test('JavascriptContext.compileFunc', async assert => {
   assert.deepEqual(func1, {
     type: 'function',
     name: 'funcname',
+    title: 'Function title',
+    summary: 'Function summary',
+    description: 'Function description',
     methods: {
       'funcname(par1: par1Type, par2: any): returnType': {
-        type: 'method',
         signature: 'funcname(par1: par1Type, par2: any): returnType',
-        title: 'Function title',
-        summary: 'Function summary',
-        description: 'Function description',
         params: [
           {
             name: 'par1',
@@ -203,6 +201,9 @@ test('JavascriptContext.compileFunc', async assert => {
   // Overloading
   const src2 = `
     /**
+     * Function description: I have two methods
+     */
+    /**
      * Overload A description
      *
      * @param  {parA1Type} parA1 Parameter A1 description
@@ -217,10 +218,10 @@ test('JavascriptContext.compileFunc', async assert => {
     function funcname(...args){}
   `
   let func2 = await context.compileFunc(src2)
+  assert.equal(func2.description, 'Function description: I have two methods')
   assert.equal(Object.keys(func2.methods).length, 2)
   assert.deepEqual(func2.methods, {
     'funcname(parA1: parA1Type): returnAType': {
-      type: 'method',
       signature: 'funcname(parA1: parA1Type): returnAType',
       description: 'Overload A description',
       params: [
@@ -229,7 +230,6 @@ test('JavascriptContext.compileFunc', async assert => {
       return: { type: 'returnAType', description: 'Return A description' }
     },
     'funcname(parB1: parB1Type): returnBType': {
-      type: 'method',
       signature: 'funcname(parB1: parB1Type): returnBType',
       description: 'Overload B description',
       params: [

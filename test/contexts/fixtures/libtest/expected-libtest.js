@@ -42,7 +42,6 @@
     "name": "func1",
     "methods": {
       "func1()": {
-        "type": "method",
         "signature": "func1()"
       }
     },
@@ -56,11 +55,10 @@
   funcs['func2'] = {
     "type": "function",
     "name": "func2",
+    "description": "A function with a repeatable parameter\n and this JsDoc string",
     "methods": {
       "func2()": {
-        "type": "method",
-        "signature": "func2()",
-        "description": "A function with a repeatable parameter\n and this JsDoc string"
+        "signature": "func2()"
       }
     },
     "source": {
@@ -73,11 +71,10 @@
   funcs['func3'] = {
     "type": "function",
     "name": "func3",
+    "description": "A function with overloads",
     "methods": {
       "func3(a: string): string": {
-        "type": "method",
         "signature": "func3(a: string): string",
-        "description": "A function with overloads",
         "params": [
           {
             "name": "a",
@@ -89,9 +86,8 @@
         }
       },
       "func3(a: number): number": {
-        "type": "method",
-        "signature": "func3(a: number): number",
         "description": "A function with overloads",
+        "signature": "func3(a: number): number",
         "params": [
           {
             "name": "a",
