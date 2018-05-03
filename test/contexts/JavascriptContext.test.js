@@ -9,17 +9,17 @@ test('JavascriptContext', assert => {
   assert.end()
 })
 
-test('JavascriptContext.compileFunc', async assert => {
+test('JavascriptContext.compile function', async assert => {
   let context = new JavascriptContext()
 
   // Test that bad inputs are handled OK
   try {
-    await context.compileFunc('')
+    await context.compile('')
   } catch (error) {
     assert.ok(error.message.match(/^No function definition found in the source code/), 'throws if no function defined')
   }
   try {
-    await context.compileFunc('foo bar()')
+    await context.compile('foo bar()')
     assert.fail('shouldn\'t get here')
   } catch (error) {
     assert.pass('throws if syntax error')
@@ -27,24 +27,33 @@ test('JavascriptContext.compileFunc', async assert => {
 
   function afunc () {}
   assert.deepEqual(
-    await context.compileFunc(afunc),
+    await context.compile(afunc),
     {
-      type: 'function',
-      name: 'afunc',
-      methods: {
-        'afunc()': {
-          signature: 'afunc()'
-        }
-      },
+      type: 'cell',
       source: {
         type: 'text', lang: 'js', data: 'function afunc() {}'
-      }
+      },
+      inputs: [],
+      outputs: [{
+        name: 'afunc',
+        value: {
+          type: 'function',
+          name: 'afunc',
+          methods: {
+            'afunc()': {
+              signature: 'afunc()'
+            }
+          }
+        }
+      }],
+      messages: []
     }
   )
 
   // Check parameters parsed from function declaration and doc comments
   async function checkParams (source, expect, message) {
-    let func = await context.compileFunc(source)
+    let cell = await context.compile(source)
+    let func = cell.outputs[0].value
     let params = Object.values(func.methods)[0].params
     assert.deepEqual(params, expect, message)
   }
@@ -94,7 +103,8 @@ test('JavascriptContext.compileFunc', async assert => {
 
   // Check return parsed from doc comment
   async function checkReturn (source, expect, message) {
-    let func = await context.compileFunc(source)
+    let cell = await context.compile(source)
+    let func = cell.outputs[0].value
     let return_ = Object.values(func.methods)[0]['return']
     assert.deepEqual(return_, expect, message)
   }
@@ -118,13 +128,13 @@ test('JavascriptContext.compileFunc', async assert => {
 
   // Check example parsed from doc comment
   assert.deepEqual(
-    Object.values((await context.compileFunc(`
+    Object.values((await context.compile(`
     /**
      * @example func(ex1)
      * @example <caption>Example 2 function</caption> func(ex2)
      */
     function func (a, b){}
-    `)).methods)[0].examples,
+    `)).outputs[0].value.methods)[0].examples,
     [
       {
         usage: 'func(ex1)'
@@ -160,7 +170,7 @@ test('JavascriptContext.compileFunc', async assert => {
       return par1 + sum(par2)
     }
   `
-  let func1 = await context.compileFunc(src1, false)
+  let func1 = (await context.compile(src1, false)).outputs[0].value
   assert.deepEqual(func1, {
     type: 'function',
     name: 'funcname',
@@ -217,7 +227,7 @@ test('JavascriptContext.compileFunc', async assert => {
      */
     function funcname(...args){}
   `
-  let func2 = await context.compileFunc(src2)
+  let func2 = (await context.compile(src2)).outputs[0].value
   assert.equal(func2.description, 'Function description: I have two methods')
   assert.equal(Object.keys(func2.methods).length, 2)
   assert.deepEqual(func2.methods, {
@@ -242,30 +252,21 @@ test('JavascriptContext.compileFunc', async assert => {
   assert.end()
 })
 
-test('JavascriptContext.executeFunc', async assert => {
-  let context = new JavascriptContext()
-
-  await context.executeFunc(function afunc () {})
-  const got = await context.executeGet({name: 'afunc'})
-  assert.deepEqual(
-    {type: got.type, name: got.name},
-    {type: 'function', name: 'afunc'}
-  )
-
-  assert.end()
-})
-
-test('JavascriptContext.executeCall', async assert => {
+test('JavascriptContext.evaluateCall', async assert => {
   let context = new JavascriptContext()
 
   async function testCall (call, expect, message) {
-    let result = await context.executeCall(call)
-    assert.deepEqual(result.value, expect, message)
+    try {
+      let result = await context.evaluateCall(call)
+      assert.deepEqual(result.value, expect, message)
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   async function testCallThrows (call, expect, message) {
     try {
-      await context.executeCall(call)
+      await context.evaluateCall(call)
       assert.fail(message)
     } catch (error) {
       assert.equal(error.message, expect, message)
@@ -275,7 +276,7 @@ test('JavascriptContext.executeCall', async assert => {
   function no_pars () { // eslint-disable-line camelcase
     return 'Hello!'
   }
-  await context.executeFunc(no_pars)
+  await context.execute(no_pars)
 
   testCall(
     {
@@ -303,7 +304,7 @@ test('JavascriptContext.executeCall', async assert => {
   function one_par (par) { // eslint-disable-line camelcase
     return par * 3
   }
-  await context.executeFunc(one_par)
+  await context.execute(one_par)
 
   testCallThrows(
     {
@@ -373,7 +374,7 @@ test('JavascriptContext.executeCall', async assert => {
   function three_pars (par1, par2, par3) { // eslint-disable-line camelcase
     return {par1, par2, par3}
   }
-  await context.executeFunc(three_pars)
+  await context.execute(three_pars)
 
   testCall(
     {
@@ -394,7 +395,7 @@ test('JavascriptContext.executeCall', async assert => {
   function default_par (par1, par2 = 'beep') { // eslint-disable-line camelcase
     return par1 + ' ' + par2
   }
-  await context.executeFunc(default_par)
+  await context.execute(default_par)
 
   testCall(
     {
@@ -428,7 +429,7 @@ test('JavascriptContext.executeCall', async assert => {
   function repeats_par (arg1, ...args) { // eslint-disable-line camelcase
     return `${arg1} ${args.join(',')}`
   }
-  await context.executeFunc(repeats_par)
+  await context.execute(repeats_par)
 
   testCall(
     {
@@ -463,7 +464,7 @@ test('JavascriptContext.executeCall', async assert => {
   function extends_par (arg1, ___args) { // eslint-disable-line camelcase
     return `${arg1} ${___args ? Object.entries(___args).map(entry => entry.join(':')).join(' ') : ''}`
   }
-  await context.executeFunc(extends_par)
+  await context.execute(extends_par)
 
   testCall(
     {

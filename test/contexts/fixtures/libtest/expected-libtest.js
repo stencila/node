@@ -44,11 +44,6 @@
       "func1()": {
         "signature": "func1()"
       }
-    },
-    "source": {
-      "type": "text",
-      "lang": "js",
-      "data": "// A function without a JSDoc string\n\nexport default function func1 () {}\n"
     }
   };
   funcs['func1'].body = func1;
@@ -60,11 +55,6 @@
       "func2()": {
         "signature": "func2()"
       }
-    },
-    "source": {
-      "type": "text",
-      "lang": "js",
-      "data": "/**\n * A function with a repeatable parameter\n * and this JsDoc string\n */\nexport default function func2 (a, ...b) {\n  return [a].concat(...b)\n}\n"
     }
   };
   funcs['func2'].body = func2;
@@ -98,11 +88,6 @@
           "type": "number"
         }
       }
-    },
-    "source": {
-      "type": "text",
-      "lang": "js",
-      "data": "/**\n * A function with overloads\n *\n * @param {string} a\n * @return {string}\n */\n\n/**\n * A function with overloads\n *\n * @param {number} a\n * @return {number}\n */\n\nexport default function func3 (a) {\n  return\n}\n"
     }
   };
   funcs['func3'].body = func3;
