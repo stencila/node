@@ -25,10 +25,11 @@ test('SqliteContext.compile expression', async assert => {
   assert.deepEqual(compiled.type, expr.type)
   assert.deepEqual(compiled.expr, expr.expr)
   assert.deepEqual(compiled.source, expr.source)
-  assert.deepEqual(compiled.messages, [])
   assert.deepEqual(compiled.inputs, [{name: 'data'}])
+  assert.deepEqual(compiled.outputs, [])
+  assert.deepEqual(compiled.messages, [])
 
-  let compiledFromString = await context.compile('SELECT * FROM data', 'cell', true)
+  let compiledFromString = await context.compile('SELECT * FROM data', true)
   assert.deepEqual(compiled, compiledFromString)
 
   // Tests of malformed `expr` node
@@ -39,37 +40,37 @@ test('SqliteContext.compile expression', async assert => {
 
   // Tests of SQL syntax errors and non-expressions
 
-  compiled = await context.compile('', 'cell', true)
+  compiled = await context.compile('', true)
   error = compiled.messages[0]
   assert.deepEqual(error.message, 'Cell source could not be parsed')
 
-  compiled = await context.compile('An intentional syntax error', 'cell', true)
+  compiled = await context.compile('An intentional syntax error', true)
   error = compiled.messages[0]
   assert.deepEqual(error.message, 'Syntax error found near WITH Clause (Statement)')
   assert.deepEqual(error.line, 0)
   assert.deepEqual(error.column, 0)
 
-  compiled = await context.compile('SELECT * FROM mytable WHERE', 'cell', true)
+  compiled = await context.compile('SELECT * FROM mytable WHERE', true)
   error = compiled.messages[0]
   assert.deepEqual(error.message, 'Syntax error found near Column Identifier (WHERE Clause)')
   assert.deepEqual(error.line, 0)
   assert.deepEqual(error.column, 27)
 
-  compiled = await context.compile('SELECT 42; SELECT 24;', 'cell', true)
+  compiled = await context.compile('SELECT 42; SELECT 24;', true)
   error = compiled.messages[0]
   assert.deepEqual(error.message, 'Cell source must be a single "SELECT" statement')
 
-  compiled = await context.compile('DROP TABLE mypreciousdata', 'cell', true)
+  compiled = await context.compile('DROP TABLE mypreciousdata', true)
   error = compiled.messages[0]
   assert.deepEqual(error.message, 'Cell source must be a "SELECT" statement, "DROP" not allowed')
 
-  compiled = await context.compile('DELETE FROM mypreciousdata', 'cell', true)
+  compiled = await context.compile('DELETE FROM mypreciousdata', true)
   error = compiled.messages[0]
   assert.deepEqual(error.message, 'Cell source must be a "SELECT" statement, "DELETE" not allowed')
 
   // Tests of parsing expression for string interpolation inputs
 
-  compiled = await context.compile('SELECT * FROM data WHERE height > ${x} AND width < ${y}', 'cell', true) // eslint-disable-line no-template-curly-in-string
+  compiled = await context.compile('SELECT * FROM data WHERE height > ${x} AND width < ${y}', true) // eslint-disable-line no-template-curly-in-string
   assert.deepEqual(compiled.messages, [])
   assert.deepEqual(compiled.inputs, [
     {name: 'data'},
@@ -125,7 +126,7 @@ test('SqliteContext.compile block', async assert => {
   assert.deepEqual(compiled.type, block.type)
   assert.deepEqual(compiled.source, block.source)
   assert.deepEqual(compiled.inputs, [{name: 'inp'}])
-  assert.deepEqual(compiled.output, {name: 'out'})
+  assert.deepEqual(compiled.outputs, [{name: 'out'}])
   assert.deepEqual(compiled.messages, [])
 
   let compiledFromString = await context.compile('out = SELECT * FROM inp')
@@ -156,10 +157,13 @@ test('SqliteContext.compile block', async assert => {
 
   // Test various types of output name syntax
   compiled = await context.compile('out = SELECT * FROM inp')
-  assert.deepEqual(compiled.output.name, 'out')
+  assert.deepEqual(compiled.outputs, [{name: 'out'}])
+
+  compiled = await context.compile('out = select * from inp')
+  assert.deepEqual(compiled.outputs, [{name: 'out'}])
 
   compiled = await context.compile('\n  out = SELECT * FROM inp')
-  assert.deepEqual(compiled.output.name, 'out')
+  assert.deepEqual(compiled.outputs, [{name: 'out'}])
 
   assert.end()
 })
@@ -172,20 +176,20 @@ test('SqliteContext.execute expressions', async assert => {
   context._db.exec(LARGE_TABLE_SQL)
 
   // Test using no inputs
-  executed = await context.execute('SELECT 42 AS answer', 'cell', true)
+  executed = await context.execute('SELECT 42 AS answer', true)
   assert.deepEqual(executed.inputs, [])
-  assert.deepEqual(executed.output, {
+  assert.deepEqual(executed.outputs, [{
     value: await context.packPackage({
       type: 'table',
       data: {'answer': [42]}
     })
-  })
+  }])
   assert.deepEqual(executed.messages, [])
 
   // Test using an existing table
-  executed = await context.execute('SELECT * FROM test_table_small', 'cell', true)
+  executed = await context.execute('SELECT * FROM test_table_small', true)
   assert.deepEqual(executed.inputs, [])
-  assert.deepEqual(executed.output, {
+  assert.deepEqual(executed.outputs, [{
     value: await context.packPackage({
       type: 'table',
       data: {
@@ -193,7 +197,7 @@ test('SqliteContext.execute expressions', async assert => {
         col2: [1, 2, 3]
       }
     })
-  })
+  }])
   assert.deepEqual(executed.messages, [])
 
   // Test with an interpolated variable input
@@ -208,7 +212,7 @@ test('SqliteContext.execute expressions', async assert => {
     output: {},
     messages: []
   })
-  assert.deepEqual(executed.output, {
+  assert.deepEqual(executed.outputs, [{
     value: await context.packPackage({
       type: 'table',
       data: {
@@ -216,7 +220,7 @@ test('SqliteContext.execute expressions', async assert => {
         col2: [1, 2]
       }
     })
-  })
+  }])
   assert.deepEqual(executed.messages, [])
 
   // Test with a table input
@@ -237,7 +241,7 @@ test('SqliteContext.execute expressions', async assert => {
     output: {},
     messages: []
   })
-  assert.deepEqual(executed.output, {
+  assert.deepEqual(executed.outputs, [{
     value: await context.packPackage({
       type: 'table',
       data: {
@@ -245,7 +249,7 @@ test('SqliteContext.execute expressions', async assert => {
         col2: [1, 2]
       }
     })
-  })
+  }])
   assert.deepEqual(executed.messages, [])
   assert.deepEqual(
     context._db.prepare('SELECT name FROM inputs.sqlite_master').pluck().all(),
@@ -289,7 +293,7 @@ test('SqliteContext.execute blocks', async assert => {
     }],
     messages: []
   })
-  assert.deepEqual(executed.output, {
+  assert.deepEqual(executed.outputs, [{
     name: 'out',
     value: await context.packPackage({
       type: 'table',
@@ -298,17 +302,17 @@ test('SqliteContext.execute blocks', async assert => {
         col2: [1, 2]
       }
     })
-  })
+  }])
   assert.deepEqual(executed.messages, [])
 
   // Test with an interpolated variable input
   executed = await context.execute('SELECT * FROM test_table_small')
-  assert.deepEqual(executed.output.value.data.data.col1.length, 3)
+  assert.deepEqual(executed.outputs[0].value.data.data.col1.length, 3)
   assert.deepEqual(executed.messages, [])
 
   // Ignore all SELECT statements except for the last
   executed = await context.execute('SELECT * FROM test_table_large; SELECT * FROM test_table_small')
-  assert.deepEqual(executed.output.value.data.data.col1.length, 3)
+  assert.deepEqual(executed.outputs[0].value.data.data.col1.length, 3)
   assert.deepEqual(executed.messages, [ { type: 'warning', message: 'Ignored a SELECT statement that is before the last statement' } ])
 
   assert.end()
@@ -326,16 +330,16 @@ test('SqliteContext pointers', async assert => {
 
   contextA1._db.exec(LARGE_TABLE_SQL)
 
-  let pointer1 = (await contextA1.execute('SELECT * FROM test_table_large')).output.value
+  let pointer1 = (await contextA1.execute('SELECT * FROM test_table_large')).outputs[0].value
   assert.equal(pointer1.type, 'table')
   assert.ok(pointer1.path.value.id, 'should have an id which identifies value')
   assert.ok(pointer1.path.value.name, 'should have a name for getting this value from context')
   assert.equal(pointer1.type, 'table')
 
-  let pointer2 = (await contextA1.execute('SELECT * FROM test_table_large')).output.value
+  let pointer2 = (await contextA1.execute('SELECT * FROM test_table_large')).outputs[0].value
   assert.notEqual(pointer1.path.value.id, pointer2.path.value.id, 'each pointer value has a unique id')
 
-  let pointer3 = (await contextA1.execute('out1 = SELECT * FROM test_table_large')).output.value
+  let pointer3 = (await contextA1.execute('out1 = SELECT * FROM test_table_large')).outputs[0].value
   assert.equal(pointer3.path.value.name, 'out1', 'when an output name is explicitly set then that is the name of pointer value')
 
   const data1 = await contextA1.unpackPointer(pointer3)
@@ -350,7 +354,7 @@ test('SqliteContext pointers', async assert => {
     source: {data: 'first = SELECT 1 AS val'}
   })
   assert.deepEqual(res.messages, [])
-  assert.deepEqual(res.output.value.data.data, {val: [1]})
+  assert.deepEqual(res.outputs[0].value.data.data, {val: [1]})
   pointer1 = await contextA1.packPointer({type: 'table', name: 'first'})
 
   res = await contextA1.execute({
@@ -358,14 +362,14 @@ test('SqliteContext pointers', async assert => {
     inputs: [{name: 'first', value: pointer1}]
   })
   assert.deepEqual(res.messages, [], 'pointer to local table as input')
-  assert.deepEqual(res.output.value.data.data, {col: [42]})
+  assert.deepEqual(res.outputs[0].value.data.data, {col: [42]})
 
   res = await contextA2.execute({
     source: {data: 'second = SELECT first.val+1 AS val FROM first'},
     inputs: [{name: 'first', value: pointer1}]
   })
   assert.deepEqual(res.messages, [], 'pointer to sibling context table as input')
-  assert.deepEqual(res.output.value.data.data, {val: [2]})
+  assert.deepEqual(res.outputs[0].value.data.data, {val: [2]})
   pointer2 = await contextA2.packPointer({type: 'table', name: 'second'})
 
   res = await contextB1.execute({
@@ -375,7 +379,7 @@ test('SqliteContext pointers', async assert => {
       {name: 'second', value: pointer2}
     ]
   })
-  assert.deepEqual(res.output.value.data.data, {val: [3]})
+  assert.deepEqual(res.outputs[0].value.data.data, {val: [3]})
   assert.deepEqual(res.messages, [], 'pointer to remote context tables as input')
 
   await hostA.stop()
