@@ -97,7 +97,7 @@ test('Host.get', async assert => {
 test('Host.call', async assert => {
   const host = new Host()
 
-  let {name} = await host.create('Context')
+  let {name} = await host.create('NodeContext')
   assert.ok(name)
 
   let result = await host.call(name, 'pack', 42)

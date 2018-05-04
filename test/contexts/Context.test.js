@@ -9,9 +9,9 @@ test('Context.packPointer+unpackPointer', async assert => {
   await hostA.start()
   await hostB.start()
 
-  const contextA1 = (await hostA.create('Context')).instance
-  const contextA2 = (await hostA.create('Context')).instance
-  const contextB1 = (await hostB.create('Context')).instance
+  const contextA1 = (await hostA.create('NodeContext')).instance
+  const contextA2 = (await hostA.create('NodeContext')).instance
+  const contextB1 = (await hostB.create('NodeContext')).instance
 
   contextA1._variables['A1X'] = 'a1x'
   contextB1._variables['B1X'] = 'b1x'

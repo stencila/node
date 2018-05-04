@@ -192,7 +192,7 @@ test('HostHttpServer.create', async assert => {
   let {req, res} = httpMocks.createMocks()
   req._setBody('')
 
-  await server.create(req, res, 'Context')
+  await server.create(req, res, 'NodeContext')
   assert.equal(res.statusCode, 200)
   let name = JSON.parse(res._getData())
   assert.ok(host._instances[name])
@@ -204,7 +204,7 @@ test('HostHttpServer.get', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
   let {req, res} = httpMocks.createMocks()
-  let {name} = await host.create('Context')
+  let {name} = await host.create('NodeContext')
 
   await server.get(req, res, name)
   assert.equal(res.statusCode, 200)
@@ -216,7 +216,7 @@ test('HostHttpServer.call', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
   let {req, res} = httpMocks.createMocks()
-  let {name} = await host.create('Context')
+  let {name} = await host.create('NodeContext')
 
   await server.call(req, res, name, 'pack', 42)
   assert.equal(res.statusCode, 200)
@@ -230,7 +230,7 @@ test('HostHttpServer.delete', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
   let {req, res} = httpMocks.createMocks()
-  let {name} = await host.create('Context')
+  let {name} = await host.create('NodeContext')
 
   await server.delete(req, res, name)
   assert.equal(res.statusCode, 200)
