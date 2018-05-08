@@ -1,5 +1,6 @@
 const test = require('tape')
 
+const { testAsync } = require('../helpers')
 const JavascriptContext = require('../../lib/contexts/JavascriptContext')
 
 test('JavascriptContext', assert => {
@@ -9,21 +10,49 @@ test('JavascriptContext', assert => {
   assert.end()
 })
 
-test('JavascriptContext.compile function', async assert => {
+testAsync('JavascriptContext.compile', async assert => {
   let context = new JavascriptContext()
 
-  // Test that bad inputs are handled OK
-  try {
-    await context.compile('')
-  } catch (error) {
-    assert.ok(error.message.match(/^No function definition found in the source code/), 'throws if no function defined')
-  }
-  try {
-    await context.compile('foo bar()')
-    assert.fail('shouldn\'t get here')
-  } catch (error) {
-    assert.pass('throws if syntax error')
-  }
+  assert.deepEqual(
+    await context.compile(''),
+    {
+      type: 'cell',
+      source: {
+        type: 'text',
+        lang: 'js',
+        data: ''
+      },
+      inputs: [],
+      outputs: [],
+      messages: []
+    }
+  )
+
+  assert.deepEqual(
+    await context.compile('foo bar()'),
+    {
+      type: 'cell',
+      source: {
+        type: 'text',
+        lang: 'js',
+        data: 'foo bar()'
+      },
+      inputs: [],
+      outputs: [],
+      messages: [{
+        type: 'error',
+        message: 'Syntax error in Javascript: Unexpected token (1:4)',
+        line: 1,
+        column: 4
+      }]
+    }
+  )
+
+  assert.end()
+})
+
+testAsync('JavascriptContext.compile function', async assert => {
+  let context = new JavascriptContext()
 
   function afunc () {}
   assert.deepEqual(
