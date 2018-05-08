@@ -17,8 +17,7 @@ testAsync('JavascriptContext.compile', async assert => {
   assert.deepEqual(await context.compile(''), {
     type: 'cell',
     source: {
-      type: 'text',
-      lang: 'js',
+      type: 'string',
       data: ''
     },
     inputs: [],
@@ -31,8 +30,7 @@ testAsync('JavascriptContext.compile', async assert => {
   assert.deepEqual(await context.compile('foo bar()'), {
     type: 'cell',
     source: {
-      type: 'text',
-      lang: 'js',
+      type: 'string',
       data: 'foo bar()'
     },
     inputs: [],
@@ -55,10 +53,30 @@ testAsync('JavascriptContext.compile', async assert => {
     )
   }
 
+  // Global variables are not inputs
+  check('Math.pi', {
+    inputs: [],
+    outputs: [{}]
+  })
+  check('const foo = require("foo")\nfoo.bar', {
+    inputs: [],
+    outputs: [{}]
+  })
+
+  // Non-global, undeclared variables are inputs
+  check('const result = specialFunc()', {
+    inputs: [{name: 'specialFunc'}],
+    outputs: [{name: 'result'}]
+  })
+  check('specialMath.pi', {
+    inputs: [{name: 'specialMath'}],
+    outputs: [{}]
+  })
+
   // Last statement is an undeclared variable
   check('foo', {
-    inputs: [ {name: 'foo'} ],
-    outputs: [ {name: 'foo'} ]
+    inputs: [{name: 'foo'}],
+    outputs: [{name: 'foo'}]
   })
 
   // Last statement is a declaration
@@ -77,22 +95,22 @@ testAsync('JavascriptContext.compile', async assert => {
 
   check('var foo\nfoo', {
     inputs: [],
-    outputs: [ {name: 'foo'} ]
+    outputs: [{name: 'foo'}]
   })
 
   check('let foo\nfoo', {
     inputs: [],
-    outputs: [ {name: 'foo'} ]
+    outputs: [{name: 'foo'}]
   })
 
   check('const foo = 1\nfoo', {
     inputs: [],
-    outputs: [ {name: 'foo'} ]
+    outputs: [{name: 'foo'}]
   })
 
   check('var foo = 1\nfoo', {
     inputs: [],
-    outputs: [ {name: 'foo'} ]
+    outputs: [{name: 'foo'}]
   })
 
   // Last statement is a declaration with multiple declarations (first identifier used)
@@ -211,7 +229,8 @@ testAsync('JavascriptContext.compile function', async assert => {
     {
       type: 'cell',
       source: {
-        type: 'text', lang: 'js', data: 'function afunc() {}'
+        type: 'string',
+        data: 'function afunc() {}'
       },
       inputs: [],
       outputs: [{
