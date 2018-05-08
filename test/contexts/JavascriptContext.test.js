@@ -13,38 +13,40 @@ test('JavascriptContext', assert => {
 testAsync('JavascriptContext.compile', async assert => {
   let context = new JavascriptContext()
 
+  // Empty string
   assert.deepEqual(await context.compile(''), {
-      type: 'cell',
-      source: {
-        type: 'text',
-        lang: 'js',
-        data: ''
-      },
-      inputs: [],
-      outputs: [],
-      messages: []
-    }
+    type: 'cell',
+    source: {
+      type: 'text',
+      lang: 'js',
+      data: ''
+    },
+    inputs: [],
+    outputs: [],
+    messages: []
+  }
   )
 
+  // Syntax error
   assert.deepEqual(await context.compile('foo bar()'), {
-      type: 'cell',
-      source: {
-        type: 'text',
-        lang: 'js',
-        data: 'foo bar()'
-      },
-      inputs: [],
-      outputs: [],
-      messages: [{
-        type: 'error',
-        message: 'Syntax error in Javascript: Unexpected token (1:4)',
-        line: 1,
-        column: 4
-      }]
-    }
+    type: 'cell',
+    source: {
+      type: 'text',
+      lang: 'js',
+      data: 'foo bar()'
+    },
+    inputs: [],
+    outputs: [],
+    messages: [{
+      type: 'error',
+      message: 'Syntax error in Javascript: Unexpected token (1:4)',
+      line: 1,
+      column: 4
+    }]
+  }
   )
 
-  async function check(source, expected) {
+  async function check (source, expected) {
     const result = await context.compile(source)
     assert.deepEqual(
       (({inputs, outputs}) => ({inputs, outputs}))(result),
@@ -53,10 +55,25 @@ testAsync('JavascriptContext.compile', async assert => {
     )
   }
 
+  // Last statement is an undeclared variable
   check('foo', {
     inputs: [ {name: 'foo'} ],
     outputs: [ {name: 'foo'} ]
   })
+
+  // Last statement is a declaration
+
+  check('var foo', {
+    inputs: [],
+    outputs: [{name: 'foo'}]
+  })
+
+  check('const foo = 1', {
+    inputs: [],
+    outputs: [{name: 'foo'}]
+  })
+
+  // Last statement is name of locally declared variable
 
   check('var foo\nfoo', {
     inputs: [],
@@ -76,6 +93,47 @@ testAsync('JavascriptContext.compile', async assert => {
   check('var foo = 1\nfoo', {
     inputs: [],
     outputs: [ {name: 'foo'} ]
+  })
+
+  // Last statement is a declaration with multiple declarations (first identifier used)
+  check('foo\nbar\nlet baz, urg\n\n', {
+    inputs: [{name: 'foo'}, {name: 'bar'}],
+    outputs: [{name: 'baz'}]
+  })
+
+  // Last statement is not a declaration or identifier
+  check('let foo\n{bar\nlet baz}', {
+    inputs: [{name: 'bar'}],
+    outputs: []
+  })
+
+  // Last statement is not a declaration or identifier
+  check('let foo\nbar\nlet baz\ntrue', {
+    inputs: [{name: 'bar'}],
+    outputs: [{}]
+  })
+
+  // Variable declaration after usage (this will be a runtime error but this tests static analysis of code regardless)
+  check('foo\nlet foo\n', {
+    inputs: [{name: 'foo'}],
+    outputs: [{name: 'foo'}]
+  })
+
+  // Last statement is an expression (producing an unnamed output)
+
+  check('true', {
+    inputs: [],
+    outputs: [{}]
+  })
+
+  check('foo * 3', {
+    inputs: [{name: 'foo'}],
+    outputs: [{}]
+  })
+
+  check('var foo = 1\nfoo * 3', {
+    inputs: [],
+    outputs: [{}]
   })
 
   assert.end()
