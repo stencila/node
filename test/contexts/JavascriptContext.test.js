@@ -38,10 +38,13 @@ test('JavascriptContext.compile function', async assert => {
         name: 'afunc',
         value: {
           type: 'function',
-          name: 'afunc',
-          methods: {
-            'afunc()': {
-              signature: 'afunc()'
+          data: {
+            type: 'function',
+            name: 'afunc',
+            methods: {
+              'afunc()': {
+                signature: 'afunc()'
+              }
             }
           }
         }
@@ -53,7 +56,7 @@ test('JavascriptContext.compile function', async assert => {
   // Check parameters parsed from function declaration and doc comments
   async function checkParams (source, expect, message) {
     let cell = await context.compile(source)
-    let func = cell.outputs[0].value
+    let func = cell.outputs[0].value.data
     let params = Object.values(func.methods)[0].params
     assert.deepEqual(params, expect, message)
   }
@@ -104,7 +107,7 @@ test('JavascriptContext.compile function', async assert => {
   // Check return parsed from doc comment
   async function checkReturn (source, expect, message) {
     let cell = await context.compile(source)
-    let func = cell.outputs[0].value
+    let func = cell.outputs[0].value.data
     let return_ = Object.values(func.methods)[0]['return']
     assert.deepEqual(return_, expect, message)
   }
@@ -134,7 +137,7 @@ test('JavascriptContext.compile function', async assert => {
      * @example <caption>Example 2 function</caption> func(ex2)
      */
     function func (a, b){}
-    `)).outputs[0].value.methods)[0].examples,
+    `)).outputs[0].value.data.methods)[0].examples,
     [
       {
         usage: 'func(ex1)'
@@ -170,7 +173,7 @@ test('JavascriptContext.compile function', async assert => {
       return par1 + sum(par2)
     }
   `
-  let func1 = (await context.compile(src1, false)).outputs[0].value
+  let func1 = (await context.compile(src1, false)).outputs[0].value.data
   assert.deepEqual(func1, {
     type: 'function',
     name: 'funcname',
@@ -227,7 +230,7 @@ test('JavascriptContext.compile function', async assert => {
      */
     function funcname(...args){}
   `
-  let func2 = (await context.compile(src2)).outputs[0].value
+  let func2 = (await context.compile(src2)).outputs[0].value.data
   assert.equal(func2.description, 'Function description: I have two methods')
   assert.equal(Object.keys(func2.methods).length, 2)
   assert.deepEqual(func2.methods, {
