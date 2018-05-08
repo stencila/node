@@ -139,6 +139,69 @@ testAsync('JavascriptContext.compile', async assert => {
   assert.end()
 })
 
+testAsync('JsContext.compile expression', async assert => {
+  let context = new JavascriptContext()
+
+  async function check (source, expected) {
+    const result = await context.compile({
+      source: {
+        type: 'string',
+        data: source
+      },
+      expr: true
+    })
+    assert.deepEqual(
+      (({inputs, outputs, messages}) => ({inputs, outputs, messages}))(result),
+      expected,
+      source
+    )
+  }
+
+  check('42', {
+    inputs: [],
+    outputs: [{}],
+    messages: []
+  })
+
+  check('x * 3', {
+    inputs: [{name: 'x'}],
+    outputs: [{}],
+    messages: []
+  })
+
+  check('let y = x * 3', {
+    inputs: [],
+    outputs: [],
+    messages: [{ type: 'error', message: 'Cell source code must be a single, simple Javascript expression' }]
+  })
+
+  check('y = x * 3', {
+    inputs: [],
+    outputs: [],
+    messages: [{ type: 'error', message: 'Cell source code must be a single, simple Javascript expression' }]
+  })
+
+  check('x++', {
+    inputs: [],
+    outputs: [],
+    messages: [{ type: 'error', message: 'Cell source code must be a single, simple Javascript expression' }]
+  })
+
+  check('y--', {
+    inputs: [],
+    outputs: [],
+    messages: [{ type: 'error', message: 'Cell source code must be a single, simple Javascript expression' }]
+  })
+
+  check('function foo(){}', {
+    inputs: [],
+    outputs: [],
+    messages: [{ type: 'error', message: 'Cell source code must be a single, simple Javascript expression' }]
+  })
+
+  assert.end()
+})
+
 testAsync('JavascriptContext.compile function', async assert => {
   let context = new JavascriptContext()
 
