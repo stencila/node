@@ -13,9 +13,7 @@ test('JavascriptContext', assert => {
 testAsync('JavascriptContext.compile', async assert => {
   let context = new JavascriptContext()
 
-  assert.deepEqual(
-    await context.compile(''),
-    {
+  assert.deepEqual(await context.compile(''), {
       type: 'cell',
       source: {
         type: 'text',
@@ -28,9 +26,7 @@ testAsync('JavascriptContext.compile', async assert => {
     }
   )
 
-  assert.deepEqual(
-    await context.compile('foo bar()'),
-    {
+  assert.deepEqual(await context.compile('foo bar()'), {
       type: 'cell',
       source: {
         type: 'text',
@@ -47,6 +43,40 @@ testAsync('JavascriptContext.compile', async assert => {
       }]
     }
   )
+
+  async function check(source, expected) {
+    const result = await context.compile(source)
+    assert.deepEqual(
+      (({inputs, outputs}) => ({inputs, outputs}))(result),
+      expected,
+      source
+    )
+  }
+
+  check('foo', {
+    inputs: [ {name: 'foo'} ],
+    outputs: [ {name: 'foo'} ]
+  })
+
+  check('var foo\nfoo', {
+    inputs: [],
+    outputs: [ {name: 'foo'} ]
+  })
+
+  check('let foo\nfoo', {
+    inputs: [],
+    outputs: [ {name: 'foo'} ]
+  })
+
+  check('const foo = 1\nfoo', {
+    inputs: [],
+    outputs: [ {name: 'foo'} ]
+  })
+
+  check('var foo = 1\nfoo', {
+    inputs: [],
+    outputs: [ {name: 'foo'} ]
+  })
 
   assert.end()
 })
