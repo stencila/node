@@ -2,6 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const test = require('tape')
 
+const { testAsync } = require('../helpers')
 const NodeContext = require('../../lib/contexts/NodeContext')
 
 test('NodeContext', assert => {
@@ -11,7 +12,7 @@ test('NodeContext', assert => {
   assert.end()
 })
 
-test('NodeContext.compileLibrary', async assert => {
+testAsync('NodeContext.compileLibrary', async assert => {
   const context = new NodeContext()
   const libtest = path.join(__dirname, 'fixtures', 'libtest')
 
@@ -29,7 +30,7 @@ test('NodeContext.compileLibrary', async assert => {
   assert.end()
 })
 
-test('NodeContext.executeLibrary', async assert => {
+testAsync('NodeContext.executeLibrary', async assert => {
   const context = new NodeContext()
   const libtest = path.join(__dirname, 'fixtures', 'libtest')
 

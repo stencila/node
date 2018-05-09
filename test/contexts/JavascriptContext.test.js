@@ -1,5 +1,6 @@
 const test = require('tape')
 
+const { testAsync } = require('../helpers')
 const JavascriptContext = require('../../lib/contexts/JavascriptContext')
 
 test('JavascriptContext', assert => {
@@ -9,29 +10,242 @@ test('JavascriptContext', assert => {
   assert.end()
 })
 
-test('JavascriptContext.compile function', async assert => {
+testAsync('JavascriptContext.compile', async assert => {
   let context = new JavascriptContext()
 
-  // Test that bad inputs are handled OK
-  try {
-    await context.compile('')
-  } catch (error) {
-    assert.ok(error.message.match(/^No function definition found in the source code/), 'throws if no function defined')
+  // Empty string
+  assert.deepEqual(await context.compile(''), {
+    type: 'cell',
+    source: {
+      type: 'string',
+      data: ''
+    },
+    inputs: [],
+    outputs: [],
+    messages: []
   }
-  try {
-    await context.compile('foo bar()')
-    assert.fail('shouldn\'t get here')
-  } catch (error) {
-    assert.pass('throws if syntax error')
+  )
+
+  // Syntax error
+  assert.deepEqual(await context.compile('foo bar()'), {
+    type: 'cell',
+    source: {
+      type: 'string',
+      data: 'foo bar()'
+    },
+    inputs: [],
+    outputs: [],
+    messages: [{
+      type: 'error',
+      message: 'Syntax error in Javascript: Unexpected token (1:4)',
+      line: 1,
+      column: 4
+    }]
+  }
+  )
+
+  async function check (source, expected) {
+    const result = await context.compile(source)
+    assert.deepEqual(
+      (({inputs, outputs}) => ({inputs, outputs}))(result),
+      expected,
+      source
+    )
   }
 
-  function afunc () {}
+  // Global variables are not inputs
+  await check('Math.pi', {
+    inputs: [],
+    outputs: [{}]
+  })
+
+  await check('const foo = require("foo")\nfoo.bar', {
+    inputs: [],
+    outputs: [{}]
+  })
+
+  // Non-global, undeclared variables are inputs
+  await check('const result = specialFunc()', {
+    inputs: [{name: 'specialFunc'}],
+    outputs: [{name: 'result'}]
+  })
+
+  await check('specialMath.pi', {
+    inputs: [{name: 'specialMath'}],
+    outputs: [{}]
+  })
+
+  // Last statement is an undeclared variable
+  await check('foo', {
+    inputs: [{name: 'foo'}],
+    outputs: [{name: 'foo'}]
+  })
+
+  // Last statement is a declaration
+
+  await check('var foo', {
+    inputs: [],
+    outputs: [{name: 'foo'}]
+  })
+
+  await check('const foo = 1', {
+    inputs: [],
+    outputs: [{name: 'foo'}]
+  })
+
+  // Last statement is name of locally declared variable
+
+  await check('var foo\nfoo', {
+    inputs: [],
+    outputs: [{name: 'foo'}]
+  })
+
+  await check('let foo\nfoo', {
+    inputs: [],
+    outputs: [{name: 'foo'}]
+  })
+
+  await check('const foo = 1\nfoo', {
+    inputs: [],
+    outputs: [{name: 'foo'}]
+  })
+
+  await check('var foo = 1\nfoo', {
+    inputs: [],
+    outputs: [{name: 'foo'}]
+  })
+
+  // Last statement is a declaration with multiple declarations (first identifier used)
+  await check('foo\nbar\nlet baz, urg\n\n', {
+    inputs: [{name: 'foo'}, {name: 'bar'}],
+    outputs: [{name: 'baz'}]
+  })
+
+  // Only top level variable declarations are considered when
+  // determining cell inputs
+  await check(`
+    let a;
+    {var c};
+    for (let b in [1,2,3]){};
+    if (true) { const d = 1 };
+    function f () { let e = 2 };
+    a * b * c * d * e;
+  `, {
+    inputs: [{name: 'b'}, {name: 'c'}, {name: 'd'}, {name: 'e'}],
+    outputs: [{}]
+  })
+
+  // Last statement is not a declaration or identifier
+  await check('let foo\nbar\nlet baz\ntrue', {
+    inputs: [{name: 'bar'}],
+    outputs: [{}]
+  })
+
+  // Variable declaration after usage (this will be a runtime error but this tests static analysis of code regardless)
+  await check('foo\nlet foo\n', {
+    inputs: [{name: 'foo'}],
+    outputs: [{name: 'foo'}]
+  })
+
+  // Last statement is an expression (producing an unnamed output)
+
+  await check('true', {
+    inputs: [],
+    outputs: [{}]
+  })
+
+  await check('foo * 3', {
+    inputs: [{name: 'foo'}],
+    outputs: [{}]
+  })
+
+  await check('var foo = 1\nfoo * 3', {
+    inputs: [],
+    outputs: [{}]
+  })
+
+  await check('let z = x * y;\n(z * 2)', {
+    inputs: [{name: 'x'}, {name: 'y'}],
+    outputs: [{}]
+  })
+
+  assert.end()
+})
+
+testAsync('JavascriptContext.compile expression', async assert => {
+  let context = new JavascriptContext()
+
+  async function check (source, expected) {
+    const result = await context.compile({
+      source: {
+        type: 'string',
+        data: source
+      },
+      expr: true
+    })
+    assert.deepEqual(
+      (({inputs, outputs, messages}) => ({inputs, outputs, messages}))(result),
+      expected,
+      source
+    )
+  }
+
+  await check('42', {
+    inputs: [],
+    outputs: [{}],
+    messages: []
+  })
+
+  await check('x * 3', {
+    inputs: [{name: 'x'}],
+    outputs: [{}],
+    messages: []
+  })
+
+  await check('let y = x * 3', {
+    inputs: [],
+    outputs: [],
+    messages: [{ type: 'error', message: 'Cell source code must be a single, simple Javascript expression' }]
+  })
+
+  await check('y = x * 3', {
+    inputs: [],
+    outputs: [],
+    messages: [{ type: 'error', message: 'Cell source code must be a single, simple Javascript expression' }]
+  })
+
+  await check('x++', {
+    inputs: [],
+    outputs: [],
+    messages: [{ type: 'error', message: 'Cell source code must be a single, simple Javascript expression' }]
+  })
+
+  await check('y--', {
+    inputs: [],
+    outputs: [],
+    messages: [{ type: 'error', message: 'Cell source code must be a single, simple Javascript expression' }]
+  })
+
+  await check('function foo(){}', {
+    inputs: [],
+    outputs: [],
+    messages: [{ type: 'error', message: 'Cell source code must be a single, simple Javascript expression' }]
+  })
+
+  assert.end()
+})
+
+testAsync('JavascriptContext.compile function', async assert => {
+  let context = new JavascriptContext()
+
+  function afunc (x, y) { return x * y }
   assert.deepEqual(
     await context.compile(afunc),
     {
       type: 'cell',
       source: {
-        type: 'text', lang: 'js', data: 'function afunc() {}'
+        type: 'string',
+        data: 'function afunc(x, y) { return x * y }'
       },
       inputs: [],
       outputs: [{
@@ -42,8 +256,12 @@ test('JavascriptContext.compile function', async assert => {
             type: 'function',
             name: 'afunc',
             methods: {
-              'afunc()': {
-                signature: 'afunc()'
+              'afunc(x, y)': {
+                signature: 'afunc(x, y)',
+                params: [
+                  {name: 'x'},
+                  {name: 'y'}
+                ]
               }
             }
           }
@@ -61,21 +279,21 @@ test('JavascriptContext.compile function', async assert => {
     assert.deepEqual(params, expect, message)
   }
 
-  checkParams('function func (){}', undefined, 'no parameters')
-  checkParams('function func (a){}', [{name: 'a'}], 'one parameter')
-  checkParams('function func (a, b, c){}', [{name: 'a'}, {name: 'b'}, {name: 'c'}], 'three parameters')
+  await checkParams('function func (){}', undefined, 'no parameters')
+  await checkParams('function func (a){}', [{name: 'a'}], 'one parameter')
+  await checkParams('function func (a, b, c){}', [{name: 'a'}, {name: 'b'}, {name: 'c'}], 'three parameters')
 
-  checkParams('function func (...a){}', [{name: 'a', repeats: true}], 'one repeatable parameters')
+  await checkParams('function func (...a){}', [{name: 'a', repeats: true}], 'one repeatable parameters')
 
-  checkParams('function func (___a){}', [{name: 'a', extends: true}], 'one extensible parameters')
+  await checkParams('function func (___a){}', [{name: 'a', extends: true}], 'one extensible parameters')
 
   // Currently, do not attempt to parse parameter defaults into values
-  checkParams('function func (a=1){}', [{name: 'a', default: '1'}], 'a parameter with a number default')
-  checkParams('function func (a="foo"){}', [{name: 'a', default: '"foo"'}], 'a parameter with a number default')
-  checkParams('function func (a=[1, 2, 3]){}', [{name: 'a', default: '[1, 2, 3]'}], 'a parameter with an array default')
-  checkParams('function func (a={b:1, c:2}){}', [{name: 'a', default: '{b:1, c:2}'}], 'a parameter with an array default')
+  await checkParams('function func (a=1){}', [{name: 'a', default: '1'}], 'a parameter with a number default')
+  await checkParams('function func (a="foo"){}', [{name: 'a', default: '"foo"'}], 'a parameter with a number default')
+  await checkParams('function func (a=[1, 2, 3]){}', [{name: 'a', default: '[1, 2, 3]'}], 'a parameter with an array default')
+  await checkParams('function func (a={b:1, c:2}){}', [{name: 'a', default: '{b:1, c:2}'}], 'a parameter with an array default')
 
-  checkParams(`
+  await checkParams(`
     /**
      * @param a Description of parameter a
      * @param {typeB} b Description of parameter b
@@ -86,7 +304,7 @@ test('JavascriptContext.compile function', async assert => {
     {name: 'b', type: 'typeB', description: 'Description of parameter b'}
   ], 'parameter descriptions and types from docs')
 
-  checkParams(`
+  await checkParams(`
     /**
      * @param {...number} pars Description of parameters
      */
@@ -95,7 +313,7 @@ test('JavascriptContext.compile function', async assert => {
     {name: 'pars', type: 'number', repeats: true, description: 'Description of parameters'}
   ], 'repeatable parameter with type specified and elipses')
 
-  checkParams(`
+  await checkParams(`
     /**
      * @param {___number} pars Description of parameters
      */
@@ -112,13 +330,13 @@ test('JavascriptContext.compile function', async assert => {
     assert.deepEqual(return_, expect, message)
   }
 
-  checkReturn(
+  await checkReturn(
     `function func (){}`,
     undefined,
     'return can only come from doc comment'
   )
 
-  checkReturn(
+  await checkReturn(
     `
     /**
      * @return {typeReturn} Description of return
@@ -255,16 +473,76 @@ test('JavascriptContext.compile function', async assert => {
   assert.end()
 })
 
-test('JavascriptContext.evaluateCall', async assert => {
+testAsync('JavascriptContext.execute', async assert => {
+  let context = new JavascriptContext()
+
+  async function check (source, inputs = [], output = undefined) {
+    for (let input of inputs) {
+      input.value = await context.pack(input.value)
+    }
+
+    const result = await context.execute({
+      type: 'cell',
+      source: {
+        type: 'string',
+        data: source
+      },
+      inputs: inputs
+    })
+
+    let outputs = output ? [output] : []
+    for (let output of outputs) {
+      output.value = await context.pack(output.value)
+    }
+
+    assert.deepEqual(result.outputs, outputs, source)
+  }
+
+  // No output
+  await check('')
+  await check('if(true){\n  let x = 4\n}\n')
+
+  // Output value but no name
+  await check('42', [], {value: 42})
+  await check('1.1 * 2', [], {value: 2.2})
+  await check('let x = 3\nMath.sqrt(x*3)', [], {value: 3})
+  await check('// Multiple lines and comments\nlet x = {}\nObject.assign(x, {\na:1\n})\n', [], {value: { a: 1 }})
+
+  // Output value and name
+  await check('let b = 1', [], {name: 'b', value: 1})
+  await check('let c = 1\nc', [], {name: 'c', value: 1})
+
+  // Inputs value and name
+  await check('x * 3', [{name: 'x', value: 6}], {value: 18})
+  await check('let z = x * y;\n(z * 2).toString()', [
+    {name: 'x', value: 2},
+    {name: 'y', value: 3}
+  ], {value: '12'})
+
+  assert.end()
+})
+
+testAsync('JavascriptContext.errors', async assert => {
+  let context = new JavascriptContext()
+
+  await context.execute({
+    type: 'cell',
+    source: {
+      type: 'string',
+      data: 'source'
+    },
+    inputs: []
+  })
+
+  assert.end()
+})
+
+testAsync('JavascriptContext.evaluateCall', async assert => {
   let context = new JavascriptContext()
 
   async function testCall (call, expect, message) {
-    try {
-      let result = await context.evaluateCall(call)
-      assert.deepEqual(result.value, expect, message)
-    } catch (error) {
-      console.log(error)
-    }
+    let result = await context.evaluateCall(call)
+    assert.deepEqual(result.value, expect, message)
   }
 
   async function testCallThrows (call, expect, message) {
@@ -281,7 +559,7 @@ test('JavascriptContext.evaluateCall', async assert => {
   }
   await context.execute(no_pars)
 
-  testCall(
+  await testCall(
     {
       type: 'call',
       func: {type: 'get', name: 'no_pars'}
@@ -292,7 +570,7 @@ test('JavascriptContext.evaluateCall', async assert => {
     'no_pars()'
   )
 
-  testCallThrows(
+  await testCallThrows(
     {
       type: 'call',
       func: {type: 'get', name: 'no_pars'},
@@ -309,7 +587,7 @@ test('JavascriptContext.evaluateCall', async assert => {
   }
   await context.execute(one_par)
 
-  testCallThrows(
+  await testCallThrows(
     {
       type: 'call',
       func: {type: 'get', name: 'one_par'}
@@ -317,7 +595,7 @@ test('JavascriptContext.evaluateCall', async assert => {
     'Function parameter "par" must be supplied'
   )
 
-  testCall(
+  await testCall(
     {
       type: 'call',
       func: {type: 'get', name: 'one_par'},
@@ -331,7 +609,7 @@ test('JavascriptContext.evaluateCall', async assert => {
     'one_par(1)'
   )
 
-  testCall(
+  await testCall(
     {
       type: 'call',
       func: {type: 'get', name: 'one_par'},
@@ -345,7 +623,7 @@ test('JavascriptContext.evaluateCall', async assert => {
     'one_par(par=1)'
   )
 
-  testCallThrows(
+  await testCallThrows(
     {
       type: 'call',
       func: {type: 'get', name: 'one_par'},
@@ -360,7 +638,7 @@ test('JavascriptContext.evaluateCall', async assert => {
     'one_par(1, par=2)'
   )
 
-  testCallThrows(
+  await testCallThrows(
     {
       type: 'call',
       func: {type: 'get', name: 'one_par'},
@@ -379,7 +657,7 @@ test('JavascriptContext.evaluateCall', async assert => {
   }
   await context.execute(three_pars)
 
-  testCall(
+  await testCall(
     {
       type: 'call',
       func: {type: 'get', name: 'three_pars'},
@@ -400,7 +678,7 @@ test('JavascriptContext.evaluateCall', async assert => {
   }
   await context.execute(default_par)
 
-  testCall(
+  await testCall(
     {
       type: 'call',
       func: {type: 'get', name: 'default_par'},
@@ -415,7 +693,7 @@ test('JavascriptContext.evaluateCall', async assert => {
     'default_par("beep", "bop")'
   )
 
-  testCall(
+  await testCall(
     {
       type: 'call',
       func: {type: 'get', name: 'default_par'},
@@ -434,7 +712,7 @@ test('JavascriptContext.evaluateCall', async assert => {
   }
   await context.execute(repeats_par)
 
-  testCall(
+  await testCall(
     {
       type: 'call',
       func: {type: 'get', name: 'repeats_par'},
@@ -450,7 +728,7 @@ test('JavascriptContext.evaluateCall', async assert => {
     'repeats_par("bar", "baz", "boop")'
   )
 
-  testCall(
+  await testCall(
     {
       type: 'call',
       func: {type: 'get', name: 'repeats_par'},
@@ -469,7 +747,7 @@ test('JavascriptContext.evaluateCall', async assert => {
   }
   await context.execute(extends_par)
 
-  testCall(
+  await testCall(
     {
       type: 'call',
       func: {type: 'get', name: 'extends_par'},
@@ -483,7 +761,7 @@ test('JavascriptContext.evaluateCall', async assert => {
     'extends_par(1)'
   )
 
-  testCall(
+  await testCall(
     {
       type: 'call',
       func: {type: 'get', name: 'extends_par'},
