@@ -230,16 +230,16 @@ testAsync('JavascriptContext.compile expression', async assert => {
 testAsync('JavascriptContext.compile function', async assert => {
   let context = new JavascriptContext()
 
-  function afunc () {}
+  function afunc (x, y) { return x * y }
   assert.deepEqual(
     await context.compile(afunc),
     {
       type: 'cell',
       source: {
         type: 'string',
-        data: 'function afunc() {}'
+        data: 'function afunc(x, y) { return x * y }'
       },
-      inputs: [],
+      inputs: [ { name: 'x' }, { name: 'y' } ],
       outputs: [{
         name: 'afunc',
         value: {
@@ -248,8 +248,12 @@ testAsync('JavascriptContext.compile function', async assert => {
             type: 'function',
             name: 'afunc',
             methods: {
-              'afunc()': {
-                signature: 'afunc()'
+              'afunc(x, y)': {
+                signature: 'afunc(x, y)',
+                params: [
+                  {name: 'x'},
+                  {name: 'y'}
+                ]
               }
             }
           }
