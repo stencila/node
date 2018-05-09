@@ -75,12 +75,6 @@ testAsync('JavascriptContext.compile', async assert => {
     outputs: [{}]
   })
 
-  // Last statement is an undeclared variable
-  await check('foo', {
-    inputs: [{name: 'foo'}],
-    outputs: [{name: 'foo'}]
-  })
-
   // Last statement is a declaration
 
   await check('var foo', {
@@ -91,6 +85,12 @@ testAsync('JavascriptContext.compile', async assert => {
   await check('const foo = 1', {
     inputs: [],
     outputs: [{name: 'foo'}]
+  })
+
+  // Last statement is a name that is not locally declared
+  await check('foo', {
+    inputs: [{name: 'foo'}],
+    outputs: [{}] // i.e. unnamed cell output
   })
 
   // Last statement is name of locally declared variable
