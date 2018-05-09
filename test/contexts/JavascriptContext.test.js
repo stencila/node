@@ -508,6 +508,22 @@ testAsync('JavascriptContext.execute', async assert => {
   await check('let x = 3\nMath.sqrt(x*3)', [], {value: 3})
   await check('// Multiple lines and comments\nlet x = {}\nObject.assign(x, {\na:1\n})\n', [], {value: { a: 1 }})
 
+  // Falsy output values
+  await check('false', [], {value: false})
+  await check('null', [], {value: null})
+  await check('0', [], {value: 0})
+
+  // Undefined output values create an error message
+  const undefinedMessages = [ { type: 'error', message: 'Cell output value is undefined' } ]
+  assert.deepEqual(
+    (await context.execute('undefined')).messages,
+    undefinedMessages
+  )
+  assert.deepEqual(
+    (await context.execute('Math.non_existant')).messages,
+    undefinedMessages
+  )
+
   // Output value and name
   await check('let b = 1', [], {name: 'b', value: 1})
   await check('let c = 1\nc', [], {name: 'c', value: 1})
