@@ -121,10 +121,18 @@ testAsync('JavascriptContext.compile', async assert => {
     outputs: [{name: 'baz'}]
   })
 
-  // Last statement is not a declaration or identifier
-  await check('let foo\n{bar\nlet baz}', {
-    inputs: [{name: 'bar'}],
-    outputs: []
+  // Only top level variable declarations are considered when
+  // determining cell inputs
+  await check(`
+    let a;
+    {var c};
+    for (let b in [1,2,3]){};
+    if (true) { const d = 1 };
+    function f () { let e = 2 };
+    a * b * c * d * e;
+  `, {
+    inputs: [{name: 'b'}, {name: 'c'}, {name: 'd'}, {name: 'e'}],
+    outputs: [{}]
   })
 
   // Last statement is not a declaration or identifier
@@ -239,7 +247,7 @@ testAsync('JavascriptContext.compile function', async assert => {
         type: 'string',
         data: 'function afunc(x, y) { return x * y }'
       },
-      inputs: [ { name: 'x' }, { name: 'y' } ],
+      inputs: [],
       outputs: [{
         name: 'afunc',
         value: {
