@@ -538,17 +538,48 @@ testAsync('JavascriptContext.execute', async assert => {
   assert.end()
 })
 
-testAsync('JavascriptContext.errors', async assert => {
+testAsync('JavascriptContext.variables', async assert => {
   let context = new JavascriptContext()
+  let cell
 
   await context.execute({
     type: 'cell',
     source: {
       type: 'string',
-      data: 'source'
+      data: 'const a = 1'
     },
     inputs: []
   })
+
+  assert.deepEqual(await context.variables(), {
+    'a': {type: 'number', data: 1}
+  })
+
+  await context.execute({
+    type: 'cell',
+    source: {
+      type: 'string',
+      data: 'const b = new Float32Array(10)'
+    },
+    inputs: []
+  })
+
+  assert.deepEqual(Object.keys(await context.variables()), ['a', 'b'])
+
+  cell = await context.execute({
+    type: 'cell',
+    source: {
+      type: 'string',
+      data: 'b.constructor.name'
+    },
+    inputs: [{
+      name: 'b',
+      value: {} // Don't actually need to provide anything here bcause `b` is a variable residing in this context
+    }]
+  })
+  assert.deepEqual(cell.outputs, [
+    {value: { type: 'string', data: 'Float32Array' }}
+  ])
 
   assert.end()
 })
