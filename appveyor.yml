@@ -1,0 +1,14 @@
+install:
+  - ps: Install-Product node 8
+  - npm install
+
+build: off
+
+test_script:
+  - node --version
+  - npm --version
+
+  - npm run lint
+  - npm run check
+  - npm run cover
+  - npm run docs
