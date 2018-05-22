@@ -89,5 +89,10 @@
         "name": "esdoc-node"
       }
     ]
+  },
+  "standard": {
+    "ignore": [
+      "test/**/fixtures/**/*.js"
+    ]
   }
 }
