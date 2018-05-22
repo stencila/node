@@ -1,7 +1,7 @@
 all: setup lint check cover docs
 
 setup:
-	npm install
+	npm install --python=python2.7
 
 run:
 	npm start
