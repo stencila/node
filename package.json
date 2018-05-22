@@ -10,7 +10,7 @@
     "stencila-node": "bin/stencila-node.js"
   },
   "scripts": {
-    "lint": "standard lib/**/*.js bin/**/*.js test/**/*.js",
+    "lint": "standard \"lib/**/*.js\" \"bin/**/*.js\" \"test/**/*.js\"",
     "check": "dependency-check ./package.json && dependency-check ./package.json --unused --no-dev --ignore-module request",
     "test": "tape test | tap-spec",
     "cover": "nyc --reporter=lcov --reporter=text npm test",
