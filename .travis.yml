@@ -21,15 +21,17 @@ addons:
       - python-pip
 
 before_install:
-  - python --version
-  - pip install pip --upgrade --user
-  # Install ipykernel for testing of JupyterContext
-  - pip install ipykernel --user
+  - |
+    if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
+      python --version
+      pip install pip --upgrade --user
+      # Install ipykernel for testing of JupyterContext
+      pip install ipykernel --user
+      # Check that ipykernel will run
+      python -m ipykernel_launcher &
+    fi
 
 script:
-  # Check that ipykernel will run
-  - python -m ipykernel_launcher &
-
   - npm run lint
   - npm run check
   - npm run cover
