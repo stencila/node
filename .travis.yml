@@ -19,8 +19,8 @@ addons:
 before_install:
   - python --version
   - pip install pip --upgrade --user
-  # Install ipykernel for testing of JupyterContext
-  - pip install ipykernel --user
+  # Install ipykernel & matplotlib for testing of JupyterContext
+  - pip install ipykernel matplotlib --user
 
 script:
   # Check that ipykernel will run

@@ -12,9 +12,9 @@ testAsync('JupyterContext', async assert => {
     return
   }
 
-  let context = new JupyterContext({
+  let context = new JupyterContext(null, 'jupyterContext1', {
     language: 'python',
-    debug: true,
+    debug: false,
     timeout: 5
   })
 
@@ -53,11 +53,33 @@ testAsync('JupyterContext', async assert => {
     ])
   })
 
-  // Execute block
+  // Execute block returning a JSONable console result
   cell = await context.execute('print(22)\n6 * 7\n')
   assert.deepEqual(cell.outputs[0], {
     value: { type: 'number', data: 42 }
   })
+
+  // Execute block returning a non-JSONable console result
+  cell = await context.execute('import datetime\ndatetime.datetime(2018, 5, 23)\n')
+  assert.deepEqual(cell.outputs[0], {
+    value: { type: 'string', data: 'datetime.datetime(2018, 5, 23, 0, 0)' }
+  })
+
+  // Execute block returning an image
+  cell = await context.execute(`
+import matplotlib.pyplot as plt
+plt.scatter([1, 2, 3], [1, 2, 3])
+plt.show()
+`)
+  // Without `%matplotlib inline` magic we get a text rep
+  assert.ok(cell.outputs[0].value.data.match(/^<matplotlib\.figure\.Figure/))
+
+  cell = await context.execute(`
+%matplotlib inline
+plt.show()
+`)
+  // Adding `%matplotlib inline` currently doesn't work as expected
+  // assert.equal(cell.outputs[0].value.type, 'image')
 
   // Execute block with error
   cell = await context.execute('foo')
