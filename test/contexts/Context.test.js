@@ -1,9 +1,8 @@
-const test = require('tape')
+const { testAsync } = require('../helpers')
 
 const Host = require('../../lib/host/Host')
-// const Context = require('../../lib/contexts/Context')
 
-test('Context.packPointer+unpackPointer', async assert => {
+testAsync('Context.packPointer+unpackPointer', async assert => {
   const hostA = new Host()
   const hostB = new Host()
   await hostA.start()
