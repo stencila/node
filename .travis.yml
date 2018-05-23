@@ -25,8 +25,8 @@ before_install:
     if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
       python --version
       pip install pip --upgrade --user
-      # Install ipykernel for testing of JupyterContext
-      pip install ipykernel --user
+      # Install ipykernel & matplotlib for testing of JupyterContext
+      pip install ipykernel matplotlib --user
       # Check that ipykernel will run
       python -m ipykernel_launcher &
     fi
