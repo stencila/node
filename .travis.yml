@@ -1,5 +1,9 @@
 language: node_js
 
+os:
+  - linux
+  - osx
+
 node_js:
   - 8
 
@@ -17,26 +21,29 @@ addons:
       - python-pip
 
 before_install:
-  - python --version
-  - pip install pip --upgrade --user
-  # Install ipykernel for testing of JupyterContext
-  - pip install ipykernel --user
+  - |
+    if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
+      python --version
+      pip install pip --upgrade --user
+      # Install ipykernel for testing of JupyterContext
+      pip install ipykernel --user
+      # Check that ipykernel will run
+      python -m ipykernel_launcher &
+    fi
 
 script:
-  # Check that ipykernel will run
-  - python -m ipykernel_launcher &
-
   - npm run lint
   - npm run check
   - npm run cover
   - npm run docs
 
 after_success:
+  # Upload test coverage to codecov.io
   - bash <(curl -s https://codecov.io/bash)
 
-# Deploy documentation to Github Pages
-# See https://docs.travis-ci.com/user/deployment/pages/
 deploy:
+  # Deploy documentation to Github Pages
+  # See https://docs.travis-ci.com/user/deployment/pages/
   provider: pages
   skip-cleanup: true
   github-token: $GITHUB_TOKEN

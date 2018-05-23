@@ -2,6 +2,7 @@
 
 [![NPM](http://img.shields.io/npm/v/stencila-node.svg?style=flat)](https://www.npmjs.com/package/stencila-node)
 [![Build status](https://travis-ci.org/stencila/node.svg?branch=master)](https://travis-ci.org/stencila/node)
+[![Build status](https://ci.appveyor.com/api/projects/status/ipj7s8hm82809lj9/branch/master?svg=true)](https://ci.appveyor.com/project/nokome/node/)
 [![Code coverage](https://codecov.io/gh/stencila/node/branch/master/graph/badge.svg)](https://codecov.io/gh/stencila/node)
 [![Dependency status](https://david-dm.org/stencila/node.svg)](https://david-dm.org/stencila/node)
 [![Chat](https://badges.gitter.im/stencila/stencila.svg)](https://gitter.im/stencila/stencila)
@@ -9,8 +10,10 @@
 ### Install
 
 ```bash
-npm install stencila-node -g
+npm install stencila-node --global --python=python2.7
 ```
+
+This package relies on dependencies with native add-ons (e.g. `better-sqlite3`, `xeromq`). So you will need to have `node-gyp` installed (https://github.com/nodejs/node-gyp#readme). The `--python` flag is necessary because, on OSX and Windows, `node-gyp` is only compatible with Python 2.7.
 
 Register this Stencila package,
 
@@ -18,7 +21,7 @@ Register this Stencila package,
 stencila-node register
 ```
 
-This creates a host manifest file in the Stencila hosts directory (e.g. `~/.stencila/hosts` on Linux). This file is used by Stencila Desktop and other packages to determine which Stencila hosts you have installed on your machine.
+This creates a host manifest file in the Stencila hosts directory (e.g. `~/.stencila/hosts/node.js` on Linux). This file is used by Stencila Desktop and other packages to determine which Stencila hosts you have installed on your machine.
 
 ### Use
 
