@@ -2,6 +2,7 @@
 
 [![NPM](http://img.shields.io/npm/v/stencila-node.svg?style=flat)](https://www.npmjs.com/package/stencila-node)
 [![Build status](https://travis-ci.org/stencila/node.svg?branch=master)](https://travis-ci.org/stencila/node)
+[![Build status](https://ci.appveyor.com/api/projects/status/ipj7s8hm82809lj9/branch/master?svg=true)](https://ci.appveyor.com/project/nokome/node/)
 [![Code coverage](https://codecov.io/gh/stencila/node/branch/master/graph/badge.svg)](https://codecov.io/gh/stencila/node)
 [![Dependency status](https://david-dm.org/stencila/node.svg)](https://david-dm.org/stencila/node)
 [![Chat](https://badges.gitter.im/stencila/stencila.svg)](https://gitter.im/stencila/stencila)
