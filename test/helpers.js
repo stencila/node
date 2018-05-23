@@ -13,7 +13,7 @@ var testAsync = (name, func) => {
   test(name, async assert => {
     try {
       await func(assert)
-    } catch(error) {
+    } catch (error) {
       assert.fail(error.message)
       console.log(error.stack) // eslint-disable-line
       assert.end()

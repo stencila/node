@@ -1,9 +1,10 @@
-const test = require('tape')
+const os = require('os')
+const { testAsync } = require('../helpers')
 
 const Host = require('../../lib/host/Host')
 const SqliteContext = require('../../lib/contexts/SqliteContext')
 
-test('SqliteContext.compile expression', async assert => {
+testAsync('SqliteContext.compile expression', async assert => {
   const context = new SqliteContext()
   let expr
   let compiled
@@ -106,7 +107,7 @@ test('SqliteContext.compile expression', async assert => {
   assert.end()
 })
 
-test('SqliteContext.compile block', async assert => {
+testAsync('SqliteContext.compile block', async assert => {
   const context = new SqliteContext()
   let block
   let compiled
@@ -168,7 +169,7 @@ test('SqliteContext.compile block', async assert => {
   assert.end()
 })
 
-test('SqliteContext.execute expressions', async assert => {
+testAsync('SqliteContext.execute expressions', async assert => {
   const context = new SqliteContext()
   let executed
 
@@ -265,7 +266,7 @@ test('SqliteContext.execute expressions', async assert => {
   assert.end()
 })
 
-test('SqliteContext.execute blocks', async assert => {
+testAsync('SqliteContext.execute blocks', async assert => {
   const context = new SqliteContext()
   let executed
 
@@ -318,7 +319,7 @@ test('SqliteContext.execute blocks', async assert => {
   assert.end()
 })
 
-test('SqliteContext pointers', async assert => {
+testAsync('SqliteContext pointers', async assert => {
   const hostA = new Host()
   const hostB = new Host()
   await hostA.start()
@@ -372,15 +373,17 @@ test('SqliteContext pointers', async assert => {
   assert.deepEqual(res.outputs[0].value.data.data, {val: [2]})
   pointer2 = await contextA2.packPointer({type: 'table', name: 'second'})
 
-  res = await contextB1.execute({
-    source: {data: 'third = SELECT first.val + second.val AS val FROM first, second'},
-    inputs: [
-      {name: 'first', value: pointer1},
-      {name: 'second', value: pointer2}
-    ]
-  })
-  assert.deepEqual(res.outputs[0].value.data.data, {val: [3]})
-  assert.deepEqual(res.messages, [], 'pointer to remote context tables as input')
+  if (os.platform() === 'linux') {
+    res = await contextB1.execute({
+      source: {data: 'third = SELECT first.val + second.val AS val FROM first, second'},
+      inputs: [
+        {name: 'first', value: pointer1},
+        {name: 'second', value: pointer2}
+      ]
+    })
+    assert.deepEqual(res.outputs[0].value.data.data, {val: [3]})
+    assert.deepEqual(res.messages, [], 'pointer to remote context tables as input')
+  }
 
   await hostA.stop()
   await hostB.stop()
@@ -388,7 +391,7 @@ test('SqliteContext pointers', async assert => {
   assert.end()
 })
 
-test('SqliteContext.outputs', async assert => {
+testAsync('SqliteContext.outputs', async assert => {
   const context = new SqliteContext()
 
   context._db.exec(SMALL_TABLE_SQL)

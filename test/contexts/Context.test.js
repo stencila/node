@@ -1,9 +1,9 @@
-const test = require('tape')
+const os = require('os')
+const { testAsync } = require('../helpers')
 
 const Host = require('../../lib/host/Host')
-// const Context = require('../../lib/contexts/Context')
 
-test('Context.packPointer+unpackPointer', async assert => {
+testAsync('Context.packPointer+unpackPointer', async assert => {
   const hostA = new Host()
   const hostB = new Host()
   await hostA.start()
@@ -46,7 +46,9 @@ test('Context.packPointer+unpackPointer', async assert => {
   assert.deepEqual(await contextA2.unpackPointer(pointerA1X), 'a1x', 'Accessible from another context on host')
   assert.deepEqual(await contextB1.unpackPointer(pointerA1X), 'a1x', 'Accessible from another context on another host')
 
-  assert.deepEqual(await contextA1.unpackPointer(pointerB1X), 'b1x', 'Accessible from another context on another host started before')
+  if (os.platform() === 'linux') {
+    assert.deepEqual(await contextA1.unpackPointer(pointerB1X), 'b1x', 'Accessible from another context on another host started before')
+  }
 
   // Simulate a pointer to data on another machine
   const pointerC1X = Object.assign({}, pointerB1X)
