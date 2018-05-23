@@ -28,7 +28,7 @@ testAsync('JupyterContext', async assert => {
 
   let cell
 
-  // Expression
+  // Execute expression
   cell = await context.execute({
     expr: true,
     source: {
@@ -40,7 +40,7 @@ testAsync('JupyterContext', async assert => {
     value: { type: 'number', data: 3 }
   })
 
-  // Expression with runtime error
+  // Execute expression with runtime error
   cell = await context.execute({
     expr: true,
     source: {
@@ -53,13 +53,13 @@ testAsync('JupyterContext', async assert => {
     ])
   })
 
-  // Block
+  // Execute block
   cell = await context.execute('print(22)\n6 * 7\n')
   assert.deepEqual(cell.outputs[0], {
     value: { type: 'number', data: 42 }
   })
 
-  // Block with error
+  // Execute block with error
   cell = await context.execute('foo')
   assert.deepEqual(cell.messages, [
     { type: 'error', message: 'NameError: name \'foo\' is not defined' }
