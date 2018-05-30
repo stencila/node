@@ -1,10 +1,10 @@
-const test = require('tape')
+const { test, testAsync } = require('../helpers')
 const httpMocks = require('node-mocks-http')
 
 const Host = require('../../lib/host/Host')
 const HostHttpServer = require('../../lib/host/HostHttpServer')
 
-test('HostHttpServer.stop+start', async assert => {
+testAsync('HostHttpServer.stop+start', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
 
@@ -17,7 +17,7 @@ test('HostHttpServer.stop+start', async assert => {
   assert.end()
 })
 
-test('HostHttpServer.stop+start multiple', async assert => {
+testAsync('HostHttpServer.stop+start multiple', async assert => {
   let host = new Host()
   let server1 = new HostHttpServer(host)
   let server2 = new HostHttpServer(host)
@@ -37,7 +37,7 @@ test('HostHttpServer.stop+start multiple', async assert => {
   assert.end()
 })
 
-test('HostHttpServer.handle authorization', async assert => {
+testAsync('HostHttpServer.handle authorization', async assert => {
   const host = new Host()
   await host.start() // To generate key file and start server
   const server = host._servers.http
@@ -77,7 +77,7 @@ test('HostHttpServer.handle authorization', async assert => {
   assert.end()
 })
 
-test('HostHttpServer.handle CORS', async assert => {
+testAsync('HostHttpServer.handle CORS', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
   let mock
@@ -110,7 +110,7 @@ test('HostHttpServer.handle CORS', async assert => {
   assert.end()
 })
 
-test('HostHttpServer.route', assert => {
+testAsync('HostHttpServer.route', assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
 
@@ -134,7 +134,7 @@ test('HostHttpServer.route', assert => {
   assert.end()
 })
 
-test('HostHttpServer.options', async assert => {
+testAsync('HostHttpServer.options', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
   let {req, res} = httpMocks.createMocks({method: 'OPTIONS', url: '/', headers: {'origin': 'http://localhost'}})
@@ -152,7 +152,7 @@ test('HostHttpServer.options', async assert => {
   assert.end()
 })
 
-test('HostHttpServer.home', async assert => {
+testAsync('HostHttpServer.home', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
   let mock = httpMocks.createMocks()
@@ -163,7 +163,7 @@ test('HostHttpServer.home', async assert => {
   assert.end()
 })
 
-test('HostHttpServer.statico', async assert => {
+testAsync('HostHttpServer.statico', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
 
@@ -186,7 +186,7 @@ test('HostHttpServer.statico', async assert => {
   assert.end()
 })
 
-test('HostHttpServer.create', async assert => {
+testAsync('HostHttpServer.create', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
   let {req, res} = httpMocks.createMocks()
@@ -200,7 +200,7 @@ test('HostHttpServer.create', async assert => {
   assert.end()
 })
 
-test('HostHttpServer.get', async assert => {
+testAsync('HostHttpServer.get', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
   let {req, res} = httpMocks.createMocks()
@@ -212,7 +212,7 @@ test('HostHttpServer.get', async assert => {
   assert.end()
 })
 
-test('HostHttpServer.call', async assert => {
+testAsync('HostHttpServer.call', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
   let {req, res} = httpMocks.createMocks()
@@ -226,7 +226,7 @@ test('HostHttpServer.call', async assert => {
   assert.end()
 })
 
-test('HostHttpServer.delete', async assert => {
+testAsync('HostHttpServer.delete', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
   let {req, res} = httpMocks.createMocks()
