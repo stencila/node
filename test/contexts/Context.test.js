@@ -8,6 +8,7 @@ testAsync('Context.packPointer+unpackPointer', async assert => {
   const hostB = new Host()
   await hostA.start()
   await hostB.start()
+  await hostA.discoverPeers() // To ensure `hostA` has a key for `hostB`
 
   const contextA1 = (await hostA.create('NodeContext')).instance
   const contextA2 = (await hostA.create('NodeContext')).instance
