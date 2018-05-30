@@ -1,4 +1,4 @@
-const { test, testAsync } = require('../helpers')
+const { testAsync } = require('../helpers')
 const httpMocks = require('node-mocks-http')
 
 const Host = require('../../lib/host/Host')
@@ -39,7 +39,7 @@ testAsync('HostHttpServer.stop+start multiple', async assert => {
 
 testAsync('HostHttpServer.handle authorization', async assert => {
   const host = new Host()
-  await host.start() // To generate key file and start server
+  await host.start() // To generate manifest and key files and start server
   const server = host._servers.http
 
   const peer = new Host()
@@ -123,11 +123,11 @@ testAsync('HostHttpServer.route', assert => {
   assert.deepEqual(server.route('POST', '/type', true), [server.create, 'type'])
   assert.deepEqual(server.route('POST', '/type', false), [server.error403, 'Authorization is required for POST /type'])
 
-  assert.deepEqual(server.route('GET', '/name', true), [server.get, 'name'])
+  assert.deepEqual(server.route('GET', '/id', true), [server.get, 'id'])
 
-  assert.deepEqual(server.route('PUT', '/name!method', true), [server.call, 'name', 'method'])
+  assert.deepEqual(server.route('PUT', '/id!method', true), [server.call, 'id', 'method'])
 
-  assert.deepEqual(server.route('DELETE', '/name', true), [server.delete, 'name'])
+  assert.deepEqual(server.route('DELETE', '/id', true), [server.destroy, 'id'])
 
   assert.deepEqual(server.route('FOO', 'foo', true), null)
 
@@ -194,8 +194,8 @@ testAsync('HostHttpServer.create', async assert => {
 
   await server.create(req, res, 'NodeContext')
   assert.equal(res.statusCode, 200)
-  let name = JSON.parse(res._getData())
-  assert.ok(host._instances[name])
+  let id = JSON.parse(res._getData())
+  assert.ok(host._instances[id])
 
   assert.end()
 })
@@ -204,9 +204,9 @@ testAsync('HostHttpServer.get', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
   let {req, res} = httpMocks.createMocks()
-  let {name} = await host.create('NodeContext')
+  let {id} = await host.create('NodeContext')
 
-  await server.get(req, res, name)
+  await server.get(req, res, id)
   assert.equal(res.statusCode, 200)
 
   assert.end()
@@ -216,9 +216,9 @@ testAsync('HostHttpServer.call', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
   let {req, res} = httpMocks.createMocks()
-  let {name} = await host.create('NodeContext')
+  let {id} = await host.create('NodeContext')
 
-  await server.call(req, res, name, 'pack', 42)
+  await server.call(req, res, id, 'pack', 42)
   assert.equal(res.statusCode, 200)
   let content = res._getData()
   assert.equal(content, '{"type":"number","data":42}')
@@ -226,15 +226,15 @@ testAsync('HostHttpServer.call', async assert => {
   assert.end()
 })
 
-testAsync('HostHttpServer.delete', async assert => {
+testAsync('HostHttpServer.destroy', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
   let {req, res} = httpMocks.createMocks()
-  let {name} = await host.create('NodeContext')
+  let {id} = await host.create('NodeContext')
 
-  await server.delete(req, res, name)
+  await server.destroy(req, res, id)
   assert.equal(res.statusCode, 200)
-  assert.notOk(host._instances[name])
+  assert.notOk(host._instances[id])
 
   assert.end()
 })
