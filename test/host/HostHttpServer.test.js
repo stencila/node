@@ -68,6 +68,7 @@ testAsync('HostHttpServer.handle authorization', async assert => {
   mock = httpMocks.createMocks({method: 'POST', url: '/NodeContext', headers: authHeader(token1)})
   await server.handle(mock.req, mock.res)
   assert.equal(mock.res.statusCode, 403, 'Authorization fails because attempting to reuse token')
+  assert.equal(mock.res._getData().substring(0, 40), 'Forbidden: Attempt to reuse a token with')
 
   mock = httpMocks.createMocks({method: 'POST', url: '/NodeContext', headers: authHeader(token2)})
   await server.handle(mock.req, mock.res)
