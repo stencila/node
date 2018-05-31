@@ -1,6 +1,6 @@
-const test = require('tape')
 const fs = require('fs')
 const path = require('path')
+const { test, testAsync } = require('../helpers')
 
 const Host = require('../../lib/host/Host')
 const NodeContext = require('../../lib/contexts/NodeContext')
@@ -14,7 +14,7 @@ test('Host', assert => {
   assert.end()
 })
 
-test('Host.register', async assert => {
+testAsync('Host.register', async assert => {
   const host = new Host()
 
   await host.register()
@@ -26,7 +26,7 @@ test('Host.register', async assert => {
   assert.end()
 })
 
-test('Host.environs', async assert => {
+testAsync('Host.environs', async assert => {
   const host = new Host()
 
   let environs = await host.environs()
@@ -39,7 +39,7 @@ test('Host.environs', async assert => {
   assert.end()
 })
 
-test('Host.manifest', async assert => {
+testAsync('Host.manifest', async assert => {
   const host = new Host()
 
   let manifest
@@ -61,14 +61,14 @@ test('Host.manifest', async assert => {
   assert.end()
 })
 
-test('Host.create', async assert => {
+testAsync('Host.create', async assert => {
   const host = new Host()
 
   let instance1 = await host.create('NodeContext')
-  assert.ok(await host.get(instance1.name))
+  assert.ok(await host.get(instance1.id))
 
   let instance2 = await host.create('NodeContext')
-  assert.notEqual(instance2.name, instance1.name)
+  assert.notEqual(instance2.id, instance1.id)
 
   try {
     await host.create('fooType')
@@ -79,67 +79,67 @@ test('Host.create', async assert => {
   assert.end()
 })
 
-test('Host.get', async assert => {
+testAsync('Host.get', async assert => {
   const host = new Host()
 
   let instance = await host.create('NodeContext')
-  assert.ok(await host.get(instance.name))
+  assert.ok(await host.get(instance.id))
 
   try {
     await host.get('foobar')
   } catch (error) {
-    assert.equal(error.message, 'No instance with name "foobar"')
+    assert.equal(error.message, 'No instance with id "foobar"')
   }
 
   assert.end()
 })
 
-test('Host.call', async assert => {
+testAsync('Host.call', async assert => {
   const host = new Host()
 
-  let {name} = await host.create('NodeContext')
-  assert.ok(name)
+  let {id} = await host.create('NodeContext')
+  assert.ok(id)
 
-  let result = await host.call(name, 'pack', 42)
+  let result = await host.call(id, 'pack', 42)
   assert.deepEqual(result, {type: 'number', data: 42})
 
   try {
-    await host.call(name, 'fooMethod')
+    await host.call(id, 'fooMethod')
   } catch (error) {
-    assert.equal(error.message, 'No method with name "fooMethod"')
+    assert.equal(error.message, `Instance "${id}" has no method "fooMethod"`)
   }
 
   try {
     await host.call('fooName')
   } catch (error) {
-    assert.equal(error.message, 'No instance with name "fooName"')
+    assert.equal(error.message, 'No instance with id "fooName"')
   }
 
   assert.end()
 })
 
-test('Host.delete', async assert => {
+testAsync('Host.destroy', async assert => {
   const host = new Host()
 
-  let {name} = await host.create('NodeContext')
-  await host.delete(name)
+  let {id} = await host.create('NodeContext')
+  await host.destroy(id)
 
   try {
-    await host.get(name)
+    await host.get(id)
   } catch (error) {
-    assert.equal(error.message, `No instance with name "${name}"`)
+    assert.equal(error.message, `No instance with id "${id}"`)
   }
 
   try {
-    await host.delete(name)
+    await host.destroy(id)
   } catch (error) {
-    assert.equal(error.message, `No instance with name "${name}"`)
+    assert.equal(error.message, `No instance with id "${id}"`)
   }
 
   assert.end()
 })
 
-test('Host.start+stop+servers', async assert => {
+testAsync('Host.start+stop+servers', async assert => {
   const host = new Host()
 
   await host.start()

@@ -1,10 +1,10 @@
-const test = require('tape')
+const { testAsync } = require('../helpers')
 const httpMocks = require('node-mocks-http')
 
 const Host = require('../../lib/host/Host')
 const HostHttpServer = require('../../lib/host/HostHttpServer')
 
-test('HostHttpServer.stop+start', async assert => {
+testAsync('HostHttpServer.stop+start', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
 
@@ -17,7 +17,7 @@ test('HostHttpServer.stop+start', async assert => {
   assert.end()
 })
 
-test('HostHttpServer.stop+start multiple', async assert => {
+testAsync('HostHttpServer.stop+start multiple', async assert => {
   let host = new Host()
   let server1 = new HostHttpServer(host)
   let server2 = new HostHttpServer(host)
@@ -37,9 +37,9 @@ test('HostHttpServer.stop+start multiple', async assert => {
   assert.end()
 })
 
-test('HostHttpServer.handle authorization', async assert => {
+testAsync('HostHttpServer.handle authorization', async assert => {
   const host = new Host()
-  await host.start() // To generate key file and start server
+  await host.start() // To generate manifest and key files and start server
   const server = host._servers.http
 
   const peer = new Host()
@@ -68,6 +68,7 @@ test('HostHttpServer.handle authorization', async assert => {
   mock = httpMocks.createMocks({method: 'POST', url: '/NodeContext', headers: authHeader(token1)})
   await server.handle(mock.req, mock.res)
   assert.equal(mock.res.statusCode, 403, 'Authorization fails because attempting to reuse token')
+  assert.equal(mock.res._getData().substring(0, 40), 'Forbidden: Attempt to reuse a token with')
 
   mock = httpMocks.createMocks({method: 'POST', url: '/NodeContext', headers: authHeader(token2)})
   await server.handle(mock.req, mock.res)
@@ -77,7 +78,7 @@ test('HostHttpServer.handle authorization', async assert => {
   assert.end()
 })
 
-test('HostHttpServer.handle CORS', async assert => {
+testAsync('HostHttpServer.handle CORS', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
   let mock
@@ -110,7 +111,7 @@ test('HostHttpServer.handle CORS', async assert => {
   assert.end()
 })
 
-test('HostHttpServer.route', assert => {
+testAsync('HostHttpServer.route', assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
 
@@ -123,18 +124,18 @@ test('HostHttpServer.route', assert => {
   assert.deepEqual(server.route('POST', '/type', true), [server.create, 'type'])
   assert.deepEqual(server.route('POST', '/type', false), [server.error403, 'Authorization is required for POST /type'])
 
-  assert.deepEqual(server.route('GET', '/name', true), [server.get, 'name'])
+  assert.deepEqual(server.route('GET', '/id', true), [server.get, 'id'])
 
-  assert.deepEqual(server.route('PUT', '/name!method', true), [server.call, 'name', 'method'])
+  assert.deepEqual(server.route('PUT', '/id!method', true), [server.call, 'id', 'method'])
 
-  assert.deepEqual(server.route('DELETE', '/name', true), [server.delete, 'name'])
+  assert.deepEqual(server.route('DELETE', '/id', true), [server.destroy, 'id'])
 
   assert.deepEqual(server.route('FOO', 'foo', true), null)
 
   assert.end()
 })
 
-test('HostHttpServer.options', async assert => {
+testAsync('HostHttpServer.options', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
   let {req, res} = httpMocks.createMocks({method: 'OPTIONS', url: '/', headers: {'origin': 'http://localhost'}})
@@ -152,7 +153,7 @@ test('HostHttpServer.options', async assert => {
   assert.end()
 })
 
-test('HostHttpServer.home', async assert => {
+testAsync('HostHttpServer.home', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
   let mock = httpMocks.createMocks()
@@ -163,7 +164,7 @@ test('HostHttpServer.home', async assert => {
   assert.end()
 })
 
-test('HostHttpServer.statico', async assert => {
+testAsync('HostHttpServer.statico', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
 
@@ -186,7 +187,7 @@ test('HostHttpServer.statico', async assert => {
   assert.end()
 })
 
-test('HostHttpServer.create', async assert => {
+testAsync('HostHttpServer.create', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
   let {req, res} = httpMocks.createMocks()
@@ -194,31 +195,31 @@ test('HostHttpServer.create', async assert => {
 
   await server.create(req, res, 'NodeContext')
   assert.equal(res.statusCode, 200)
-  let name = JSON.parse(res._getData())
-  assert.ok(host._instances[name])
+  let id = JSON.parse(res._getData())
+  assert.ok(host._instances[id])
 
   assert.end()
 })
 
-test('HostHttpServer.get', async assert => {
+testAsync('HostHttpServer.get', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
   let {req, res} = httpMocks.createMocks()
-  let {name} = await host.create('NodeContext')
+  let {id} = await host.create('NodeContext')
 
-  await server.get(req, res, name)
+  await server.get(req, res, id)
   assert.equal(res.statusCode, 200)
 
   assert.end()
 })
 
-test('HostHttpServer.call', async assert => {
+testAsync('HostHttpServer.call', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
   let {req, res} = httpMocks.createMocks()
-  let {name} = await host.create('NodeContext')
+  let {id} = await host.create('NodeContext')
 
-  await server.call(req, res, name, 'pack', 42)
+  await server.call(req, res, id, 'pack', 42)
   assert.equal(res.statusCode, 200)
   let content = res._getData()
   assert.equal(content, '{"type":"number","data":42}')
@@ -226,15 +227,15 @@ test('HostHttpServer.call', async assert => {
   assert.end()
 })
 
-test('HostHttpServer.delete', async assert => {
+testAsync('HostHttpServer.destroy', async assert => {
   let host = new Host()
   let server = new HostHttpServer(host)
   let {req, res} = httpMocks.createMocks()
-  let {name} = await host.create('NodeContext')
+  let {id} = await host.create('NodeContext')
 
-  await server.delete(req, res, name)
+  await server.destroy(req, res, id)
   assert.equal(res.statusCode, 200)
-  assert.notOk(host._instances[name])
+  assert.notOk(host._instances[id])
 
   assert.end()
 })

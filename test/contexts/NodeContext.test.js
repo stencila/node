@@ -1,8 +1,7 @@
 const fs = require('fs')
 const path = require('path')
-const test = require('tape')
+const { test, testAsync } = require('../helpers')
 
-const { testAsync } = require('../helpers')
 const NodeContext = require('../../lib/contexts/NodeContext')
 
 test('NodeContext', assert => {
