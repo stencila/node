@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../">
+  <title data-ice="title">lib/contexts/JavascriptContext.js | stencila-node</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Stencila for Node.js"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="stencila-node"><meta property="twitter:description" content="Stencila for Node.js"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+<a style="position:relative; top:3px;" href="https://github.com/stencila/node"><img width="20px" src="./image/github.png"></a></header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#contexts">contexts</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/Context.js~Context.html">Context</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/JavascriptContext.js~JavascriptContext.html">JavascriptContext</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/JupyterContext.js~JupyterContext.html">JupyterContext</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/NodeContext.js~NodeContext.html">NodeContext</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/SqliteContext.js~SqliteContext.html">SqliteContext</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#host">host</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/host/Host.js~Host.html">Host</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/host/HostHttpServer.js~HostHttpServer.html">HostHttpServer</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">lib/contexts/JavascriptContext.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">const acorn = require(&apos;acorn&apos;)
+const doctrine = require(&apos;doctrine&apos;)
+const { generate } = require(&apos;astring&apos;)
+const walk = require(&apos;acorn/dist/walk&apos;)
+
+const Context = require(&apos;./Context&apos;)
+
+/**
+ * Global variable names that should be ignored when determining
+ * cell inputs with the `compile()` method
+ *
+ * @type {Array}
+ */
+const GLOBALS = [
+  // A list of ES6 globals obtained using: Object.keys(require(&apos;globals&apos;).es6)
+  &apos;Array&apos;, &apos;ArrayBuffer&apos;, &apos;Boolean&apos;, &apos;constructor&apos;, &apos;DataView&apos;, &apos;Date&apos;, &apos;decodeURI&apos;, &apos;decodeURIComponent&apos;,
+  &apos;encodeURI&apos;, &apos;encodeURIComponent&apos;, &apos;Error&apos;, &apos;escape&apos;, &apos;eval&apos;, &apos;EvalError&apos;, &apos;Float32Array&apos;, &apos;Float64Array&apos;,
+  &apos;Function&apos;, &apos;hasOwnProperty&apos;, &apos;Infinity&apos;, &apos;Int16Array&apos;, &apos;Int32Array&apos;, &apos;Int8Array&apos;, &apos;isFinite&apos;, &apos;isNaN&apos;,
+  &apos;isPrototypeOf&apos;, &apos;JSON&apos;, &apos;Map&apos;, &apos;Math&apos;, &apos;NaN&apos;, &apos;Number&apos;, &apos;Object&apos;, &apos;parseFloat&apos;, &apos;parseInt&apos;, &apos;Promise&apos;,
+  &apos;propertyIsEnumerable&apos;, &apos;Proxy&apos;, &apos;RangeError&apos;, &apos;ReferenceError&apos;, &apos;Reflect&apos;, &apos;RegExp&apos;, &apos;Set&apos;, &apos;String&apos;,
+  &apos;Symbol&apos;, &apos;SyntaxError&apos;, &apos;System&apos;, &apos;toLocaleString&apos;, &apos;toString&apos;, &apos;TypeError&apos;, &apos;Uint16Array&apos;, &apos;Uint32Array&apos;,
+  &apos;Uint8Array&apos;, &apos;Uint8ClampedArray&apos;, &apos;undefined&apos;, &apos;unescape&apos;, &apos;URIError&apos;, &apos;valueOf&apos;, &apos;WeakMap&apos;, &apos;WeakSet&apos;,
+  // A list of Node.js globals obtained using: Object.keys(require(&apos;globals&apos;).node)
+  &apos;__dirname&apos;, &apos;__filename&apos;, &apos;arguments&apos;, &apos;Buffer&apos;, &apos;clearImmediate&apos;, &apos;clearInterval&apos;, &apos;clearTimeout&apos;, &apos;console&apos;,
+  &apos;exports&apos;, &apos;GLOBAL&apos;, &apos;global&apos;, &apos;Intl&apos;, &apos;module&apos;, &apos;process&apos;, &apos;require&apos;, &apos;root&apos;, &apos;setImmediate&apos;, &apos;setInterval&apos;, &apos;setTimeout&apos;
+]
+
+/**
+ * An execution context for Javascript
+ *
+ * Although this currently resides in the `stencila/node` repository,
+ * it is intended for eventual use within the browser by
+ * replacing the `JsContext in `stencila/stencila`
+ */
+class JavascriptContext extends Context {
+  constructor (host, name) {
+    super(host, name)
+
+    /**
+     * Libraries registered in this context
+     *
+     * @type {Object}
+     */
+    this._libraries = {}
+
+    /**
+     * Variables residing in this context
+     *
+     * @type {Object}
+     */
+    this._variables = {}
+  }
+
+  /**
+   * Pack a value
+   *
+   * An overide of `Context.pack` which deals
+   * with packing of functions.
+   *
+   * @overide
+   */
+  async pack (value) {
+    if (typeof value === &apos;function&apos;) {
+      return {
+        type: &apos;function&apos;,
+        data: value._spec || {name: value.name},
+        location: this.location
+      }
+    } else {
+      return super.pack(value)
+    }
+  }
+
+  /**
+   * Get the libraries registered in this context
+   */
+  async libraries () {
+    return this._libraries
+  }
+
+  /**
+   * Get the variables residing in this context
+   */
+  async variables () {
+    let packed = {}
+    for (let [name, variable] of Object.entries(this._variables)) {
+      packed[name] = await this.pack(variable)
+    }
+    return packed
+  }
+
+  /**
+   * Compile a cell
+   */
+  async compile (cell, internal = false) {
+    // Cell source code
+    let source
+    if (typeof cell === &apos;string&apos; || cell instanceof String) {
+      source = cell
+    } else if (typeof cell === &apos;function&apos;) {
+      source = cell.toString()
+    } else {
+      source = cell.source.data
+    }
+
+    // Should source be a simple expression?
+    const exprOnly = cell.expr || false
+
+    // Input values
+    let inputs = []
+
+    // Output name and value (currently assuming a single output)
+    let name
+    let value
+
+    // A code expression to execute to get the return value
+    // (only used internally as an optimisation when
+    // called by `this.execute()`)
+    let _return = null
+
+    // Error messages
+    let messages = []
+
+    // Parse the source code (including comments for function definitions)
+    let ast
+    let docs = []
+    try {
+      ast = acorn.parse(source, {
+        sourceType: &apos;module&apos;,
+        onComment: (block, text) =&gt; {
+          if (block) docs.push(text)
+        }
+      })
+    } catch (error) {
+      let line = 0
+      let column = 0
+      if (error instanceof SyntaxError &amp;&amp; error.loc) {
+        line = error.loc.line
+        column = error.loc.column
+      }
+      messages.push({
+        type: &apos;error&apos;,
+        message: &apos;Syntax error in Javascript: &apos; + error.message,
+        line,
+        column
+      })
+    }
+    if (docs.length === 0) docs.push(null)
+
+    // Check for single expression only
+    // Only allow simple expressions
+    // See http://esprima.readthedocs.io/en/latest/syntax-tree-format.html#expressions-and-patterns
+    // for a list of expression types
+    if (messages.length === 0 &amp;&amp; exprOnly) {
+      try {
+        if (ast.body.length &gt; 1) throw new Error()
+        const first = ast.body[0]
+        if (!first) throw new Error()
+        if (first.type !== &apos;ExpressionStatement&apos;) throw new Error()
+        const dissallowed = [&apos;AssignmentExpression&apos;, &apos;UpdateExpression&apos;, &apos;AwaitExpression&apos;, &apos;Super&apos;]
+        if (dissallowed.indexOf(first.expression.type) &gt;= 0) throw new Error()
+      } catch (error) {
+        messages.push({
+          type: &apos;error&apos;,
+          message: &apos;Cell source code must be a single, simple Javascript expression&apos;
+        })
+      }
+    }
+
+    if (messages.length === 0) {
+      // Determine which names are declared and which are used
+      // do not enter some nodes like blocks and function declarations
+      // because we only want to pick up top level declarations and
+      // identifers
+      let declared = []
+      walk.recursive(ast, {}, {
+        BlockStatement (node, state, contin) {},
+        // For statements contain variable declarations we wish to ignore
+        ForStatement (node, state, contin) {},
+        ForInStatement (node, state, contin) {},
+        ForOfStatement (node, state, contin) {},
+        FunctionDeclaration (node, state, contin) {
+          declared.push(node.id.name)
+        },
+        VariableDeclarator (node, state, contin) {
+          declared.push(node.id.name)
+          // Recurse into initializer
+          if (node.init) contin(node.init, state)
+        },
+        Identifier (node, state, contin) {
+          let name = node.name
+          if (declared.indexOf(name) &lt; 0 &amp;&amp; GLOBALS.indexOf(name) &lt; 0) {
+            inputs.push({ name })
+          }
+        }
+      })
+
+      // If the last top level node in the AST is a FunctionDeclaration,
+      // VariableDeclaration or Identifier then use it&apos;s name as the output name
+      let last = ast.body.pop()
+      if (last) {
+        switch (last.type) {
+          case &apos;FunctionDeclaration&apos;:
+            name = last.id.name
+            value = this._compileFunction(name, last, source, docs)
+            _return = name
+            break
+          case &apos;ExportDefaultDeclaration&apos;:
+            // Currently, only handle exported functions
+            const decl = last.declaration
+            if (decl.type === &apos;FunctionDeclaration&apos;) {
+              name = decl.id.name
+              value = this._compileFunction(name, decl, source, docs)
+              _return = name
+            }
+            break
+          case &apos;VariableDeclaration&apos;:
+            name = last.declarations[0].id.name
+            _return = name
+            break
+          case &apos;ExpressionStatement&apos;:
+            if (last.expression.type === &apos;Identifier&apos;) {
+              // If the identifier is not in inputs then
+              // use it as the output name
+              const id = last.expression.name
+              if (inputs.filter(({name}) =&gt; name === id).length === 0) {
+                name = id
+              }
+            }
+            _return = generate(last)
+            break
+          case &apos;BlockStatement&apos;:
+          case &apos;IfStatement&apos;:
+            break
+          default:
+            // During development it can be useful to turn this on
+            throw new Error(&apos;Unhandled AST node type: &apos; + last.type)
+        }
+      }
+    }
+
+    let output = {}
+    if (name) output.name = name
+    if (value) output.value = await this.pack(value)
+    let outputs = (name || value || _return) ? [output] : []
+
+    const compiled = {
+      type: &apos;cell&apos;,
+      source: {
+        type: &apos;string&apos;,
+        data: source
+      },
+      inputs,
+      outputs,
+      messages
+    }
+    if (internal) compiled._return = _return
+
+    return compiled
+  }
+
+  _compileFunction (name, decl, source, docs) {
+    let func = {
+      type: &apos;function&apos;,
+      name: name
+    }
+
+    // Extract the type specification for a `@param` or `@return` tag
+    function _extractType (tag) {
+      switch (tag.type.type) {
+        case &apos;AllLiteral&apos;:
+          return &apos;any&apos;
+        case &apos;NameExpression&apos;:
+          return tag.type.name
+        case &apos;UnionType&apos;:
+          return tag.type.elements.map((element) =&gt; element.name).join(&apos;|&apos;)
+        case &apos;TypeApplication&apos;:
+          return tag.type.expression.name + &apos;[&apos; +
+                 tag.type.applications.map((application) =&gt; application.name).join(&apos;,&apos;) + &apos;]&apos;
+        case &apos;OptionalType&apos;:
+          return tag.default ? tag.type.expression.name : &apos;null&apos;
+        case &apos;RestType&apos;:
+          return tag.type.expression.name
+        default:
+          throw new Error(&apos;Unhandled type specification: &apos; + tag.type.type)
+      }
+    }
+
+    let methods = {}
+    for (let doc of docs) {
+      let method = {}
+      let params = []
+      let return_
+      let examples = []
+      if (doc) {
+        // Strip spaces and asterisks from front of each line
+        let jsdoc = doc.replace(/^\s*\*?/mg, &apos;&apos;)
+        // Parse JSDoc documentation
+        const {description, tags} = doctrine.parse(jsdoc, {
+          sloppy: true // allow optional parameters to be specified in brackets
+        })
+        if (!func.description) func.description = description
+        else method.description = description
+        // Process tags
+        for (let tag of tags) {
+          switch (tag.title) {
+            // Tags which always apply to the function as a whole
+
+            case &apos;name&apos;:
+              if (tag.name !== name) throw new Error(`Documentation tag @name with name &quot;${tag.name}&quot; differs from name in function definition`)
+              break
+
+            case &apos;title&apos;:
+              func.title = tag.description
+              break
+
+            case &apos;summary&apos;:
+              func.summary = tag.description
+              break
+
+            case &apos;description&apos;:
+              func.description = tag.description
+              break
+
+            // Tags applied to indivdual methods
+
+            case &apos;param&apos;:
+              let param = {
+                name: tag.name || `par${params.length + 1}`
+              }
+              if (tag.type) {
+                if (tag.type.type === &apos;RestType&apos;) {
+                  param.type = _extractType(tag)
+                  param.repeats = true
+                } else if (tag.type.type === &apos;NameExpression&apos; &amp;&amp; tag.type.name.substring(0, 3) === &apos;___&apos;) {
+                  param.type = tag.type.name.substring(3)
+                  param.extends = true
+                } else {
+                  param.type = _extractType(tag)
+                }
+              }
+              if (tag.description) param.description = tag.description
+              params.push(param)
+              break
+
+            case &apos;return&apos;:
+              return_ = {}
+              if (tag.type) return_.type = _extractType(tag)
+              if (tag.description) return_.description = tag.description
+              break
+
+            case &apos;example&apos;:
+              let example = {
+                usage: tag.description
+              }
+              if (tag.caption) example.caption = tag.caption
+              examples.push(example)
+              break
+          }
+        }
+      } else {
+        // Process each parameter declaration node into a parameter spec
+        for (let node of decl.params) {
+          let param = {}
+          switch (node.type) {
+            case &apos;Identifier&apos;:
+              if (node.name.substring(0, 3) === &apos;___&apos;) {
+                param.name = node.name.substring(3)
+                param.extends = true
+              } else {
+                param.name = node.name
+              }
+              break
+            case &apos;RestElement&apos;:
+              param.name = node.argument.name
+              param.repeats = true
+              break
+            case &apos;AssignmentPattern&apos;:
+              param.name = node.left.name
+              param.default = source.substring(node.right.start, node.right.end)
+              break
+            default:
+              throw new Error(`Unhandled parameter node type &quot;${node.type}&quot;`)
+          }
+          params.push(param)
+        }
+      }
+
+      if (params.length || return_ || examples.length) {
+        let signature = name + &apos;(&apos; + params.map(param =&gt; {
+          return param.name + (param.type ? `: ${param.type}` : &apos;&apos;)
+        }).join(&apos;, &apos;) + &apos;)&apos;
+        if (return_) signature += `: ${return_.type}`
+        method.signature = signature
+
+        if (params.length) method.params = params
+        if (return_) method.return = return_
+        if (examples.length) method.examples = examples
+
+        methods[signature] = method
+      }
+    }
+
+    // Ensure that there is always at least one method
+    if (Object.values(methods).length === 0) {
+      let signature = name + &apos;()&apos;
+      methods[signature] = { signature }
+    }
+
+    func.methods = methods
+
+    return func
+  }
+
+  async execute (cell) {
+    // At present, the received cell may not have
+    // all the things we need (e.g. outputs etc) from a
+    // previous compilation step. So we compile the cell
+    // and extract those from there. Only `inputs` (with values)
+    // are taken from the received cell
+    let compiled = await this.compile(cell, true)
+    cell = {
+      source: compiled.source,
+      expr: cell.expr || false,
+      inputs: cell.inputs || [],
+      outputs: compiled.outputs,
+      messages: compiled.messages
+    }
+
+    // Get cell source code adding the return value of function to the code
+    // (i.e. simulate implicit return). Although this approach is inefficient,
+    // because it involves executing expressions twice, it
+    // has the advantage of accurately reporting errors in the correct location
+    // in the cell&apos;s source code. Other approaches can be investigated later.
+    let source = cell.source.data + `;\nreturn ${compiled._return};`
+
+    // Get the names and values of cell inputs
+    let inputNames = []
+    let inputValues = []
+    for (let input of cell.inputs) {
+      let {name, value} = input
+      if (!name) throw new Error(`Name is required for input`)
+      if (!value) throw new Error(`Value is required for input &quot;${name}&quot;`)
+      inputNames.push(name)
+      // Get the input from variables, if available, otherwise
+      // unpack the provided one
+      let value_
+      if (this._variables.hasOwnProperty(name)) {
+        value_ = this._variables[name]
+      } else {
+        value_ = await this.unpack(value)
+      }
+      inputValues.push(value_)
+    }
+
+    // Construct a function from them
+    const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
+    const func = new AsyncFunction(...inputNames, source) // eslint-disable-line no-new-func
+
+    // Execute the function, using input values as arguments
+    // an converting exceptions into error messages
+    let value
+    try {
+      value = await func(...inputValues)
+    } catch (error) {
+      let line = 0
+      let column = 0
+      let message
+      if (error.stack) {
+        // Parse the error stack to get message, line and columns numbers
+        let lines = error.stack.split(&apos;\n&apos;)
+        let match = lines[1].match(/&lt;anonymous&gt;:(\d+):(\d+)/)
+        if (match) {
+          line = parseInt(match[1], 10) - 2
+          column = parseInt(match[2], 10)
+        }
+        message = lines[0] || error.message
+      }
+      cell.messages.push({
+        type: &apos;error&apos;,
+        line: line,
+        column: column,
+        message: message
+      })
+    }
+
+    const output = cell.outputs[0]
+    if (output) {
+      if (output.name) {
+        // Register the output as a variable residing in this context
+        this._variables[output.name] = value
+      }
+
+      if (typeof value === &apos;undefined&apos;) {
+        // If the cell has an output but that output is undefined
+        // then treat it as an error
+        cell.messages.push({
+          type: &apos;error&apos;,
+          message: &apos;Cell output value is undefined&apos;
+        })
+      } else {
+        if (typeof value === &apos;function&apos; &amp;&amp; output.value &amp;&amp; output.value.type === &apos;function&apos;) {
+          // Output value is a function, get it&apos;s specification
+          let func = await this.unpack(output.value)
+
+          // Attach the specification to the function object
+          value._spec = func
+
+          // Attach the function to the specification and
+          // register in the library (we may drop this in the future
+          // in favour of treating functions just like other variables)
+          func.body = value
+          if (!this._libraries[&apos;local&apos;]) this._libraries[&apos;local&apos;] = {}
+          this._libraries[&apos;local&apos;][func.name] = func
+        } else {
+          // Pack the output value
+          output.value = await this.pack(value)
+        }
+      }
+    }
+
+    return cell
+  }
+
+  async evaluateCall (call) {
+    // Get the function
+    const func = await this.evaluate(call.func)
+
+    // Currently, just use the first method
+    const method = Object.values(func.methods)[0]
+
+    // Using `method.params` specification, map the call&apos;s arguments onto the method&apos;s parameters
+    let args = []
+    let argsIndex = 0
+    let argsUsed = 0
+    let namedArgs
+    let namedArgsUsed = []
+    if (method.params) {
+      for (let param of method.params) {
+        if (param.repeats) {
+          // Put the remaining arguments into an array
+          let remaining = []
+          for (; argsIndex &lt; call.args.length; argsIndex++) {
+            remaining.push(await this.evaluate(call.args[argsIndex]))
+            argsUsed++
+          }
+          args.push(remaining)
+          break
+        } else if (param.extends) {
+          // Put the remaining named arguments into an object
+          if (call.namedArgs) {
+            namedArgs = {}
+            for (let name of Object.keys(call.namedArgs)) {
+              if (namedArgsUsed.indexOf(name) &lt; 0) {
+                namedArgs[name] = await this.evaluate(call.namedArgs[name])
+                namedArgsUsed.push(param.name)
+              }
+            }
+          }
+          break
+        } else {
+          // Get the argument for the parameter either by name or by index
+          let arg
+          if (call.namedArgs) {
+            arg = call.namedArgs[param.name]
+            if (arg) namedArgsUsed.push(param.name)
+          }
+          if (!arg &amp;&amp; call.args) {
+            arg = call.args[argsIndex]
+            if (arg) argsUsed++
+          }
+          if (!arg &amp;&amp; !param.default) {
+            throw new Error(`Function parameter &quot;${param.name}&quot; must be supplied`)
+          }
+          if (arg) args.push(await this.evaluate(arg))
+          else args.push(undefined)
+        }
+        argsIndex++
+      }
+    }
+    // Check that there are no extra, unused arguments in call
+    if (call.args &amp;&amp; argsUsed &lt; call.args.length) {
+      const extra = call.args.length - argsUsed
+      throw new Error(`Function was supplied ${extra} extra arguments`)
+    }
+    if (call.namedArgs &amp;&amp; namedArgsUsed.length &lt; Object.keys(call.namedArgs).length) {
+      const extra = Object.keys(call.namedArgs).filter((arg) =&gt; namedArgsUsed.indexOf(arg) &lt; 0)
+        .map((arg) =&gt; `&quot;${arg}&quot;`)
+        .join(&apos;, &apos;)
+      throw new Error(`Function was supplied extra named arguments ${extra}`)
+    }
+    // Execute the actual function call
+    let value = namedArgs ? func.body(...args, namedArgs) : func.body(...args)
+    if (value !== undefined) call.value = await this.pack(value)
+
+    return call
+  }
+
+  async evaluateGet (get) {
+    // Currently, this just iterates over registered libraries looking
+    // for a value with the name
+    let value
+    for (let library of Object.values(this._libraries)) {
+      value = library[get.name]
+      if (value) break
+    }
+    if (!value) throw new Error(`Could not get value &quot;${get.name}&quot;`)
+    return value
+  }
+}
+
+JavascriptContext.spec = {
+  name: &apos;JavascriptContext&apos;,
+  client: &apos;ContextHttpClient&apos;
+}
+
+module.exports = JavascriptContext
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.4)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

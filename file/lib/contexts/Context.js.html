@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../">
+  <title data-ice="title">lib/contexts/Context.js | stencila-node</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Stencila for Node.js"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="stencila-node"><meta property="twitter:description" content="Stencila for Node.js"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+<a style="position:relative; top:3px;" href="https://github.com/stencila/node"><img width="20px" src="./image/github.png"></a></header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#contexts">contexts</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/Context.js~Context.html">Context</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/JavascriptContext.js~JavascriptContext.html">JavascriptContext</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/JupyterContext.js~JupyterContext.html">JupyterContext</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/NodeContext.js~NodeContext.html">NodeContext</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/SqliteContext.js~SqliteContext.html">SqliteContext</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#host">host</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/host/Host.js~Host.html">Host</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/host/HostHttpServer.js~HostHttpServer.html">HostHttpServer</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">lib/contexts/Context.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">const uuid = require(&apos;uuid&apos;)
+const request = require(&apos;request-promise&apos;)
+
+class Context {
+  constructor (host, name) {
+    this._host = host
+    this._id = `node-${this.constructor.name.toLowerCase()}-${uuid()}`
+    this._name = name
+    this._variables = {}
+  }
+
+  get host () {
+    return this._host
+  }
+
+  get id () {
+    return this._id
+  }
+
+  get name () {
+    return this._name
+  }
+
+  get location () {
+    return {
+      context: {
+        id: this._id,
+        name: this._name
+      },
+      host: {
+        id: this._host.id,
+        port: this._host.servers.http &amp;&amp; this._host.servers.http.port
+      },
+      machine: {
+        id: this._host.machine.id,
+        ip: this._host.machine.ip
+      }
+    }
+  }
+
+  async libraries () {
+    return {}
+  }
+
+  async pack (value) {
+    return this.packPackage(value)
+  }
+
+  /**
+   * Unpack a data node into a native data value
+   *
+   * @param  {Object} node A data node (either a data packet or data pointer)
+   * @return {[type]}      [description]
+   */
+  async unpack (node) {
+    return this.unpackPackage(node)
+  }
+
+  async packPackage (value) {
+    let type
+    if (value === null) type = &apos;null&apos;
+    else type = value.type || typeof value
+    switch (type) {
+      case &apos;image&apos;:
+        return {type, src: value.src}
+      default:
+        return {type, data: value}
+    }
+  }
+
+  async unpackPackage (pkg) {
+    const type = pkg.type
+    switch (type) {
+      default: return pkg.data
+    }
+  }
+
+  async packPointer ({type, name, preview = null}) {
+    let {context, host, machine} = this.location
+    return {
+      type,
+      path: {
+        value: {
+          id: &apos;value-&apos; + uuid(),
+          name: name
+        },
+        context,
+        host,
+        machine
+      },
+      preview: preview
+    }
+  }
+
+  async unpackPointer (pointer) {
+    const path = pointer.path
+    const what = {
+      name: path.value.name
+    }
+    if (path.context.id === this.id) {
+      // Get data from this context
+      return this.resolve(what)
+    } else if (path.host.id === this.host.id) {
+      // Get a context on this host to provide data
+      let context = await this.host.resolve(path.context.name)
+      let packag = await context.provide(what)
+      return this.unpack(packag)
+    } else if (path.machine.id === this.host.machine.id) {
+      // Make a HTTP request to context via another host on this machine
+      return this.host.generateToken(path.host.id).then(token =&gt; {
+        const url = `http://127.0.0.1:${path.host.port}/${path.context.name}!provide`
+        const auth = &apos;Bearer &apos; + token
+        return request({
+          method: &apos;PUT&apos;,
+          uri: url,
+          headers: {
+            Accept: &apos;application/json&apos;,
+            Authorization: auth
+          },
+          body: what,
+          json: true
+        })
+      }).then(packag =&gt; {
+        return this.unpack(packag)
+      })
+    } else {
+      // Currently, because access keys are not exchanged between machines, this
+      // is not possible. It may be possible in the future.
+      throw new Error(&apos;Inter-machine pointers are not yet supported&apos;)
+    }
+  }
+
+  async resolve (what) {
+    if (!what.name) throw new Error(&apos;No name in: &apos; + what)
+    const value = this._variables[what.name]
+    if (value === undefined) throw new Error(&apos;No such value: &apos; + what.name)
+    return value
+  }
+
+  async provide (what) {
+    const data = await this.resolve(what)
+    return this.pack(data)
+  }
+
+  async compile (cell) {
+    let source
+    if (typeof cell === &apos;string&apos; || cell instanceof String) {
+      source = cell
+    } else if (typeof cell === &apos;function&apos;) {
+      source = cell.toString()
+    } else {
+      source = cell.source.data
+    }
+
+    return {
+      source: {
+        type: &apos;string&apos;,
+        data: source
+      },
+      expr: cell.expr || false,
+      global: cell.global || false,
+      options: {},
+      inputs: [],
+      outputs: [],
+      messages: []
+    }
+  }
+
+  async execute (cell) {
+    return cell
+  }
+
+  async evaluate (node) {
+    switch (node.type) {
+      case &apos;get&apos;: return this.evaluateGet(node)
+      case &apos;call&apos;: return this.evaluateCall(node)
+      default: return this.unpack(node)
+    }
+  }
+}
+
+Context.spec = {
+  name: &apos;Context&apos;,
+  client: &apos;ContextHttpClient&apos;
+}
+
+module.exports = Context
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.4)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../">
+  <title data-ice="title">lib/contexts/NodeContext.js | stencila-node</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Stencila for Node.js"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="stencila-node"><meta property="twitter:description" content="Stencila for Node.js"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+<a style="position:relative; top:3px;" href="https://github.com/stencila/node"><img width="20px" src="./image/github.png"></a></header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#contexts">contexts</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/Context.js~Context.html">Context</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/JavascriptContext.js~JavascriptContext.html">JavascriptContext</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/JupyterContext.js~JupyterContext.html">JupyterContext</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/NodeContext.js~NodeContext.html">NodeContext</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/SqliteContext.js~SqliteContext.html">SqliteContext</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#host">host</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/host/Host.js~Host.html">Host</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/host/HostHttpServer.js~HostHttpServer.html">HostHttpServer</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">lib/contexts/NodeContext.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">const fs = require(&apos;fs&apos;)
+let glob = require(&apos;glob&apos;)
+const path = require(&apos;path&apos;)
+const rollup = require(&apos;rollup&apos;)
+const rollupUglify = require(&apos;rollup-plugin-uglify&apos;)
+const tmp = require(&apos;tmp&apos;)
+const untildify = require(&apos;untildify&apos;)
+const util = require(&apos;util&apos;)
+glob = util.promisify(glob)
+
+const JavascriptContext = require(&apos;./JavascriptContext&apos;)
+
+/**
+ * A Node.js context for executing Javascript code
+ */
+class NodeContext extends JavascriptContext {
+  /**
+   * Compile a Javascript source code file
+   *
+   * @param  {String} file File path
+   * @return {Object}      Function object
+   */
+  async compileFile (file) {
+    let content = fs.readFileSync(file, &apos;utf8&apos;)
+    try {
+      return this.compile(content)
+    } catch (error) {
+      throw new Error(`Error compiling file &quot;${file}&quot;: ` + error.message)
+    }
+  }
+
+  /**
+   * Compile a Stencila library so that it can be loaded either into
+   * a `NodeContext` or another `JavascriptContext` (e.g one embedded
+   * into a Stencila web or desktop interface).
+   *
+   * Creates a Javascript bundle which exports both function definitions and
+   * a function specification objects.
+   *
+   * @param {String} src Path to library folder
+   * @param {String} dest Destination
+   * @param {Boolean} minify Should the bundle be minified? (defaults to true)
+   */
+  async compileLibrary (library = {}) {
+    let src = library.src || &apos;.&apos;
+    let dest = library.dest
+    let minify = (library.minify === false) ? library.minify : true
+
+    src = path.resolve(untildify(src))
+    if (!dest) {
+      let file = path.basename(src)
+      if (minify) file += &apos;.min&apos;
+      file += &apos;.js&apos;
+      dest = path.join(src, file)
+    }
+
+    try {
+      fs.statSync(src)
+    } catch (error) {
+      throw new Error(`No such folder &quot;${src}&quot;`)
+    }
+
+    const name = library.name || path.basename(src)
+
+    let json
+    try {
+      json = fs.readFileSync(path.join(src, &apos;package.json&apos;))
+    } catch (error) {
+      json = &apos;{}&apos;
+    }
+    const pkg = JSON.parse(json)
+
+    const pattern = path.join(src, &apos;funcs&apos;, &apos;*.js&apos;)
+    const files = await glob(pattern, {ignore: &apos;**/_*&apos;})
+    if (files.length === 0) throw new Error(`No functions found matching pattern &quot;${pattern}&quot;`)
+
+    let funcs = {}
+    let index = `
+      export const type = &apos;library&apos;
+      export const name = &apos;${name}&apos;
+      export let funcs = {}
+    `
+    for (let file of files) {
+      let cell
+      try {
+        cell = await this.compileFile(file, false)
+      } catch (error) {
+        throw new Error(`Error compiling file &quot;${file}&quot;: ${error.message}`)
+      }
+      let func = cell.outputs[0].value.data
+      const name = func.name
+      funcs[name] = func
+
+      const json = JSON.stringify(func, null, &apos;  &apos;)
+      index += `import ${name}_ from &apos;${file}&apos;\n`
+      index += `funcs[&apos;${name}&apos;] = ${json}\n`
+      index += `funcs[&apos;${name}&apos;].body = ${name}_\n\n`
+    }
+
+    const indexPath = tmp.tmpNameSync()
+    fs.writeFileSync(indexPath, index)
+
+    const rollupConfig = pkg.rollup || {}
+
+    const plugins = []
+    if (minify) plugins.push(rollupUglify())
+
+    const bundle = await rollup.rollup({
+      input: indexPath,
+      plugins: plugins,
+      external: rollupConfig.external
+    })
+
+    await bundle.write({
+      format: &apos;umd&apos;,
+      name: rollupConfig.name || &apos;local&apos;,
+      file: dest,
+      globals: rollupConfig.globals
+    })
+
+    return {
+      type: &apos;library&apos;,
+      name: name,
+      funcs: funcs,
+      bundle: dest
+    }
+  }
+
+  async executeLibrary (library_) {
+    const library = await this.compileLibrary(library_)
+    library.module = require(library.bundle)
+    this._libraries[library.name] = library
+    return {
+      type: &apos;library&apos;,
+      name: library.name,
+      funcs: library.funcs
+    }
+  }
+}
+
+NodeContext.spec = {
+  name: &apos;NodeContext&apos;,
+  client: &apos;ContextHttpClient&apos;
+}
+
+module.exports = NodeContext
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.4)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

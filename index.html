@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl">
+  <title data-ice="title">Home | stencila-node</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Stencila for Node.js"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="stencila-node"><meta property="twitter:description" content="Stencila for Node.js"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+<a style="position:relative; top:3px;" href="https://github.com/stencila/node"><img width="20px" src="./image/github.png"></a></header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#contexts">contexts</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/Context.js~Context.html">Context</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/JavascriptContext.js~JavascriptContext.html">JavascriptContext</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/JupyterContext.js~JupyterContext.html">JupyterContext</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/NodeContext.js~NodeContext.html">NodeContext</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/SqliteContext.js~SqliteContext.html">SqliteContext</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#host">host</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/host/Host.js~Host.html">Host</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/host/HostHttpServer.js~HostHttpServer.html">HostHttpServer</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><div data-ice="index" class="github-markdown"><h2 id="stencila-for-node-js">Stencila for Node.js</h2><p><a href="https://www.npmjs.com/package/stencila-node"><img src="http://img.shields.io/npm/v/stencila-node.svg?style=flat" alt="NPM"></a>
+<a href="https://travis-ci.org/stencila/node"><img src="https://travis-ci.org/stencila/node.svg?branch=master" alt="Build status"></a>
+<a href="https://ci.appveyor.com/project/nokome/node/"><img src="https://ci.appveyor.com/api/projects/status/ipj7s8hm82809lj9/branch/master?svg=true" alt="Build status"></a>
+<a href="https://codecov.io/gh/stencila/node"><img src="https://codecov.io/gh/stencila/node/branch/master/graph/badge.svg" alt="Code coverage"></a>
+<a href="https://david-dm.org/stencila/node"><img src="https://david-dm.org/stencila/node.svg" alt="Dependency status"></a>
+<a href="https://gitter.im/stencila/stencila"><img src="https://badges.gitter.im/stencila/stencila.svg" alt="Chat"></a></p>
+<h3 id="install">Install</h3><pre><code class="lang-bash"><code class="source-code prettyprint">npm install stencila-node --global --python=python2.7</code>
+</code></pre>
+<p>This package relies on dependencies with native add-ons (e.g. <code>better-sqlite3</code>, <code>xeromq</code>). So you will need to have <code>node-gyp</code> installed (<a href="https://github.com/nodejs/node-gyp#readme">https://github.com/nodejs/node-gyp#readme</a>). The <code>--python</code> flag is necessary because, on OSX and Windows, <code>node-gyp</code> is only compatible with Python 2.7.</p>
+<p>Register this Stencila package,</p>
+<pre><code><code class="source-code prettyprint">stencila-node register</code>
+</code></pre><p>This creates a host manifest file in the Stencila hosts directory (e.g. <code>~/.stencila/hosts/node.js</code> on Linux). This file is used by Stencila Desktop and other packages to determine which Stencila hosts you have installed on your machine.</p>
+<h3 id="use">Use</h3><p>This package lets you run JavaScript and other code from inside Stencila documents. First, you need to start serving the Stencila Host within this package. You can do that at a terminal,</p>
+<pre><code class="lang-bash"><code class="source-code prettyprint">stencila-node</code>
+</code></pre>
+<p>or inside Node.js:</p>
+<pre><code class="lang-js"><code class="source-code prettyprint">const stencila = require(&apos;stencila-node&apos;)
+stencila.run()</code>
+</code></pre>
+<p>This will serve a Stencila <code>Host</code> on localhost. You can then open your Stencila document from within the <a href="https://github.com/stencila/desktop">Stencila Desktop</a>. The host will be automatically detected by the desktop app and you&apos;ll be able to execute Javascript code cells from within your documents.</p>
+<p>You can also use this package to compile libraries of Javascript functions for use within Stencila:</p>
+<pre><code class="lang-bash"><code class="source-code prettyprint">stencila-node compile &quot;~/stencila/source/libcore/&quot;</code>
+</code></pre>
+<p>This creates a minified Javascript bundle, in this example at <code>&quot;~/stencila/source/libcore/libcore.min.js</code></p>
+<p>API documentation is available at <a href="https://stencila.github.io/node">https://stencila.github.io/node</a>.</p>
+<h3 id="discuss">Discuss</h3><p>We love feedback. Create a <a href="https://github.com/stencila/node/issues/new">new issue</a>, add to <a href="https://github.com/stencila/node/issues">existing issues</a> or <a href="https://gitter.im/stencila/stencila">chat</a> with members of the community.</p>
+<h3 id="contribute">Contribute</h3><p>See <a href="CONTRIBUTING.md">CONTRIBUTING.md</a>.</p>
+</div>
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.4)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

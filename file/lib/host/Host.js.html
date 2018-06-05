@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../">
+  <title data-ice="title">lib/host/Host.js | stencila-node</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Stencila for Node.js"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="stencila-node"><meta property="twitter:description" content="Stencila for Node.js"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+<a style="position:relative; top:3px;" href="https://github.com/stencila/node"><img width="20px" src="./image/github.png"></a></header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#contexts">contexts</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/Context.js~Context.html">Context</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/JavascriptContext.js~JavascriptContext.html">JavascriptContext</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/JupyterContext.js~JupyterContext.html">JupyterContext</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/NodeContext.js~NodeContext.html">NodeContext</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/SqliteContext.js~SqliteContext.html">SqliteContext</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#host">host</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/host/Host.js~Host.html">Host</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/host/HostHttpServer.js~HostHttpServer.html">HostHttpServer</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">lib/host/Host.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">const util = require(&apos;util&apos;)
+
+const assert = require(&apos;assert&apos;)
+const machine = require(&apos;address&apos;)
+const crypto = require(&apos;crypto&apos;)
+const execa = require(&apos;execa&apos;)
+const fs = require(&apos;fs&apos;)
+const glob = util.promisify(require(&apos;glob&apos;))
+const jsonwebtoken = require(&apos;jsonwebtoken&apos;)
+const mkdirp = require(&apos;mkdirp&apos;)
+const path = require(&apos;path&apos;)
+const os = require(&apos;os&apos;)
+const request = require(&apos;request-promise&apos;)
+const uuid = require(&apos;uuid&apos;)
+
+const pkg = require(&apos;../../package&apos;)
+const HostHttpServer = require(&apos;./HostHttpServer&apos;)
+
+const JupyterContext = require(&apos;../contexts/JupyterContext&apos;)
+const NodeContext = require(&apos;../contexts/NodeContext&apos;)
+const SqliteContext = require(&apos;../contexts/SqliteContext&apos;)
+
+const version = pkg.version
+
+// The current execution environment
+// The `STENCILA_ENVIRON` env var may be set if inside
+// a defined environment e.g. stencila/core@1.2
+const ENVIRON = process.env.STENCILA_ENVIRON || &apos;local&apos;
+
+// Types of execution contexts provided by this Host
+// Note that types provided by peers are also available
+// to clients of this host. See `Host.types`
+const TYPES = {
+  &apos;JupyterContext&apos;: JupyterContext,
+  &apos;NodeContext&apos;: NodeContext,
+  &apos;SqliteContext&apos;: SqliteContext
+}
+
+/**
+ * A `Host` allows you to create, get, run methods of, and delete instances of various types.
+ * The types can be thought of a &quot;services&quot; provided by the host e.g. `NoteContext`
+ *
+ * The API of a host is similar to that of a HTTP server. It&apos;s methods names
+ * (e.g. `post`, `get`) are similar to HTTP methods (e.g. `POST`, `GET`) but
+ * the sematics sometimes differ (e.g. a host&apos;s `put()` method is used to call an
+ * instance method)
+ *
+ * A `Host` is not limited to being served by HTTP and it&apos;s methods are exposed by both `HostHttpServer`
+ * and `HostWebsocketServer`. Those other classes are responsible for tasks associated with
+ * their communication protocol (e.g. serialising and deserialising objects).
+ *
+ *
+ * This is a singleton class. There should only ever be one `Host`
+ * in memory in each process (although, for purposes of testing, this is not enforced)
+ */
+class Host {
+  constructor (key = null) {
+    this._id = `node-host-${uuid()}`
+    this._key = key
+    this._servers = {}
+    this._started = null
+    this._heartbeat = null
+    this._instances = {}
+    this._counts = {}
+    this._peers = {}
+  }
+
+  /**
+   * Get unique ID of this host
+   */
+  get id () {
+    return this._id
+  }
+
+  /**
+   * Get the key of this host
+   *
+   * @return {string} - Host&apos;s authentication key
+   */
+  get key () {
+    return this._key
+  }
+
+  /**
+   * Get the current user&apos;s Stencila data directory
+   */
+  static userDir () {
+    // TODO: isn&apos;t there a module helping us to find OS paths?
+    // maybe something which works like electron&apos;s app.getPath()
+    // https://github.com/electron/electron/blob/master/docs/api/app.md#appgetpathname
+    switch (process.platform) {
+      // see https://nodejs.org/api/process.html#process_process_platform
+      case &apos;darwin&apos;:
+        return path.join(process.env.HOME, &apos;Library&apos;, &apos;Application Support&apos;, &apos;Stencila&apos;)
+      case &apos;linux&apos;:
+        return path.join(process.env.HOME, &apos;.stencila&apos;)
+      case &apos;win32&apos;:
+        return path.join(process.env.APPDATA, &apos;Stencila&apos;)
+      default:
+        return path.join(process.env.HOME, &apos;stencila&apos;)
+    }
+  }
+
+  /**
+   * Is the user running this process a super user?
+   */
+  static isSuperUser () {
+    return (process.getuid &amp;&amp; process.getuid() === 0) || process.env.SUDO_UID
+  }
+
+  /**
+   * Get the current Stencila temporary directory
+   */
+  static tempDir () {
+    return path.join(os.tmpdir(), &apos;stencila&apos;)
+  }
+
+  /**
+   * Get the execution environments supported by this host
+   *
+   * @return {Array} A list of supported execution environment
+   */
+  async environs () {
+    let environs = []
+
+    let name = null
+    let version = null
+    const match = ENVIRON.match(/^([\w-]+)(@(.+)?)$/)
+    if (match) {
+      name = match[1]
+      version = match[3]
+    } else {
+      name = ENVIRON
+    }
+    let current = {
+      id: ENVIRON,
+      name: name,
+      version: version
+    }
+    environs.push(current)
+
+    const pattern = path.join(Host.userDir(), &apos;environs&apos;, &apos;**/*.json&apos;)
+    for (let file of glob.sync(pattern)) {
+      const json = fs.readFileSync(file)
+      const environ = JSON.parse(json)
+      environs.push(environ)
+    }
+    return environs
+  }
+
+  /**
+   * Get specifications for context types provided by this
+   * Host, including types provided by peer Hosts.
+   *
+   * Types which are provided by this Host directly are marked
+   * with `local: true`, and those provided by peers with
+   * `local: false`
+   */
+  get types () {
+    let specs = {}
+    for (let [name, type] of Object.entries(TYPES)) {
+      specs[name] = Object.assign(type.spec, {local: true})
+    }
+    for (let peer of Object.values(this._peers)) {
+      const types = peer &amp;&amp; peer.manifest &amp;&amp; peer.manifest.types
+      if (types) {
+        for (let [name, spec] of Object.entries(types)) {
+          // Only add the type if it is not available locally
+          // on this host
+          if (!specs[name]) {
+            specs[name] = Object.assign(spec, {local: false})
+          }
+        }
+      }
+    }
+    return specs
+  }
+
+  /**
+   * Get information on the machine that this host is running on
+   *
+   * Used for resolving data pointers (amongst other things)
+   *
+   * @return {Object} Machine information
+   */
+  get machine () {
+    return this._machine
+  }
+
+  /**
+   * Get information on the process that this host is running in
+   *
+   * Used by peer hosts to check that this host is runing (amongst other things)
+   *
+   * @return {Object} Process information
+   */
+  get process () {
+    return {
+      pid: process.pid,
+      name: process.title,
+      version: process.version,
+      platform: process.platform,
+      arch: process.arch
+    }
+  }
+
+  /**
+   * Get a manifest for this host
+   *
+   * The manifest describes the host and it&apos;s capabilities. It is used
+   * by peer hosts to determine which &quot;types&quot; this host provides and
+   * which &quot;instances&quot; have already been instantiated.
+   *
+   * @return {Object} Manifest object
+   */
+  async manifest () {
+    let manifest = {
+      stencila: {
+        package: &apos;node&apos;,
+        version: version
+      },
+      id: this.id,
+      spawn: [&apos;stencila-node&apos;, &apos;spawn&apos;],
+      environs: await this.environs(),
+      types: this.types
+    }
+    if (this._started) {
+      manifest = Object.assign(manifest, {
+        machine: this.machine,
+        process: this.process,
+        servers: this.servers,
+        instances: Object.keys(this._instances)
+      })
+    }
+    return manifest
+  }
+
+  /**
+   * Register as a host for the current execution environment.
+   *
+   * Registering a host involves creating a file `node.json` inside of
+   * the current environment&apos;s directory within the the user&apos;s
+   * Stencila data directory (see `userDir()`).
+   */
+  async register () {
+    const dir = path.join(Host.userDir(), &apos;hosts&apos;)
+    mkdirp.sync(dir)
+    const json = JSON.stringify(await this.manifest(), null, &apos;  &apos;)
+    fs.writeFileSync(path.join(dir, &apos;node.json&apos;), json)
+  }
+
+  /**
+   * Resolve an instance identifier to an instance
+   *
+   * @param  {String} id Instance identifier
+   * @return {Object}      The instance
+   */
+  resolve (id) {
+    return Promise.resolve().then(() =&gt; {
+      let instance = this._instances[id]
+      if (!instance) throw new Error(`No instance with id &quot;${id}&quot;`)
+      return instance
+    })
+  }
+
+  async startup (id) {
+    if (id === ENVIRON) {
+      return { path: &apos;&apos; }
+    } else {
+      throw new Error(&apos;Creating environments other than local not yet supported&apos;)
+    }
+  }
+
+  async shutdown (id) {
+    return true
+  }
+
+  /**
+   * Create a new instance of a type
+   *
+   * @param  {string} type - Type of instance
+   * @param  {options} options - Arguments to be passed to type constructor
+   * @return {Object} - Identier and newly created instance
+   */
+  async create (type, options) {
+    this.heartbeat()
+
+    const makeId = () =&gt; {
+      let number = (this._counts[type] || 0) + 1
+      this._counts[type] = number
+      return `${type[0].toLowerCase()}${type.substring(1)}${number}`
+    }
+
+    let id
+    let instance
+
+    let Class = TYPES[type]
+    if (Class) {
+      // Type present locally
+      id = makeId(type)
+      instance = new Class(this, id, options)
+      // Do initialization if class has such a method
+      if (typeof instance.initialize === &apos;function&apos;) await instance.initialize()
+    } else {
+      // Type not present locally, see if a peer has it
+      let peer = await (async () =&gt; {
+        // Sort peers so that we search for the type in active, running peers
+        // first and then in registered peers that need to be spawned
+        let peers = Object.values(this._peers).sort((a, b) =&gt; {
+          if (a.manifest.process &amp;&amp; !b.manifest.process) return -1
+          if (!a.manifest.process &amp;&amp; b.manifest.process) return 1
+          return 0
+        })
+        for (let peer of peers) {
+          const types = peer &amp;&amp; peer.manifest &amp;&amp; peer.manifest.types
+          if (types) {
+            for (let name of Object.keys(types)) {
+              if (name === type) {
+                if (peer.manifest.process) {
+                  // Peer is active, so use it
+                  return peer
+                } else {
+                  // Peer is inactive, so `spawn` it
+                  return this.spawnPeer(peer)
+                }
+              }
+            }
+          }
+        }
+        throw new Error(`No type with name &quot;${type}&quot;`)
+      })()
+
+      let remoteId = await this.requestPeer(peer, &apos;POST&apos;, &apos;/&apos; + type, options)
+
+      // Store the instance as a {peer, id pair} to be proxied to. In other methods (e.g. `call`),
+      // such object instances are recognised as remote instances and requests are proxied to them
+      id = makeId(type)
+      instance = {
+        proxy: true,
+        peer,
+        id: remoteId
+      }
+    }
+
+    this._instances[id] = instance
+    return {id, instance}
+  }
+
+  /**
+   * Get an instance
+   *
+   * @param {String} id - Instance identifier
+   */
+  async get (id) {
+    this.heartbeat()
+
+    let instance = await this.resolve(id)
+    if (instance.proxy) {
+      // Pass on request to peer host
+      return this.requestPeer(instance.peer, &apos;GET&apos;, &apos;/&apos; + instance.id)
+    } else {
+      // Return an JSON represenation of the instance
+      // excluding any &apos;private&apos; propertues
+      if (typeof instance.repr === &apos;function&apos;) {
+        return instance.repr()
+      } else {
+        let repr = {}
+        for (const [key, value] of Object.entries(instance)) {
+          if (key.substring(0, 1) !== &apos;_&apos;) repr[key] = value
+        }
+        return repr
+      }
+    }
+  }
+
+  /**
+   * Call a method of an instance
+   *
+   * @param {String} id - Instance identifier
+   * @param {String} method - Name of instance method
+   * @param {Object} data - An object to apply the method to
+   */
+  async call (id, method, data) {
+    this.heartbeat()
+
+    let instance = await this.resolve(id)
+    if (instance.proxy) {
+      // Pass on request to peer host
+      return this.requestPeer(instance.peer, &apos;PUT&apos;, &apos;/&apos; + instance.id + &apos;!&apos; + method, data)
+    } else {
+      let func = instance[method]
+      if (func) {
+        // Call the instance&apos;s method
+        return instance[method](data)
+      } else {
+        throw new Error(`Instance &quot;${id}&quot; has no method &quot;${method}&quot;`)
+      }
+    }
+  }
+
+  /**
+   * Destroy an instance
+   *
+   * @param  {String} id - Instance identifier
+   */
+  async destroy (id) {
+    this.heartbeat()
+
+    let instance = await this.resolve(id)
+    if (instance.proxy) {
+      // Pass on request to peer host
+      return this.requestPeer(instance.peer, &apos;DELETE&apos;, &apos;/&apos; + instance.id)
+    } else {
+      // Do finalization if class has such a method
+      if (typeof instance.finalize === &apos;function&apos;) await instance.finalize()
+      // Delete the instance entry
+      delete this._instances[id]
+    }
+  }
+
+  /**
+   * Start serving this host
+   *
+   * Currently, HTTP is the only server available
+   * for hosts. We plan to implement a `HostWebsocketServer` soon.
+   *
+   * @return {Promise}
+   */
+  async start (options = {}) {
+    let address = options.address || &apos;127.0.0.1&apos;
+    let port = options.port || 2000
+    let key = options.key || null
+    let quiet = options.quiet || false
+
+    if (!this._servers.http) {
+      // Ensure key
+      if (key === null) {
+        if (process.env.STENCILA_AUTH === &apos;false&apos;) key = false
+        else key = crypto.randomBytes(32).toString(&apos;hex&apos;)
+      }
+      this._key = key
+
+      // Ensure MAC and IP
+      const mac = await (util.promisify(machine.mac))()
+      const ip = machine.ip()
+      this._machine = {
+        id: mac || ip,
+        ip: ip
+      }
+
+      // Start HTTP server
+      var server = new HostHttpServer(this, address, port)
+      this._servers.http = server
+      await server.start()
+
+      if (!quiet) {
+        let key = this._key
+        console.log(`Host has started:\n  Id: ${this.id}\n  Key: ${key}\n  URLs: ${server.url}`) // eslint-disable-line no-console
+        if (key === false) {
+          console.warn(`  Warning: authentication has been disabled!`) // eslint-disable-line no-console
+        }
+      }
+
+      // Record start times
+      this._started = new Date()
+      this._heartbeat = new Date()
+
+      // Register as a running host by creating a manifest file and a key file
+      let hostsDir = path.join(Host.tempDir(), &apos;hosts&apos;)
+      mkdirp.sync(hostsDir)
+      let manifest = await this.manifest()
+      let json = JSON.stringify(manifest, null, &apos;  &apos;)
+      fs.writeFileSync(path.join(hostsDir, this.id + &apos;.json&apos;), json, { mode: &apos;600&apos; })
+      fs.writeFileSync(path.join(hostsDir, this.id + &apos;.key&apos;), this.key, { mode: &apos;600&apos; })
+
+      // Discover other hosts
+      return this.discoverPeers()
+    }
+  }
+
+  /**
+   * Update this host&apos;s heartbeat
+   *
+   * Can be called explictly by a peer (i.e. `PUT /!heartbeat`)
+   * but also called by the `post`, `get`, `put` and `delete` methods
+   * above.
+   *
+   * @return {Date} Date/time of last heartbeat
+   */
+  heartbeat () {
+    this._heartbeat = new Date()
+    return this._heartbeat
+  }
+
+  /**
+   * Stop serving this host
+   *
+   * @return {Promise}
+   */
+  stop (options = {}) {
+    let quiet = options.quiet || false
+
+    return new Promise((resolve) =&gt; {
+      const type = &apos;http&apos;
+      let server = this._servers[type]
+      if (server) {
+        delete this._servers[type]
+        server.stop().then(() =&gt; {
+          // Deregister as a running host by removing manifest and key files
+          let hostsDir = path.join(Host.tempDir(), &apos;hosts&apos;)
+          let manifestFile = path.join(hostsDir, this.id + &apos;.json&apos;)
+          fs.unlink(manifestFile, () =&gt; {})
+          let keyFile = path.join(hostsDir, this.id + &apos;.key&apos;)
+          fs.unlink(keyFile, () =&gt; {})
+
+          // Stop any child peers that this host spawned
+          for (let peer of Object.values(this._peers)) {
+            if (peer.child) {
+              console.log(`Stopping peer host &quot;${peer.id}&quot;.`)
+              // Use both SIGINT and SIGTERM (which is not handled on Windows)
+              peer.child.kill(&apos;SIGINT&apos;)
+              peer.child.kill(&apos;SIGTERM&apos;)
+            }
+          }
+
+          // Destroy all instances created to trigger any finalization they may do
+          for (let id of Object.keys(this._instances)) {
+            this.destroy(id)
+          }
+
+          if (!quiet) console.log(&apos;Host HTTP server has stopped.&apos;) // eslint-disable-line no-console
+
+          resolve()
+        })
+      }
+    })
+  }
+
+  /**
+   * Start serving this host and wait for connections
+   * indefinitely
+   */
+  run (options = {}) {
+    let address = options.address || &apos;127.0.0.1&apos;
+    let port = options.port || 2000
+    let key = options.key || null
+    let timeout = options.timeout || Infinity
+    let duration = options.duration || Infinity
+    let quiet = options.quiet || false
+
+    const stop = () =&gt; {
+      this.stop({quiet: quiet}).then(() =&gt; {
+        process.exit()
+      })
+    }
+
+    // Setup timer to check timeout and duration every minute
+    setInterval(() =&gt; {
+      const time = new Date()
+      if ((time - this._heartbeat) / 1000 &gt; timeout || (time - this._started) / 1000 &gt;= duration) {
+        stop()
+      }
+    }, 60 * 1000)
+
+    // Handle interrupt
+    if (process.platform === &apos;win32&apos;) {
+      var rl = require(&apos;readline&apos;).createInterface({
+        input: process.stdin,
+        output: process.stdout
+      })
+      rl.on(&apos;SIGINT&apos;, () =&gt; process.emit(&apos;SIGINT&apos;))
+    }
+    process.on(&apos;SIGINT&apos;, stop)
+
+    return this.start({address, port, key, quiet})
+  }
+
+  async spawn (options = {}) {
+    options.quiet = true
+    await this.run(options)
+    return {
+      id: this.id,
+      manifest: this.manifest,
+      key: this.key
+    }
+  }
+
+  /**
+   * Get a list of server names for this host
+   *
+   * Servers are identified by the protocol shorthand
+   * e.g. `http` for `HostHttpServer`
+   *
+   * @return {array} Array of strings
+   */
+  get servers () {
+    let servers = {}
+    for (let name of Object.keys(this._servers)) {
+      let server = this._servers[name]
+      servers[name] = {
+        url: server.url,
+        address: server.address,
+        port: server.port
+      }
+    }
+    return servers
+  }
+
+  /**
+   * Get a list of URLs for this host
+   *
+   * @return {array} Array of strings
+   */
+  get urls () {
+    return Object.keys(this._servers).map(name =&gt; this._servers[name].url)
+  }
+
+  /**
+   * View this host in the browser
+   *
+   * Opens the default browser at the URL of this host
+   */
+  view () {
+    // Difficult to test headlessly, so don&apos;t include in coverage
+    /* istanbul ignore next */
+    Promise.resolve(
+      this.start()
+        .then(() =&gt; {
+          let url = this._servers.http.url
+          if (os.platform() === &apos;linux&apos;) {
+            execa(`2&gt;/dev/null 1&gt;&amp;2 xdg-open &quot;${url}&quot;`)
+          } else {
+            execa(`open &quot;${url}&quot;`)
+          }
+        })
+    )
+  }
+
+  registerPeer ({id, manifest, key}, child) {
+    assert(id)
+    assert(id !== this.id)
+
+    let peer = {
+      id,
+      manifest: manifest || {},
+      key,
+      child,
+      tokens: {} // TODO: garbage collection of expired tokens to reduce memory usage
+    }
+    this._peers[id] = peer
+    return peer
+  }
+
+  /**
+   * Discover peers
+   *
+   * Looks for peer hosts in the following locations (on Linux, equivalents on other OSs):
+   *
+   * - `/tmp/stencila/hosts` - hosts that are currently active (i.e. running)
+   * - `~/.stencila/hosts` - hosts that are installed but inactive
+   *
+   * This method is intended to be robust to errors in peer files etc and
+   * will only register an active peer if it can connect to it and access its
+   * key file
+   */
+  async discoverPeers () {
+    let discoverDir = async dir =&gt; {
+      // Check the folder exists (they may not e.g. if no packages have been registered)
+      try {
+        await fs.accessSync(dir, fs.constants.R_OK)
+      } catch (error) {
+        return
+      }
+      // For each host in the directory
+      for (let file of await glob(path.join(dir, &apos;*.json&apos;))) {
+        let json
+        try {
+          json = fs.readFileSync(file, { encoding: &apos;utf8&apos; })
+        } catch (error) {
+          console.warn(`Warning: error reading file &quot;${file}&quot;: ${error.message}`)
+          continue
+        }
+
+        let manifest
+        try {
+          manifest = JSON.parse(json)
+        } catch (error) {
+          console.warn(`Warning: error parsing file &quot;${file}&quot;: ${error.message}`)
+          continue
+        }
+        const id = manifest.id
+
+        // Don&apos;t register no id or self as a peer!
+        if (!id || id === this.id) continue
+
+        // If the manifest defines a `process` then check that process is actually running
+        const pid = manifest.process &amp;&amp; manifest.process.pid
+        if (pid) {
+          try {
+            process.kill(pid, 0)
+          } catch (error) {
+            if (error.code === &apos;ESRCH&apos;) {
+              console.warn(`Warning: no active peer process with pid &quot;${pid}&quot;`)
+            } else {
+              console.warn(`Warning: error checking process with pid &quot;${pid}&quot;: ${error.message}`)
+            }
+            continue
+          }
+        }
+
+        // If the manifest defines `servers` then check that we are able to connect to
+        // it and update the manifest
+        if (manifest.servers &amp;&amp; manifest.servers.http) {
+          try {
+            manifest = await this.requestPeer(manifest.servers.http.url + &apos;/manifest&apos;)
+          } catch (error) {
+            console.warn(`Warning: error attempting to connect to peer: ${error.message}`)
+            continue
+          }
+        }
+
+        // If the manifest defines `servers` then obtain its key so that requests can
+        // be made to it.
+        let key
+        if (manifest.servers &amp;&amp; Object.keys(manifest.servers).length) {
+          const keyFile = path.join(dir, id + &apos;.key&apos;)
+          try {
+            key = fs.readFileSync(keyFile, { encoding: &apos;utf8&apos; })
+          } catch (error) {
+            console.warn(`Warning: error reading file &quot;${keyFile}&quot;: ${error.message}`)
+            continue
+          }
+        }
+
+        // If we got here, then it&apos;s OK to use this as a peer
+        this.registerPeer({id, manifest, key})
+      }
+    }
+    // Discover active hosts first,...
+    await discoverDir(path.join(Host.tempDir(), &apos;hosts&apos;))
+    // ...then inactive hosts
+    await discoverDir(path.join(Host.userDir(), &apos;hosts&apos;))
+    // ...then Jupyter kernels installed locally
+    await JupyterContext.discover()
+  }
+
+  /**
+   * Spawn a peer from an inactive host manifest
+   *
+   * @param  {Object} peer A peer object including `manifest`
+   * @return {[type]}      [description]
+   */
+  spawnPeer (peer) {
+    return new Promise((resolve, reject) =&gt; {
+      let spawn = peer.manifest.spawn
+      let child = execa(spawn[0], spawn.slice(1))
+      child.stdout.on(&apos;data&apos;, data =&gt; {
+        const spawnedPeer = JSON.parse(data.toString())
+        this.registerPeer(spawnedPeer, child)
+        resolve(spawnedPeer)
+      })
+      child.catch(error =&gt; {
+        reject(new Error(`Could not spawn peer using &quot;${spawn.join(&apos; &apos;)}&quot;: ${error.message}`))
+      })
+    })
+  }
+
+  async requestPeer (peer, method = &apos;GET&apos;, path = &apos;&apos;, data = null) {
+    let url
+    let headers = {
+      Accept: &apos;application/json&apos;
+    }
+    if (typeof peer === &apos;string&apos;) {
+      url = peer
+    } else {
+      url = peer.manifest.servers[&apos;http&apos;].url
+      headers[&apos;Authorization&apos;] = &apos;Bearer &apos; + await this.generateToken(peer.id)
+    }
+    return request({
+      method: method,
+      uri: url + path,
+      headers: headers,
+      jar: true,
+      body: data,
+      json: true
+    })
+  }
+
+  /**
+   * Generate a request token
+   *
+   * @param {String} host The id of the host
+   */
+  async generateToken (host) {
+    let peer = this._peers[host]
+    if (!peer) throw new Error(`Could not find peer with id &quot;${host}&quot;`)
+
+    // If the peer has no key then auth is turned off
+    // and so token is an empty string
+    if (!peer.key) return &apos;&apos;
+
+    return jsonwebtoken.sign({
+      // `iat` and `exp` claims are added by `jsonwebtoken`
+      iss: this.id,
+      jti: crypto.randomBytes(32).toString(&apos;hex&apos;)
+    }, peer.key, {
+      algorithm: &apos;HS256&apos;,
+      expiresIn: 300
+    })
+  }
+
+  /**
+   * Authorize a request token.
+   *
+   * Throws an error if the token is invalid.
+   *
+   * @param {String} token Token string (usually from the `Authorization` header of a HTTP request)
+   */
+  authorizeToken (token) {
+    // If key is explicitly set to false then no authorization is done
+    if (this._key === false) return true
+
+    // Note that `jsonwebtoken.verify` will return the
+    // &quot;decoded payload if the signature is valid and optional expiration, audience, or issuer are valid&quot;
+    let payload = jsonwebtoken.verify(token, this.key, {
+      algorithms: [&apos;HS256&apos;]
+    })
+
+    // Verify `iss` and `jti`
+    // These can, optionally, be set by clients to prevent token replay attacks.
+    const iss = payload.iss // Issuer
+    const jti = payload.jti // JWT ID
+    if (iss &amp;&amp; jti) {
+      let peer = this._peers[iss]
+      if (!peer) {
+        // Request is from a host that is not yet registered
+        peer = this.registerPeer({id: iss})
+      }
+      if (peer.tokens.hasOwnProperty(jti)) throw new Error(`Attempt to reuse a token with &apos;iss&apos;: &quot;${iss}&quot; and &apos;jti&apos;: &quot;${jti}&quot;`)
+      peer.tokens[jti] = payload
+    }
+    return payload
+  }
+
+  /**
+   * Compile a library
+   *
+   * @param  {Object} options Options for the `NodeContext.compileLibrary` method
+   * @return {Object}     Library node including `bundle`, the path to the bundle created
+   */
+  async compile (options) {
+    const context = new NodeContext()
+    return context.compileLibrary(options)
+  }
+}
+
+module.exports = Host
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.4)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

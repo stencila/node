@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../">
+  <title data-ice="title">lib/host/HostHttpServer.js | stencila-node</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Stencila for Node.js"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="stencila-node"><meta property="twitter:description" content="Stencila for Node.js"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+<a style="position:relative; top:3px;" href="https://github.com/stencila/node"><img width="20px" src="./image/github.png"></a></header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#contexts">contexts</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/Context.js~Context.html">Context</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/JavascriptContext.js~JavascriptContext.html">JavascriptContext</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/JupyterContext.js~JupyterContext.html">JupyterContext</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/NodeContext.js~NodeContext.html">NodeContext</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/contexts/SqliteContext.js~SqliteContext.html">SqliteContext</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#host">host</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/host/Host.js~Host.html">Host</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/host/HostHttpServer.js~HostHttpServer.html">HostHttpServer</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">lib/host/HostHttpServer.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">const assert = require(&apos;assert&apos;)
+const body = require(&apos;body&apos;)
+const http = require(&apos;http&apos;)
+const path = require(&apos;path&apos;)
+const send = require(&apos;send&apos;)
+const url = require(&apos;url&apos;)
+
+const pathIsInside = require(&apos;path-is-inside&apos;)
+const httpShutdown = require(&apos;http-shutdown&apos;)
+
+/**
+ * A HTTP server for a `Host`
+ */
+class HostHttpServer {
+  constructor (host, address = &apos;127.0.0.1&apos;, port = 2000) {
+    assert(host &amp;&amp; host.constructor.name === &apos;Host&apos;, &apos;host must be an instance of Host&apos;)
+
+    this._host = host
+    this._address = address
+    this._port = port
+    this._server = null
+  }
+
+  get address () {
+    return this._address
+  }
+
+  get port () {
+    return this._port
+  }
+
+  /**
+   * Get the URL of this server
+   *
+   * @return {string} - Server&apos;s URL, `null` if not serving
+   */
+  get url () {
+    return this._server ? (&apos;http://&apos; + this._address + &apos;:&apos; + this._port) : null
+  }
+
+  /**
+   * Start this server
+   *
+   * @return {Promise}
+   */
+  start () {
+    return new Promise((resolve, reject) =&gt; {
+      if (!this._server) {
+        if (require(&apos;../host/Host&apos;).isSuperUser()) {
+          return reject(new Error(&apos;Serving host as a super user is dangerous and is not allowed&apos;))
+        }
+
+        let server = http.createServer(this.handle.bind(this))
+        server = httpShutdown(server)
+        server.on(&apos;error&apos;, error =&gt; {
+          if (error.code === &apos;EADDRINUSE&apos;) {
+            this._port += 10
+            server.close()
+            server.listen(this._port, this._address, 511)
+          } else {
+            reject(error)
+          }
+        })
+        server.on(&apos;listening&apos;, () =&gt; {
+          resolve()
+        })
+        server.listen(this._port, this._address, 511)
+        this._server = server
+      } else {
+        resolve()
+      }
+    })
+  }
+
+  /**
+   * Stop this server
+   *
+   * @return {Promise}
+   */
+  stop () {
+    return new Promise((resolve) =&gt; {
+      if (this._server) {
+        this._server.shutdown()
+        this._server = null
+      }
+      resolve()
+    })
+  }
+
+  /**
+   * Handle a HTTP request
+   */
+  handle (request, response) {
+    let uri = url.parse(request.url, true)
+
+    // Check authorization
+    let authorized = false
+    if (!this._host.key) {
+      authorized = true
+    } else {
+      const authHeader = request.headers.authorization
+      if (authHeader) {
+        const match = authHeader.match(/^Bearer (.+)/)
+        if (match) {
+          let token = match[1]
+          try {
+            this._host.authorizeToken(token)
+            authorized = true
+          } catch (error) {
+            return this.error403(request, response, error.message)
+          }
+        }
+      }
+    }
+
+    // Add CORS headers used to control access by browsers. In particular, CORS
+    // can prevent access by XHR requests made by Javascript in third party sites.
+    // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
+
+    // Get the Origin header (sent in CORS and POST requests) and fall back to Referer header
+    // if it is not present (either of these should be present in most browser requests)
+    let origin = request.headers.origin
+    if (!origin &amp;&amp; request.headers.referer) {
+      let uri = url.parse(request.headers.referer || &apos;&apos;)
+      origin = `${uri.protocol}//${uri.host}`
+    }
+
+    // Check that origin is in whitelist of file://, http://127.0.0.1, http://localhost, or http://*.stenci.la
+    // The origin &apos;file://&apos; is sent when a connection is made from Electron (i.e Stencila Desktop)
+    if (origin) {
+      if (origin !== &apos;file://&apos;) {
+        let host = url.parse(origin).hostname
+        let match = host.match(/^((127\.0\.0\.1)|(localhost)|(([^.]+\.)?stenci\.la))$/)
+        if (!match) origin = null
+      }
+    }
+
+    // If an origin has been found and is authorized set CORS headers
+    // Without these headers browser XHR request get an error like:
+    //     No &apos;Access-Control-Allow-Origin&apos; header is present on the requested resource.
+    //     Origin &apos;http://evil.hackers:4000&apos; is therefore not allowed access.
+    if (origin) {
+      // &apos;Simple&apos; requests (GET and POST XHR requests)
+      response.setHeader(&apos;Access-Control-Allow-Origin&apos;, origin)
+      // Allow sending cookies and other credentials
+      response.setHeader(&apos;Access-Control-Allow-Credentials&apos;, &apos;true&apos;)
+      // Pre-flighted requests by OPTIONS method (made before PUT, DELETE etc XHR requests and in other circumstances)
+      // get additional CORS headers
+      if (request.method === &apos;OPTIONS&apos;) {
+        // Allowable methods and headers
+        response.setHeader(&apos;Access-Control-Allow-Methods&apos;, &apos;GET, POST, PUT, DELETE, OPTIONS&apos;)
+        // According to MDN &quot;The simple headers, Accept, Accept-Language, Content-Language, Content-Type are always available and
+        // don&apos;t need to be listed by this header.&quot; but I found it was necessary
+        response.setHeader(&apos;Access-Control-Allow-Headers&apos;, &apos;Authorization, Content-Type&apos;)
+        // &quot;how long the response to the preflight request can be cached for without sending another preflight request&quot;
+        response.setHeader(&apos;Access-Control-Max-Age&apos;, &apos;86400&apos;) // 24 hours
+      }
+    }
+
+    if (request.method === &apos;OPTIONS&apos;) {
+      // For preflighted CORS OPTIONS requests return an empty response with headers set
+      // (https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS#Preflighted_requests)
+      response.end()
+    } else {
+      let endpoint = this.route(request.method, uri.pathname, authorized)
+      if (endpoint) {
+        return new Promise((resolve, reject) =&gt; {
+          // Handle mock requests used during testing
+          if (request._setBody) resolve(JSON.stringify(request.body))
+          else {
+            body(request, (err, body) =&gt; {
+              if (err) reject(err)
+              else resolve(body)
+            })
+          }
+        }).then(body =&gt; {
+          let method = endpoint[0]
+          let params = endpoint.slice(1)
+          let data = body ? JSON.parse(body) : {}
+          return method.call(this, request, response, ...params, data)
+        }).catch(error =&gt; {
+          this.error500(request, response, error)
+        })
+      } else {
+        return this.error400(request, response)
+      }
+    }
+  }
+
+  /**
+   * Route a HTTP request
+   *
+   * @param {string} verb - The request&apos;s HTTP verb (aka. &quot;method&quot;) eg. GET
+   * @param {string} path - The requested path
+   * @param {Boolean} authorized - Is the request authorized
+   * @return {array} - An array with first element being the method to call,
+   *                   and subsequent elements being the call arguments
+   */
+  route (verb, path, authorized) {
+    // Public endpoints
+
+    if (path === &apos;/&apos;) return [this.home]
+    if (path.substring(0, 8) === &apos;/static/&apos;) return [this.statico, path.substring(8)]
+    if (path === &apos;/manifest&apos;) return [this.manifest]
+
+    // Private endpoints for which authorization is necessary
+
+    if (!authorized) return [this.error403, `Authorization is required for ${verb} ${path}`]
+
+    let matches = path.match(/^\/([^!$]+)((!|\$)([^?]+))?.*$/)
+    if (matches) {
+      let id = matches[1]
+      let operator = matches[3]
+      let method = matches[4]
+      if (verb === &apos;POST&apos; &amp;&amp; id &amp;&amp; !method) {
+        if (id.substring(0, 8) === &apos;environ/&apos;) return [this.startup, id.substring(8)]
+        else return [this.create, id]
+      } else if (verb === &apos;GET&apos; &amp;&amp; id &amp;&amp; !method) {
+        return [this.get, id]
+      } else if (verb === &apos;PUT&apos; &amp;&amp; id &amp;&amp; operator === &apos;!&apos; &amp;&amp; method) {
+        return [this.call, id, method]
+      } else if (verb === &apos;DELETE&apos; &amp;&amp; id &amp;&amp; !method) {
+        if (id.substring(0, 8) === &apos;environ/&apos;) return [this.shutdown, id.substring(8)]
+        else return [this.destroy, id]
+      }
+    }
+
+    return null
+  }
+
+  /**
+   * Handle a request to `home`
+   */
+  home (request, response) {
+    return this.statico(request, response, &apos;index.html&apos;)
+  }
+
+  /**
+   * Handle a request for a static file
+   */
+  statico (request, response, path_) {
+    return new Promise((resolve) =&gt; {
+      let staticPath = path.join(__dirname, &apos;../../static&apos;)
+      let requestedPath = path.join(staticPath, url.parse(path_).pathname)
+      if (!pathIsInside(requestedPath, staticPath)) {
+        this.error403(request, response, path_)
+        resolve()
+      } else {
+        send(request, requestedPath)
+          .on(&apos;error&apos;, (err) =&gt; {
+            if (err.status === 404) this.error404(request, response, path_)
+            else this.error500(request, response, path_)
+            resolve()
+          })
+          .on(&apos;end&apos;, resolve)
+          .pipe(response)
+      }
+    })
+  }
+
+  /**
+   * Handle a request to `manifest`
+   */
+  manifest (request, response) {
+    this._host.manifest().then(manifest =&gt; {
+      response.setHeader(&apos;Content-Type&apos;, &apos;application/json&apos;)
+      response.end(JSON.stringify(manifest))
+    })
+  }
+
+  /**
+   * Handle a request to startup an environment
+   */
+  startup (request, response, type, options) {
+    return this._host.startup(type, options).then(result =&gt; {
+      response.setHeader(&apos;Content-Type&apos;, &apos;application/json&apos;)
+      response.end(JSON.stringify(result))
+    })
+  }
+
+  /**
+   * Handle a request to shutdown an environment
+   */
+  shutdown (request, response, type, options) {
+    return this._host.shutdown(type, options).then(result =&gt; {
+      response.setHeader(&apos;Content-Type&apos;, &apos;application/json&apos;)
+      response.end(JSON.stringify(result))
+    })
+  }
+
+  /**
+   * Handle a request to create an instance
+   */
+  create (request, response, type, options) {
+    return this._host.create(type, options).then(result =&gt; {
+      response.setHeader(&apos;Content-Type&apos;, &apos;application/json&apos;)
+      response.end(JSON.stringify(result.id))
+    })
+  }
+
+  /**
+   * Handle a request to get an instance
+   */
+  get (request, response, name) {
+    return this._host.get(name).then(repr =&gt; {
+      response.setHeader(&apos;Content-Type&apos;, &apos;application/json&apos;)
+      response.end(JSON.stringify(repr))
+    })
+  }
+
+  /**
+   * Handle a request to call an instance method
+   */
+  call (request, response, name, method, data) {
+    return this._host.call(name, method, data).then(result =&gt; {
+      response.setHeader(&apos;Content-Type&apos;, &apos;application/json&apos;)
+      response.end(JSON.stringify(result))
+    })
+  }
+
+  /**
+   * Handle a request to destroy an instance
+   */
+  destroy (request, response, name) {
+    return this._host.destroy(name).then(() =&gt; {
+      response.end()
+    })
+  }
+
+  /**
+   * General error handling
+   */
+  error (request, response, status, error) {
+    return new Promise((resolve) =&gt; {
+      response.statusCode = status
+      let content
+      if (acceptsJson(request)) {
+        response.setHeader(&apos;Content-Type&apos;, &apos;application/json&apos;)
+        content = JSON.stringify(error)
+      } else {
+        content = error.error + &apos;: &apos; + error.details
+      }
+      response.end(content)
+      resolve()
+    })
+  }
+
+  /**
+   * Specific error handling functions
+   */
+
+  error400 (request, response, details) {
+    details = details || (request.method + &apos; &apos; + request.url)
+    return this.error(request, response, 400, {error: &apos;Bad request&apos;, details: details})
+  }
+
+  error403 (request, response, details) {
+    return this.error(request, response, 403, {error: &apos;Forbidden&apos;, details: details})
+  }
+
+  error404 (request, response, details) {
+    return this.error(request, response, 404, {error: &apos;Not found&apos;, details: details})
+  }
+
+  error500 (request, response, error) {
+    /* istanbul ignore next */
+    return this.error(request, response, 500, {error: &apos;Internal error&apos;, details: error ? error.stack : &apos;&apos;})
+  }
+}
+
+function acceptsJson (request) {
+  let accept = request.headers[&apos;accept&apos;] || &apos;&apos;
+  return accept.match(/application\/json/)
+}
+
+module.exports = HostHttpServer
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.4)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+{
+  "coverage": "50%",
+  "expectCount": 152,
+  "actualCount": 76,
+  "files": {
+    "lib/contexts/Context.js": {
+      "expectCount": 22,
+      "actualCount": 1,
+      "undocumentLines": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        12,
+        16,
+        20,
+        24,
+        41,
+        45,
+        59,
+        71,
+        78,
+        95,
+        133,
+        140,
+        145,
+        169,
+        173
+      ]
+    },
+    "lib/contexts/JavascriptContext.js": {
+      "expectCount": 13,
+      "actualCount": 8,
+      "undocumentLines": [
+        36,
+        262,
+        415,
+        525,
+        599
+      ]
+    },
+    "lib/contexts/JupyterContext.js": {
+      "expectCount": 21,
+      "actualCount": 9,
+      "undocumentLines": [
+        90,
+        92,
+        93,
+        108,
+        109,
+        110,
+        111,
+        114,
+        117,
+        122,
+        127,
+        135
+      ]
+    },
+    "lib/contexts/NodeContext.js": {
+      "expectCount": 4,
+      "actualCount": 3,
+      "undocumentLines": [
+        129
+      ]
+    },
+    "lib/contexts/SqliteContext.js": {
+      "expectCount": 14,
+      "actualCount": 10,
+      "undocumentLines": [
+        9,
+        10,
+        16,
+        354
+      ]
+    },
+    "lib/host/Host.js": {
+      "expectCount": 48,
+      "actualCount": 28,
+      "undocumentLines": [
+        8,
+        23,
+        28,
+        33,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        266,
+        274,
+        446,
+        578,
+        639,
+        768
+      ]
+    },
+    "lib/host/HostHttpServer.js": {
+      "expectCount": 28,
+      "actualCount": 17,
+      "undocumentLines": [
+        371,
+        15,
+        18,
+        19,
+        20,
+        21,
+        24,
+        28,
+        357,
+        361,
+        365
+      ]
+    },
+    "lib/index.js": {
+      "expectCount": 2,
+      "actualCount": 0,
+      "undocumentLines": [
+        7,
+        9
+      ]
+    }
+  }
+}

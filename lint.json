@@ -1,0 +1,109 @@
+[
+  {
+    "name": "NodeContext#compileLibrary",
+    "filePath": "lib/contexts/NodeContext.js",
+    "lines": [
+      {
+        "lineNumber": 31,
+        "line": "  /**"
+      },
+      {
+        "lineNumber": 32,
+        "line": "   * Compile a Stencila library so that it can be loaded either into"
+      },
+      {
+        "lineNumber": 33,
+        "line": "   * a `NodeContext` or another `JavascriptContext` (e.g one embedded"
+      },
+      {
+        "lineNumber": 34,
+        "line": "   * into a Stencila web or desktop interface)."
+      },
+      {
+        "lineNumber": 35,
+        "line": "   *"
+      },
+      {
+        "lineNumber": 36,
+        "line": "   * Creates a Javascript bundle which exports both function definitions and"
+      },
+      {
+        "lineNumber": 37,
+        "line": "   * a function specification objects."
+      },
+      {
+        "lineNumber": 38,
+        "line": "   *"
+      },
+      {
+        "lineNumber": 39,
+        "line": "   * @param {String} src Path to library folder"
+      },
+      {
+        "lineNumber": 40,
+        "line": "   * @param {String} dest Destination"
+      },
+      {
+        "lineNumber": 41,
+        "line": "   * @param {Boolean} minify Should the bundle be minified? (defaults to true)"
+      },
+      {
+        "lineNumber": 42,
+        "line": "   */"
+      },
+      {
+        "lineNumber": 43,
+        "line": "  async compileLibrary (library = {}) {"
+      }
+    ],
+    "codeParams": [
+      "library"
+    ],
+    "docParams": [
+      "src",
+      "dest",
+      "minify"
+    ]
+  },
+  {
+    "name": "SqliteContext#_interpolateSql",
+    "filePath": "lib/contexts/SqliteContext.js",
+    "lines": [
+      {
+        "lineNumber": 276,
+        "line": "  /**"
+      },
+      {
+        "lineNumber": 277,
+        "line": "   * Do string interpolation of variables in SQL code"
+      },
+      {
+        "lineNumber": 278,
+        "line": "   *"
+      },
+      {
+        "lineNumber": 279,
+        "line": "   * @param  {String} sql SQL code with interpolation marks e.g. `SELECT * FROM data WHERE height > ${x} AND width < ${y}`"
+      },
+      {
+        "lineNumber": 280,
+        "line": "   * @return {Object}     Interpolation variable names and interpolated e.g. `{variables:['x', 'y'], sql: 'SELECT * FROM data WHERE height > 10 AND width < 32'}`"
+      },
+      {
+        "lineNumber": 281,
+        "line": "   */"
+      },
+      {
+        "lineNumber": 282,
+        "line": "  _interpolateSql (sql, inputs = {}) {"
+      }
+    ],
+    "codeParams": [
+      "sql",
+      "inputs"
+    ],
+    "docParams": [
+      "sql"
+    ]
+  }
+]
