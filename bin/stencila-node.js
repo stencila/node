@@ -1,16 +1,14 @@
 #!/usr/bin/env node
 
 /**
- * A command line interface, primarily intended for machine use,
+ * A very simple command line interface, primarily intended for machine use,
  * such as spawning new hosts. Provide a function name as first argument
- * and function options as a JSON object in the second argument or
- * standard input. e.g.
+ * and function options as a JSON object in the second argument e.g.
  *
+ *   stencila-node run
  *   stencila-node spawn '{"port":2300}'
- *   echo '{"port":2300}' | stencila-node spawn
  */
 
-const getStdin = require('get-stdin')
 const stencila = require('../lib/index.js')
 
 ;(async function () {
@@ -23,7 +21,7 @@ const stencila = require('../lib/index.js')
   }
 
   // Function options as JSON object from second argument or stdin
-  let inp = process.argv[3] || await getStdin()
+  let inp = process.argv[3]
   let options
   if (inp && inp.length) {
     if (inp[0] === '{') {
